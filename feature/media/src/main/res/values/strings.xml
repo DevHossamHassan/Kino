@@ -1,0 +1,29 @@
+<resources>
+    <string name="media_manager_title">Media Manager</string>
+    <string name="media_list_view">List view</string>
+    <string name="media_grid_view">Grid view</string>
+    <string name="media_permission_required_title">Media permissions required</string>
+    <string name="media_permission_required_message">We need access to your media library to attach files.</string>
+    <string name="media_grant_permission">Grant permission</string>
+    <string name="media_loading">Loading media...</string>
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="media_empty_title">No media yet</string>
+    <string name="media_empty_message">Attach files to tasks or notes and they will show up here.</string>
+    <string name="media_more_options">More options</string>
+    <string name="media_go_to_source">Go to source</string>
+    <string name="media_delete">Delete</string>
+    <string name="media_viewer_title">Media viewer</string>
+    <string name="media_open_source">Open linked item</string>
+    <string name="media_open_external">Open with another app</string>
+    <string name="media_metadata_header">Details</string>
+    <string name="media_metadata_size">Size</string>
+    <string name="media_metadata_type">Type</string>
+    <string name="media_metadata_dimensions">Dimensions</string>
+    <string name="media_metadata_duration">Duration</string>
+    <string name="media_metadata_added">Added</string>
+    <string name="media_metadata_modified">Modified</string>
+    <string name="media_play_audio">Play</string>
+    <string name="media_pause_audio">Pause</string>
+    <string name="media_open_external_error">No app available to open this file.</string>
+</resources>

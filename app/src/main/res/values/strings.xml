@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Task Manager</string>
+    
+    <!-- Kanban Board -->
+    <string name="kanban_board_title">My Tasks</string>
+    <string name="kanban_search">Search</string>
+    <string name="kanban_filter">Filter</string>
+    <string name="kanban_profile">Profile</string>
+    <string name="kanban_add_task">Add Task</string>
+    
+    <!-- Sections -->
+    <string name="section_personal">Personal</string>
+    <string name="section_work">Work</string>
+    <string name="section_family">Family</string>
+    <string name="section_task_count">%1$d tasks</string>
+    <string name="section_expand">Expand section</string>
+    <string name="section_collapse">Collapse section</string>
+    
+    <!-- Columns -->
+    <string name="column_backlog">Backlog</string>
+    <string name="column_todo_this_week">To Do This Week</string>
+    <string name="column_in_progress">In Progress</string>
+    <string name="column_pending">Pending</string>
+    <string name="column_done">Done</string>
+    
+    <!-- Task Card -->
+    <string name="task_priority_high">High Priority</string>
+    <string name="task_priority_medium">Medium Priority</string>
+    <string name="task_priority_low">Low Priority</string>
+    <string name="task_attachments">%1$d attachments</string>
+    <string name="task_checklist_progress">%1$d of %2$d completed</string>
+    <string name="task_due_date">Due %1$s</string>
+    
+    <!-- Drag and Drop -->
+    <string name="drag_task_started">Started dragging task</string>
+    <string name="drag_task_over_column">Over %1$s column</string>
+    <string name="drag_task_dropped">Task moved to %1$s</string>
+    <string name="drag_task_cancelled">Drag cancelled</string>
+    
+    <!-- Accessibility -->
+    <string name="cd_task_card">Task card: %1$s</string>
+    <string name="cd_drag_handle">Drag to move task</string>
+    <string name="cd_priority_badge">Priority: %1$s</string>
+    <string name="cd_column_drop_zone">Drop zone for %1$s column</string>
+    <string name="cd_empty_column">%1$s column is empty</string>
+    
+    <!-- Feedback Messages -->
+    <string name="feedback_task_moved">Task moved successfully</string>
+    <string name="feedback_task_move_failed">Failed to move task</string>
+    <string name="feedback_invalid_drop_location">Cannot drop task here</string>
+    
+    <!-- Navigation -->
+    <string name="nav_kanban">Tasks</string>
+    <string name="nav_notes">Notes</string>
+    <string name="nav_media">Media</string>
+    <string name="nav_notifications">Notifications</string>
+    
+    <!-- Media Manager -->
+    <string name="media_manager_title">Media Manager</string>
+    <string name="media_grid_view">Grid View</string>
+    <string name="media_list_view">List View</string>
+    <string name="media_more_options">More options</string>
+    <string name="media_go_to_source">Go to source</string>
+    <string name="media_delete">Delete</string>
+    <string name="media_file_size">%1$s</string>
+    <string name="media_empty_title">No media yet</string>
+    <string name="media_empty_message">Attach images and files to your tasks and notes to see them here</string>
+    <string name="media_total_size">Total size: %1$s</string>
+    <string name="media_total_count">%1$d items</string>
+    <string name="media_attach">Attach Media</string>
+    <string name="media_attach_images">Attach Images</string>
+    <string name="media_attach_videos">Attach Videos</string>
+    <string name="media_attach_documents">Attach Documents</string>
+    <string name="media_filter_all">All Media</string>
+    <string name="media_filter_images">Images</string>
+    <string name="media_filter_videos">Videos</string>
+    <string name="media_filter_documents">Documents</string>
+    <string name="media_filter_tasks">From Tasks</string>
+    <string name="media_filter_notes">From Notes</string>
+    <string name="media_search_hint">Search media...</string>
+    <string name="media_deleted_successfully">Media deleted successfully</string>
+    <string name="media_delete_failed">Failed to delete media</string>
+    <string name="media_loading">Loading media...</string>
+    <string name="media_error_loading">Failed to load media</string>
+    
+    <!-- Permissions -->
+    <string name="media_permission_required_title">Media Access Required</string>
+    <string name="media_permission_required_message">To manage your attached media, we need permission to access your photos and videos.</string>
+    <string name="media_grant_permission">Grant Permission</string>
+    <string name="media_permission_denied">Permission denied. Cannot access media.</string>
+    
+    <!-- Task Detail -->
+    <string name="task_detail_title">Task Details</string>
+    <string name="task_detail_edit">Edit task</string>
+    <string name="task_detail_save">Save</string>
+    <string name="task_detail_delete">Delete task</string>
+    <string name="task_detail_save_changes">Save Changes</string>
+    <string name="task_detail_checklist_title">Checklist</string>
+    <string name="task_detail_add_item">Add Item</string>
+    <string name="task_detail_new_item_placeholder">Enter checklist item</string>
+    <string name="task_detail_no_checklist">No checklist items yet</string>
+    <string name="task_detail_attachments">Attachments</string>
+    <string name="task_detail_no_attachments">No attachments</string>
+    <string name="task_detail_due_date">Due Date</string>
+    <string name="task_detail_no_due_date">No due date set</string>
+    <string name="task_detail_labels">Labels</string>
+    <string name="task_detail_no_labels">No labels</string>
+    <string name="task_detail_progress">Progress</string>
+    <string name="task_detail_description">Description</string>
+    <string name="task_detail_no_description">No description provided</string>
+    <string name="task_detail_attach_media">Attach Media</string>
+    <string name="task_detail_task_updated">Task updated</string>
+    <string name="task_detail_task_update_failed">Failed to update task</string>
+    <string name="task_detail_checklist_updated">Checklist updated</string>
+    <string name="task_detail_checklist_update_failed">Failed to update checklist</string>
+    <string name="task_detail_item_added">Item added</string>
+    <string name="task_detail_item_add_failed">Failed to add item</string>
+    <string name="task_detail_media_attached">Media attached</string>
+    <string name="task_detail_media_attach_failed">Failed to attach media</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="delete">Delete</string>
+    
+    <!-- Notes -->
+    <string name="notes_title">Notes</string>
+    <string name="notes_create_note">Create new note</string>
+    <string name="notes_search">Search notes</string>
+    <string name="notes_empty_title">No notes yet</string>
+    <string name="notes_empty_message">Create your first note to get started</string>
+    <string name="notes_pinned">Pinned</string>
+    <string name="notes_recent">Recent</string>
+    <string name="notes_with_labels">With Labels</string>
+    <string name="notes_all">All</string>
+    <string name="notes_pin">Pin</string>
+    <string name="notes_unpin">Unpin</string>
+    <string name="notes_note_created">Note created</string>
+    <string name="notes_note_create_failed">Failed to create note</string>
+    <string name="notes_note_updated">Note updated</string>
+    <string name="notes_note_update_failed">Failed to update note</string>
+    <string name="notes_note_deleted">Note deleted</string>
+    <string name="notes_note_delete_failed">Failed to delete note</string>
+    <string name="notes_start_typing">Start typing your note...</string>
+    <string name="notes_format_bold">Bold</string>
+    <string name="notes_format_italic">Italic</string>
+    <string name="notes_format_underline">Underline</string>
+    <string name="notes_format_bullet_list">Bullet List</string>
+    <string name="notes_format_checklist">Checklist</string>
+    
+    <!-- Common -->
+    <string name="loading">Loading...</string>
+    <string name="error_generic">Something went wrong</string>
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+</resources>

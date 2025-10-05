@@ -1,0 +1,77 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
+}
+
+android {
+    namespace = "com.letsgotoperfection.kino.feature.kanban"
+    compileSdk = 36
+    
+    defaultConfig {
+        minSdk = 26
+    }
+    
+    buildFeatures {
+        compose = true
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+    }
+    
+    sourceSets {
+        getByName("main") {
+            kotlin.srcDirs("src/main/kotlin")
+        }
+    }
+}
+
+dependencies {
+    // Core modules only
+    implementation(project(":core:common"))
+    implementation(project(":core:design-system"))
+    implementation(project(":core:data"))
+    implementation(project(":core:model"))
+    implementation(project(":core:database"))
+    
+    // Navigation (for deep links) - REMOVED to avoid circular dependency
+    // Navigation should only be used in the app module
+    
+    // Compose
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.activity)
+    implementation(libs.androidx.compose.material.icons.extended)
+    
+    // Lifecycle
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    ksp(libs.hilt.androidx.compiler)
+    
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+}

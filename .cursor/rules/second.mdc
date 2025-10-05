@@ -1,0 +1,1049 @@
+---
+alwaysApply: true
+---
+# Cursor AI Project Prompt & Rules
+
+## Project Overview
+
+Build a modern Android task management application with Kanban board, notes system, and media management following the latest Android best practices.
+
+---
+
+## Core Requirements
+
+### Application Purpose
+- Task/Todo management system with Kanban-style board
+- Rich note-taking with organization features
+- Comprehensive media manager
+- Smart AI-powered task breakdown notifications
+- Gamification for productivity
+
+### Main Features
+1. **Kanban Board** with collapsible sections (Personal, Work, Family)
+2. **Notes System** with rich text formatting, tags, and attachments
+3. **Media Manager** with grid/list views and navigation to source
+4. **Smart Notifications** using ML for task breakdown
+5. **Task Details** with checklists, progress tracking, and rich formatting
+
+---
+
+## Multi-Module Architecture (Feature Modules)
+
+### Project Structure Overview
+
+```
+project-root/
+├── app/                           // Main app module (minimal, orchestration only)
+├── core/
+│   ├── common/                    // Shared utilities, extensions
+│   ├── design-system/             // UI components, theme, Material3
+│   ├── data/                      // Data layer abstractions
+│   ├── database/                  // Room database, DAOs
+│   ├── network/                   // Retrofit, API clients (if needed)
+│   └── model/                     // Shared domain models
+├── feature/
+│   ├── kanban/                    // Kanban board feature
+│   ├── notes/                     // Notes feature
+│   ├── media/                     // Media manager feature
+│   ├── task-detail/               // Task detail screen
+│   └── notifications/             // Smart notifications & gamification
+└── navigation/                    // App-level navigation graph
+```
+
+### Module Dependency Rules
+
+**CRITICAL: Follow These Dependency Rules**
+
+```
+┌─────────────────────────────────────────┐
+│              :app                       │  ← Orchestrates everything
+└────────────┬────────────────────────────┘
+             │ depends on ↓
+┌────────────▼────────────────────────────┐
+│         :navigation                     │  ← Navigation coordinator
+└────────────┬────────────────────────────┘
+             │ depends on ↓
+┌────────────▼────────────────────────────┐
+│    :feature:* modules                   │  ← Feature modules (isolated)
+└────────────┬────────────────────────────┘
+             │ depends on ↓
+┌────────────▼────────────────────────────┐
+│         :core:* modules                 │  ← Core/shared modules
+└─────────────────────────────────────────┘
+
+Rules:
+✅ Features can depend on core modules
+✅ Features can depend on navigation (for deep links)
+❌ Features CANNOT depend on other features
+❌ Features CANNOT depend on :app
+❌ Core modules cannot depend on features
+✅ Use APIs/interfaces for feature-to-feature communication
+```
+
+### Feature Module Template
+
+Each feature module follows this internal structure:
+
+```kotlin
+// feature/kanban/
+├── src/main/kotlin/com/yourapp/feature/kanban/
+│   ├── api/                       // PUBLIC API for other modules
+│   │   ├── KanbanApi.kt          // Interface defining public operations
+│   │   └── KanbanNavigation.kt   // Navigation destinations
+│   ├── internal/                  // INTERNAL implementation
+│   │   ├── data/
+│   │   │   ├── repository/
+│   │   │   └── mapper/
+│   │   ├── domain/
+│   │   │   └── usecase/
+│   │   └── presentation/
+│   │       ├── ui/
+│   │       ├── viewmodel/
+│   │       └── state/
+│   └── di/                        // Module-specific DI
+│       └── KanbanModule.kt
+└── build.gradle.kts
+```
+
+### API-Style Communication Between Features
+
+**Example: Kanban Feature API**
+
+```kotlin
+// feature/kanban/api/KanbanApi.kt
+interface KanbanApi {
+    /**
+     * Get task by ID (for deep linking from other features)
+     */
+    suspend fun getTask(taskId: String): Result<Task>
+    
+    /**
+     * Create a task from external feature
+     */
+    suspend fun createTask(task: TaskCreationRequest): Result<String>
+    
+    /**
+     * Navigate to task detail
+     */
+    fun navigateToTaskDetail(navController: NavController, taskId: String)
+    
+    /**
+     * Get observable task updates (for notifications)
+     */
+    fun observeTaskUpdates(): Flow<TaskUpdate>
+}
+
+// feature/kanban/api/KanbanNavigation.kt
+object KanbanDestinations {
+    const val KANBAN_BOARD = "kanban_board"
+    const val TASK_DETAIL = "task_detail/{taskId}"
+    
+    fun taskDetailRoute(taskId: String) = "task_detail/$taskId"
+}
+
+// Internal implementation (NOT exposed)
+// feature/kanban/internal/data/repository/KanbanApiImpl.kt
+@Singleton
+internal class KanbanApiImpl @Inject constructor(
+    private val taskRepository: TaskRepository,
+    private val taskDao: TaskDao
+) : KanbanApi {
+    
+    override suspend fun getTask(taskId: String): Result<Task> = 
+        runCatching { taskRepository.getTaskById(taskId) }
+    
+    override suspend fun createTask(task: TaskCreationRequest): Result<String> =
+        runCatching { taskRepository.createTask(task) }
+        
+    override fun navigateToTaskDetail(navController: NavController, taskId: String) {
+        navController.navigate(KanbanDestinations.taskDetailRoute(taskId))
+    }
+    
+    override fun observeTaskUpdates(): Flow<TaskUpdate> = 
+        taskDao.observeAllTasks().map { it.toTaskUpdates() }
+}
+```
+
+**Example: Notes Feature Using Kanban API**
+
+```kotlin
+// feature/notes/internal/presentation/viewmodel/NoteViewModel.kt
+@HiltViewModel
+internal class NoteViewModel @Inject constructor(
+    private val noteRepository: NoteRepository,
+    private val kanbanApi: KanbanApi  // ← Dependency on API, not implementation
+) : ViewModel() {
+    
+    fun attachNoteToTask(noteId: String, taskId: String) {
+        viewModelScope.launch {
+            kanbanApi.getTask(taskId).fold(
+                onSuccess = { task ->
+                    // Attach note to task
+                    noteRepository.linkNoteToTask(noteId, taskId)
+                },
+                onFailure = { error ->
+                    // Handle error
+                }
+            )
+        }
+    }
+}
+```
+
+### Dependency Injection for Multi-Module
+
+**Core DI Setup**
+
+```kotlin
+// app/src/main/kotlin/com/yourapp/di/AppModule.kt
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class AppModule {
+    
+    // Bind feature APIs to implementations
+    @Binds
+    @Singleton
+    abstract fun bindKanbanApi(impl: KanbanApiImpl): KanbanApi
+    
+    @Binds
+    @Singleton
+    abstract fun bindNotesApi(impl: NotesApiImpl): NotesApi
+    
+    @Binds
+    @Singleton
+    abstract fun bindMediaApi(impl: MediaApiImpl): MediaApi
+}
+```
+
+**Feature Module DI**
+
+```kotlin
+// feature/kanban/di/KanbanModule.kt
+@Module
+@InstallIn(SingletonComponent::class)
+internal object KanbanModule {
+    
+    @Provides
+    @Singleton
+    fun provideTaskRepository(
+        taskDao: TaskDao,
+        // Only depend on core modules
+        @ApplicationContext context: Context
+    ): TaskRepository = TaskRepositoryImpl(taskDao, context)
+    
+    @Provides
+    @Singleton
+    internal fun provideKanbanApiImpl(
+        repository: TaskRepository,
+        taskDao: TaskDao
+    ): KanbanApiImpl = KanbanApiImpl(repository, taskDao)
+}
+```
+
+### Gradle Configuration for Modules
+
+**Core Module (core/common/build.gradle.kts)**
+
+```kotlin
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
+}
+
+android {
+    namespace = "com.yourapp.core.common"
+    compileSdk = 34
+    
+    defaultConfig {
+        minSdk = 26
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // Only essential dependencies
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+}
+```
+
+**Feature Module (feature/kanban/build.gradle.kts)**
+
+```kotlin
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
+}
+
+android {
+    namespace = "com.yourapp.feature.kanban"
+    compileSdk = 34
+    
+    defaultConfig {
+        minSdk = 26
+    }
+    
+    buildFeatures {
+        compose = true
+    }
+    
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
+}
+
+dependencies {
+    // Core modules only
+    implementation(project(":core:common"))
+    implementation(project(":core:design-system"))
+    implementation(project(":core:data"))
+    implementation(project(":core:model"))
+    implementation(project(":core:database"))
+    
+    // Navigation (for deep links)
+    implementation(project(":navigation"))
+    
+    // DO NOT depend on other features
+    // ❌ implementation(project(":feature:notes"))  // WRONG!
+    
+    // Standard dependencies
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+}
+```
+
+**App Module (app/build.gradle.kts)**
+
+```kotlin
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
+}
+
+android {
+    namespace = "com.yourapp"
+    // ... configuration
+}
+
+dependencies {
+    // Include all feature modules
+    implementation(project(":feature:kanban"))
+    implementation(project(":feature:notes"))
+    implementation(project(":feature:media"))
+    implementation(project(":feature:task-detail"))
+    implementation(project(":feature:notifications"))
+    
+    // Core modules
+    implementation(project(":core:common"))
+    implementation(project(":core:design-system"))
+    implementation(project(":core:database"))
+    
+    // Navigation
+    implementation(project(":navigation"))
+    
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+}
+```
+
+### Navigation Between Features
+
+**Central Navigation Module**
+
+```kotlin
+// navigation/src/main/kotlin/com/yourapp/navigation/AppNavGraph.kt
+@Composable
+fun AppNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        navController = navController,
+        startDestination = KanbanDestinations.KANBAN_BOARD,
+        modifier = modifier
+    ) {
+        // Kanban feature graph
+        kanbanNavGraph(navController)
+        
+        // Notes feature graph
+        notesNavGraph(navController)
+        
+        // Media feature graph
+        mediaNavGraph(navController)
+        
+        // Task detail feature graph
+        taskDetailNavGraph(navController)
+    }
+}
+
+// Each feature provides its own nav graph
+// feature/kanban/api/KanbanNavigation.kt
+fun NavGraphBuilder.kanbanNavGraph(navController: NavController) {
+    composable(KanbanDestinations.KANBAN_BOARD) {
+        KanbanBoardScreen(
+            onNavigateToTaskDetail = { taskId ->
+                navController.navigate(TaskDetailDestinations.taskDetailRoute(taskId))
+            },
+            onNavigateToNotes = {
+                navController.navigate(NotesDestinations.NOTES_LIST)
+            }
+        )
+    }
+}
+```
+
+### Event Bus for Cross-Feature Communication
+
+**For decoupled event communication:**
+
+```kotlin
+// core/common/src/main/kotlin/com/yourapp/core/common/event/AppEvents.kt
+sealed interface AppEvent {
+    data class TaskCreated(val taskId: String) : AppEvent
+    data class TaskUpdated(val taskId: String) : AppEvent
+    data class TaskDeleted(val taskId: String) : AppEvent
+    data class MediaAttached(val mediaId: String, val targetId: String) : AppEvent
+    data class NoteLinked(val noteId: String, val taskId: String) : AppEvent
+}
+
+// core/common/src/main/kotlin/com/yourapp/core/common/event/EventBus.kt
+@Singleton
+class EventBus @Inject constructor() {
+    private val _events = MutableSharedFlow<AppEvent>(
+        replay = 0,
+        extraBufferCapacity = 10,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    
+    val events: SharedFlow<AppEvent> = _events.asSharedFlow()
+    
+    suspend fun emit(event: AppEvent) {
+        _events.emit(event)
+    }
+}
+
+// Usage in feature module
+@HiltViewModel
+internal class KanbanViewModel @Inject constructor(
+    private val repository: TaskRepository,
+    private val eventBus: EventBus
+) : ViewModel() {
+    
+    init {
+        // Listen to events from other features
+        viewModelScope.launch {
+            eventBus.events.collect { event ->
+                when (event) {
+                    is AppEvent.NoteLinked -> {
+                        // Refresh task with linked note
+                        refreshTask(event.taskId)
+                    }
+                    is AppEvent.MediaAttached -> {
+                        // Update task with new media
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+    
+    fun createTask(task: Task) {
+        viewModelScope.launch {
+            repository.createTask(task)
+            eventBus.emit(AppEvent.TaskCreated(task.id))
+        }
+    }
+}
+```
+
+### Team Workflow & Ownership
+
+**Feature Team Structure:**
+
+```
+Team 1: Kanban Board
+- Owns: feature/kanban
+- API: KanbanApi.kt (stable contract)
+- Can work independently without affecting other teams
+
+Team 2: Notes
+- Owns: feature/notes
+- API: NotesApi.kt
+- Consumes: KanbanApi (read-only)
+
+Team 3: Media Manager
+- Owns: feature/media
+- API: MediaApi.kt
+- Consumes: KanbanApi, NotesApi
+
+Team 4: Core/Infrastructure
+- Owns: All core/* modules
+- Maintains: Shared utilities, design system
+```
+
+**Development Workflow:**
+
+1. **API-First Design**: Teams agree on API contracts before implementation
+2. **Parallel Development**: Teams work on their features independently
+3. **Mock Implementations**: Use fake/mock APIs during development
+4. **Integration**: Only integrate when APIs are stable
+5. **Code Reviews**: Each team reviews their own feature code
+
+### Testing Multi-Module Apps
+
+**Unit Tests (Feature Module)**
+
+```kotlin
+// feature/kanban/src/test/kotlin/com/yourapp/feature/kanban/
+class KanbanViewModelTest {
+    
+    @Test
+    fun `create task emits event to event bus`() = runTest {
+        // Given
+        val eventBus = FakeEventBus()
+        val viewModel = KanbanViewModel(fakeRepository, eventBus)
+        
+        // When
+        viewModel.createTask(testTask)
+        
+        // Then
+        val event = eventBus.events.first()
+        assert(event is AppEvent.TaskCreated)
+    }
+}
+```
+
+**Integration Tests (Between Modules)**
+
+```kotlin
+// app/src/androidTest/kotlin/com/yourapp/
+@HiltAndroidTest
+class FeatureIntegrationTest {
+    
+    @Test
+    fun `kanban api accessible from notes feature`() = runTest {
+        // Test that Notes feature can use Kanban API
+        val kanbanApi = hiltRule.inject<KanbanApi>()
+        val result = kanbanApi.getTask("test-id")
+        assert(result.isSuccess)
+    }
+}
+```
+
+### Module Visibility Control
+
+**Using Kotlin internal modifier:**
+
+```kotlin
+// feature/kanban/internal/data/repository/TaskRepositoryImpl.kt
+@Singleton
+internal class TaskRepositoryImpl @Inject constructor(
+    private val taskDao: TaskDao
+) : TaskRepository {
+    // Implementation is internal, not exposed outside module
+}
+
+// Only API interface is public
+// feature/kanban/api/KanbanApi.kt
+interface KanbanApi {  // public by default
+    suspend fun getTask(taskId: String): Result<Task>
+}
+```
+
+### Version Catalogs for Dependency Management
+
+**gradle/libs.versions.toml**
+
+```toml
+[versions]
+kotlin = "1.9.20"
+compose = "1.5.4"
+hilt = "2.48"
+
+[libraries]
+androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+
+[plugins]
+android-library = { id = "com.android.library", version = "8.1.2" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+```
+
+### Module Performance Optimization
+
+**Build Configuration:**
+
+```kotlin
+// gradle.properties
+org.gradle.parallel=true
+org.gradle.caching=true
+org.gradle.configureondemand=true
+kotlin.incremental=true
+kotlin.code.style=official
+
+# Enable Gradle build cache
+android.enableBuildCache=true
+```
+
+### Documentation Requirements for APIs
+
+```kotlin
+/**
+ * Public API for Kanban feature.
+ * 
+ * This API allows other feature modules to:
+ * - Query tasks
+ * - Create/update tasks
+ * - Navigate to task screens
+ * 
+ * @since 1.0.0
+ * @see NotesApi for linking notes to tasks
+ * @see MediaApi for attaching media to tasks
+ */
+interface KanbanApi {
+    
+    /**
+     * Retrieves a task by its unique identifier.
+     * 
+     * @param taskId The unique task identifier
+     * @return Result containing the Task or an error
+     * @throws TaskNotFoundException if task doesn't exist
+     */
+    suspend fun getTask(taskId: String): Result<Task>
+}
+```
+
+---
+
+## Android Architecture Rules (Single Module - For Reference)
+
+### Internal Module Structure (within each feature)
+
+```kotlin
+// Inside each feature module: CLEAN + MVVM
+feature/kanban/internal/
+├── data/
+│   ├── local/          // Room entities, DAOs
+│   ├── repository/     // Repository implementations
+│   └── mapper/         // Data <-> Domain mappers
+├── domain/
+│   ├── model/          // Domain models
+│   ├── usecase/        // Business logic
+│   └── repository/     // Repository interfaces
+└── presentation/
+    ├── ui/             // Composables
+    ├── viewmodel/      // ViewModels
+    └── state/          // UI state classes
+```
+
+### Required Technologies
+
+**MANDATORY Stack:**
+- Kotlin 1.9+
+- Jetpack Compose (latest stable) - NO XML layouts
+- Material3 Design System
+- Kotlin Coroutines + Flow
+- Room Database (latest version)
+- Hilt for Dependency Injection
+- ViewModel + StateFlow/SharedFlow
+- Navigation Compose
+- Coil for image loading
+- DataStore for preferences (NOT SharedPreferences)
+
+**Optional but Recommended:**
+- WorkManager for background tasks
+- Paging3 for large lists
+- CameraX for camera features
+- MLKit or TensorFlow Lite for AI features
+
+---
+
+## Code Quality Standards
+
+### Critical Rules - NEVER VIOLATE
+
+1. **NO Deprecated APIs**
+   - NEVER use deprecated functions or classes
+   - Always use the latest recommended alternatives
+   - Check deprecation status before implementation
+
+2. **Proper State Management**
+   ```kotlin
+   // CORRECT - Use StateFlow with sealed classes
+   sealed class UiState<out T> {
+       data object Loading : UiState<Nothing>()
+       data class Success<T>(val data: T) : UiState<T>()
+       data class Error(val message: String) : UiState<Nothing>()
+   }
+   
+   // ViewModel
+   private val _uiState = MutableStateFlow<UiState<List<Task>>>(UiState.Loading)
+   val uiState: StateFlow<UiState<List<Task>>> = _uiState.asStateFlow()
+   ```
+
+3. **Compose Best Practices**
+   ```kotlin
+   // CORRECT - Stable parameters, proper state hoisting
+   @Composable
+   fun TaskCard(
+       task: Task,
+       onTaskClick: (String) -> Unit,
+       modifier: Modifier = Modifier
+   ) {
+       // Use remember for computed values
+       val progress = remember(task.checklist) { 
+           calculateProgress(task.checklist) 
+       }
+       // Implementation
+   }
+   
+   // WRONG - Avoid
+   @Composable
+   fun TaskCard(task: Task, viewModel: TaskViewModel) { } // Don't pass ViewModels
+   ```
+
+4. **Database - Room Best Practices**
+   ```kotlin
+   // CORRECT - Use Flow for reactive queries
+   @Dao
+   interface TaskDao {
+       @Query("SELECT * FROM tasks WHERE section = :section")
+       fun getTasksBySection(section: String): Flow<List<TaskEntity>>
+       
+       @Upsert // Use Upsert instead of separate insert/update
+       suspend fun upsertTask(task: TaskEntity)
+   }
+   
+   // Use Type Converters for complex types
+   @TypeConverter
+   fun fromLabelList(labels: List<Label>): String = Json.encodeToString(labels)
+   ```
+
+5. **Coroutine Scoping**
+   ```kotlin
+   // CORRECT - Use appropriate scopes
+   class TaskViewModel @Inject constructor(
+       private val repository: TaskRepository
+   ) : ViewModel() {
+       
+       fun loadTasks() {
+           viewModelScope.launch {
+               repository.getTasks()
+                   .catch { emit(UiState.Error(it.message)) }
+                   .collect { tasks ->
+                       _uiState.value = UiState.Success(tasks)
+                   }
+           }
+       }
+   }
+   ```
+
+6. **Dependency Injection with Hilt**
+   ```kotlin
+   // CORRECT - Proper Hilt setup
+   @HiltAndroidApp
+   class TaskApp : Application()
+   
+   @Module
+   @InstallIn(SingletonComponent::class)
+   object DatabaseModule {
+       @Provides
+       @Singleton
+       fun provideDatabase(@ApplicationContext context: Context): TaskDatabase {
+           return Room.databaseBuilder(context, TaskDatabase::class.java, "task_db")
+               .fallbackToDestructiveMigration()
+               .build()
+       }
+   }
+   ```
+
+7. **Navigation**
+   ```kotlin
+   // CORRECT - Type-safe navigation
+   sealed class Screen(val route: String) {
+       object Kanban : Screen("kanban")
+       object Notes : Screen("notes")
+       data object TaskDetail : Screen("task/{taskId}") {
+           fun createRoute(taskId: String) = "task/$taskId"
+       }
+   }
+   ```
+
+8. **Error Handling**
+   ```kotlin
+   // CORRECT - Proper error handling
+   suspend fun loadTasks(): Result<List<Task>> = runCatching {
+       taskDao.getAllTasks().first()
+   }.fold(
+       onSuccess = { Result.success(it.map { entity -> entity.toDomain() }) },
+       onFailure = { Result.failure(it) }
+   )
+   ```
+
+---
+
+## Problem-Solving Guidelines
+
+### When Encountering Issues
+
+**DO:**
+- Research the latest official Android documentation
+- Check if there's a newer, recommended approach
+- Use Kotlin idiomatic solutions
+- Implement proper error handling
+- Add appropriate logging
+- Write unit tests for critical logic
+
+**DON'T:**
+- Replace modern practices with legacy solutions
+- Use deprecated APIs because they "work"
+- Ignore compiler warnings
+- Add hacky workarounds without proper investigation
+- Skip error handling to "make it work"
+- Use Thread() instead of Coroutines
+- Use findViewById() or XML layouts when Compose is specified
+
+### Example Problem Resolution
+
+```kotlin
+// PROBLEM: Large list causing performance issues
+// WRONG SOLUTION: Load all items at once with simple List
+// CORRECT SOLUTION: Use Paging3
+
+@Dao
+interface TaskDao {
+    @Query("SELECT * FROM tasks ORDER BY created_date DESC")
+    fun getTasksPaged(): PagingSource<Int, TaskEntity>
+}
+
+@OptIn(ExperimentalPagingApi::class)
+class TaskRepository @Inject constructor(private val dao: TaskDao) {
+    fun getTasks(): Flow<PagingData<Task>> = Pager(
+        config = PagingConfig(pageSize = 20, prefetchDistance = 5),
+        pagingSourceFactory = { dao.getTasksPaged() }
+    ).flow.map { pagingData ->
+        pagingData.map { it.toDomain() }
+    }
+}
+```
+
+---
+
+## UI Implementation Rules
+
+### Material3 Design System
+
+```kotlin
+// CORRECT - Use Material3 components
+@Composable
+fun TaskScreen() {
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("Tasks") }) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Task")
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        // Content with proper padding
+        LazyColumn(modifier = Modifier.padding(paddingValues)) {
+            // Items
+        }
+    }
+}
+```
+
+### Theme Configuration
+
+```kotlin
+// Use Material3 color scheme from design specs
+val LightColorScheme = lightColorScheme(
+    primary = Color(0xFF6366F1),      // Indigo
+    secondary = Color(0xFF10B981),    // Emerald
+    tertiary = Color(0xFFF59E0B),     // Amber
+    error = Color(0xFFEF4444),        // Red
+    background = Color(0xFFF9FAFB),   // Light Gray
+    surface = Color(0xFFFFFFFF),      // White
+)
+```
+
+### Accessibility
+
+```kotlin
+// ALWAYS include accessibility
+Text(
+    text = "Task Title",
+    modifier = Modifier.semantics {
+        contentDescription = "Task title: ${task.title}"
+        role = Role.Button
+    }
+)
+```
+
+---
+
+## Performance Optimization
+
+### Mandatory Optimizations
+
+1. **Use derivedStateOf for computed values**
+   ```kotlin
+   val filteredTasks by remember {
+       derivedStateOf { tasks.filter { it.section == selectedSection } }
+   }
+   ```
+
+2. **LazyColumn keys for efficient recomposition**
+   ```kotlin
+   LazyColumn {
+       items(tasks, key = { it.id }) { task ->
+           TaskCard(task = task)
+       }
+   }
+   ```
+
+3. **Image loading with Coil**
+   ```kotlin
+   AsyncImage(
+       model = ImageRequest.Builder(LocalContext.current)
+           .data(imageUrl)
+           .crossfade(true)
+           .memoryCachePolicy(CachePolicy.ENABLED)
+           .build(),
+       contentDescription = "Task attachment"
+   )
+   ```
+
+4. **Background work with WorkManager**
+   ```kotlin
+   // For notifications and sync
+   class TaskNotificationWorker(context: Context, params: WorkerParameters) 
+       : CoroutineWorker(context, params) {
+       override suspend fun doWork(): Result { }
+   }
+   ```
+
+---
+
+## Testing Requirements
+
+```kotlin
+// ViewModel Test Example
+@Test
+fun `loadTasks emits success state with tasks`() = runTest {
+    // Given
+    val tasks = listOf(Task(id = "1", title = "Test"))
+    coEvery { repository.getTasks() } returns flowOf(tasks)
+    
+    // When
+    viewModel.loadTasks()
+    
+    // Then
+    viewModel.uiState.test {
+        assert(awaitItem() is UiState.Success)
+    }
+}
+```
+
+---
+
+## Git Commit Standards
+
+```
+feat: Add task creation with rich text editor
+fix: Resolve notification timing issue
+refactor: Migrate to Compose Navigation
+perf: Optimize task list rendering
+test: Add unit tests for TaskRepository
+```
+
+---
+
+## Documentation Requirements
+
+Every complex function must have KDoc:
+
+```kotlin
+/**
+ * Breaks down a task into smaller actionable steps using ML model.
+ * 
+ * @param task The task to analyze
+ * @param dueDate The task's due date
+ * @return List of suggested micro-tasks ordered by priority
+ * @throws TaskAnalysisException if ML model fails
+ */
+suspend fun analyzeTaskBreakdown(task: Task, dueDate: LocalDateTime): List<MicroTask>
+```
+
+---
+
+## AI/ML Integration Guidelines
+
+For smart notifications:
+
+```kotlin
+// Use ML Kit or TensorFlow Lite
+class TaskBreakdownAnalyzer @Inject constructor() {
+    
+    suspend fun suggestNextStep(task: Task): MicroTask? {
+        // Implement using ML model
+        // Analyze task description, checklist, due date
+        // Return next actionable micro-task
+    }
+}
+```
+
+---
+
+## Final Checklist Before Any Commit
+
+- [ ] No deprecated API usage
+- [ ] Proper error handling everywhere
+- [ ] StateFlow/SharedFlow used correctly
+- [ ] Compose best practices followed
+- [ ] Hilt injection working
+- [ ] No memory leaks (check with LeakCanary)
+- [ ] Proper coroutine scoping
+- [ ] Material3 components used
+- [ ] Accessibility considered
+- [ ] Performance optimized
+- [ ] Unit tests added for business logic
+- [ ] KDoc for complex functions
+
+---
+
+## References
+
+- [Android Developers Guide](https://developer.android.com)
+- [Jetpack Compose Guidelines](https://developer.android.com/jetpack/compose)
+- [Kotlin Coroutines Best Practices](https://kotlinlang.org/docs/coroutines-guide.html)
+- [Material3 Design System](https://m3.material.io)
+
+---
+
+## When In Doubt
+
+1. Check official Android documentation FIRST
+2. Use the most modern, recommended approach
+3. Never compromise code quality for quick fixes
+4. Ask "Is there a better way?" before implementing
+5. Prioritize maintainability and scalability
+
+**Remember: Good code is better than fast code. Modern practices are better than legacy solutions.**

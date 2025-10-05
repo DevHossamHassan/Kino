@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notification Channels -->
+    <string name="channel_task_reminders_name">Task Reminders</string>
+    <string name="channel_task_reminders_description">Reminders for your tasks and deadlines</string>
+    
+    <string name="channel_smart_suggestions_name">Smart Suggestions</string>
+    <string name="channel_smart_suggestions_description">AI-powered productivity tips and suggestions</string>
+    
+    <string name="channel_achievements_name">Achievements</string>
+    <string name="channel_achievements_description">Celebrate your progress and streaks</string>
+    
+    <string name="channel_notes_name">Notes</string>
+    <string name="channel_notes_description">Reminders for your notes</string>
+    
+    <!-- Permission -->
+    <string name="notification_permission_title">Enable Notifications</string>
+    <string name="notification_permission_message">Stay on top of your tasks with timely reminders and smart suggestions</string>
+    <string name="notification_grant_permission">Enable</string>
+    <string name="notification_permission_denied">Notifications disabled</string>
+    <string name="notification_permission_denied_message">You can enable notifications in settings to receive task reminders and smart suggestions</string>
+    <string name="notification_open_settings">Open Settings</string>
+    
+    <!-- Notification Actions -->
+    <string name="notification_action_complete">Complete</string>
+    <string name="notification_action_snooze">Snooze</string>
+    <string name="notification_action_mark_done">Mark Done</string>
+    <string name="notification_action_open_note">Open Note</string>
+    <string name="notification_action_dismiss">Dismiss</string>
+    <string name="notification_action_view_task">View Task</string>
+    
+    <!-- Notification Content -->
+    <string name="notification_task_reminder_title">Task Reminder</string>
+    <string name="notification_achievement_title">Achievement Unlocked!</string>
+    <string name="notification_smart_suggestion_title">Smart Suggestion</string>
+    <string name="notification_note_reminder_title">Note Reminder</string>
+    
+    <!-- Error Messages -->
+    <string name="notification_error_permission_denied">Notification permission denied</string>
+    <string name="notification_error_send_failed">Failed to send notification</string>
+    <string name="notification_error_schedule_failed">Failed to schedule notification</string>
+</resources>

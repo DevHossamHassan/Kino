@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Notification permission (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Schedule exact alarms (Android 12+) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    
+    <!-- Vibration permission for notifications -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    
+    <!-- Wake lock for scheduled notifications -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application>
+        <!-- Notification action receiver -->
+        <receiver
+            android:name=".internal.receiver.NotificationActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ACTION_COMPLETE_TASK" />
+                <action android:name="ACTION_COMPLETE_MICRO_TASK" />
+                <action android:name="ACTION_SNOOZE" />
+                <action android:name="ACTION_MARK_AS_DONE" />
+                <action android:name="ACTION_OPEN_NOTE" />
+                <action android:name="ACTION_DISMISS" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- Dismiss receiver -->
+        <receiver
+            android:name=".internal.receiver.NotificationDismissReceiver"
+            android:exported="false" />
+            
+        <!-- Scheduled notification worker -->
+        <service
+            android:name=".internal.worker.ScheduledNotificationWorker"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+    </application>
+
+</manifest>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">كينو</string>
+    
+    <!-- Kanban Board -->
+    <string name="kanban_board_title">مهامي</string>
+    <string name="kanban_search">بحث</string>
+    <string name="kanban_search_tasks">البحث في المهام</string>
+    <string name="kanban_filter">تصفية</string>
+    <string name="kanban_clear_priority_filter">مسح تصفية الأولوية</string>
+    <string name="kanban_profile">الملف الشخصي</string>
+    <string name="kanban_add_task">إضافة مهمة</string>
+    
+    <!-- Sections -->
+    <string name="section_personal">شخصي</string>
+    <string name="section_work">عمل</string>
+    <string name="section_family">عائلة</string>
+    <string name="section_task_count">%1$d مهمة</string>
+    <string name="section_expand">توسيع القسم</string>
+    <string name="section_collapse">طي القسم</string>
+    
+    <!-- Columns -->
+    <string name="column_backlog">المؤجلة</string>
+    <string name="column_todo_this_week">لهذا الأسبوع</string>
+    <string name="column_in_progress">قيد التنفيذ</string>
+    <string name="column_pending">معلقة</string>
+    <string name="column_done">مكتملة</string>
+    
+    <!-- Task Card -->
+    <string name="task_priority_high">أولوية عالية</string>
+    <string name="task_priority_medium">أولوية متوسطة</string>
+    <string name="task_priority_low">أولوية منخفضة</string>
+    <string name="task_attachments">%1$d مرفق</string>
+    <string name="task_checklist_progress">%1$d من %2$d مكتمل</string>
+    <string name="task_due_date">مستحق %1$s</string>
+    
+    <!-- Drag and Drop -->
+    <string name="drag_task_started">بدأ سحب المهمة</string>
+    <string name="drag_task_over_column">فوق عمود %1$s</string>
+    <string name="drag_task_dropped">تم نقل المهمة إلى %1$s</string>
+    <string name="drag_task_cancelled">تم إلغاء السحب</string>
+    
+    <!-- Accessibility -->
+    <string name="cd_task_card">بطاقة المهمة: %1$s</string>
+    <string name="cd_drag_handle">اسحب لنقل المهمة</string>
+    <string name="cd_priority_badge">الأولوية: %1$s</string>
+    <string name="cd_column_drop_zone">منطقة الإسقاط لعمود %1$s</string>
+    <string name="cd_empty_column">عمود %1$s فارغ</string>
+    
+    <!-- Feedback Messages -->
+    <string name="feedback_task_moved">تم نقل المهمة بنجاح</string>
+    <string name="feedback_task_move_failed">فشل في نقل المهمة</string>
+    <string name="feedback_invalid_drop_location">لا يمكن إسقاط المهمة هنا</string>
+    
+    <!-- Navigation -->
+    <string name="nav_kanban">المهام</string>
+    <string name="nav_notes">الملاحظات</string>
+    <string name="nav_media">الوسائط</string>
+    <string name="nav_notifications">الإشعارات</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="nav_recurring_tasks">المهام المتكررة</string>
+    
+    <!-- Media Manager -->
+    <string name="media_manager_title">مدير الوسائط</string>
+    <string name="media_grid_view">عرض الشبكة</string>
+    <string name="media_list_view">عرض القائمة</string>
+    <string name="media_more_options">خيارات أكثر</string>
+    <string name="media_go_to_source">الذهاب للمصدر</string>
+    <string name="media_delete">حذف</string>
+    <string name="media_file_size">%1$s</string>
+    <string name="media_empty_title">لا توجد وسائط بعد</string>
+    <string name="media_empty_message">أرفق الصور والملفات بمهامك وملاحظاتك لتراها هنا</string>
+    <string name="media_total_size">الحجم الإجمالي: %1$s</string>
+    <string name="media_total_count">%1$d عنصر</string>
+    <string name="media_attach">إرفاق وسائط</string>
+    <string name="media_attach_images">إرفاق صور</string>
+    <string name="media_attach_videos">إرفاق فيديوهات</string>
+    <string name="media_attach_documents">إرفاق مستندات</string>
+    <string name="media_filter_all">كل الوسائط</string>
+    <string name="media_filter_images">صور</string>
+    <string name="media_filter_videos">فيديوهات</string>
+    <string name="media_filter_documents">مستندات</string>
+    <string name="media_filter_tasks">من المهام</string>
+    <string name="media_filter_notes">من الملاحظات</string>
+    <string name="media_search_hint">البحث في الوسائط...</string>
+    <string name="media_deleted_successfully">تم حذف الوسائط بنجاح</string>
+    <string name="media_delete_failed">فشل في حذف الوسائط</string>
+    <string name="media_loading">جاري تحميل الوسائط...</string>
+    <string name="media_error_loading">فشل في تحميل الوسائط</string>
+    <string name="media_viewer_title">عارض الوسائط</string>
+    <string name="media_open_source">فتح العنصر المرتبط</string>
+    <string name="media_open_external">فتح بتطبيق آخر</string>
+    <string name="media_metadata_header">التفاصيل</string>
+    <string name="media_metadata_size">الحجم</string>
+    <string name="media_metadata_type">النوع</string>
+    <string name="media_metadata_dimensions">الأبعاد</string>
+    <string name="media_metadata_duration">المدة</string>
+    <string name="media_metadata_added">تم الإضافة</string>
+    <string name="media_metadata_modified">تم التعديل</string>
+    <string name="media_play_audio">تشغيل</string>
+    <string name="media_pause_audio">إيقاف مؤقت</string>
+    <string name="media_open_external_error">لا يوجد تطبيق متاح لفتح هذا الملف.</string>
+    
+    <!-- Permissions -->
+    <string name="media_permission_required_title">مطلوب الوصول للوسائط</string>
+    <string name="media_permission_required_message">لإدارة الوسائط المرفقة، نحتاج إذن الوصول لصورك وفيديوهاتك.</string>
+    <string name="media_grant_permission">منح الإذن</string>
+    <string name="media_permission_denied">تم رفض الإذن. لا يمكن الوصول للوسائط.</string>
+    
+    <!-- Task Detail -->
+    <string name="task_detail_title">تفاصيل المهمة</string>
+    <string name="task_detail_edit">تعديل المهمة</string>
+    <string name="task_detail_save">حفظ</string>
+    <string name="task_detail_delete">حذف المهمة</string>
+    <string name="task_detail_save_changes">حفظ التغييرات</string>
+    <string name="task_detail_checklist_title">قائمة المراجعة</string>
+    <string name="task_detail_add_item">إضافة عنصر</string>
+    <string name="task_detail_new_item_placeholder">أدخل عنصر قائمة المراجعة</string>
+    <string name="task_detail_no_checklist">لا توجد عناصر في قائمة المراجعة بعد</string>
+    <string name="task_detail_attachments">المرفقات</string>
+    <string name="task_detail_no_attachments">لا توجد مرفقات</string>
+    <string name="task_detail_due_date">تاريخ الاستحقاق</string>
+    <string name="task_detail_no_due_date">لم يتم تحديد تاريخ الاستحقاق</string>
+    <string name="task_detail_labels">التسميات</string>
+    <string name="task_detail_no_labels">لا توجد تسميات</string>
+    <string name="task_detail_progress">التقدم</string>
+    <string name="task_detail_description">الوصف</string>
+    <string name="task_detail_no_description">لم يتم تقديم وصف</string>
+    <string name="task_detail_attach_media">إرفاق وسائط</string>
+    <string name="task_detail_task_updated">تم تحديث المهمة</string>
+    <string name="task_detail_task_update_failed">فشل في تحديث المهمة</string>
+    <string name="task_detail_checklist_updated">تم تحديث قائمة المراجعة</string>
+    <string name="task_detail_checklist_update_failed">فشل في تحديث قائمة المراجعة</string>
+    <string name="task_detail_item_added">تم إضافة العنصر</string>
+    <string name="task_detail_item_add_failed">فشل في إضافة العنصر</string>
+    <string name="task_detail_media_attached">تم إرفاق الوسائط</string>
+    <string name="task_detail_media_attach_failed">فشل في إرفاق الوسائط</string>
+    
+    <!-- Notes -->
+    <string name="notes_title">الملاحظات</string>
+    <string name="notes_create_note">إنشاء ملاحظة جديدة</string>
+    <string name="notes_search">البحث في الملاحظات</string>
+    <string name="notes_empty_title">لا توجد ملاحظات بعد</string>
+    <string name="notes_empty_message">أنشئ ملاحظتك الأولى للبدء</string>
+    <string name="notes_pinned">مثبتة</string>
+    <string name="notes_recent">الأحدث</string>
+    <string name="notes_with_labels">بالتسميات</string>
+    <string name="notes_all">الكل</string>
+    <string name="notes_pin">تثبيت</string>
+    <string name="notes_unpin">إلغاء التثبيت</string>
+    <string name="notes_note_created">تم إنشاء الملاحظة</string>
+    <string name="notes_note_create_failed">فشل في إنشاء الملاحظة</string>
+    <string name="notes_note_updated">تم تحديث الملاحظة</string>
+    <string name="notes_note_update_failed">فشل في تحديث الملاحظة</string>
+    <string name="notes_note_deleted">تم حذف الملاحظة</string>
+    <string name="notes_note_delete_failed">فشل في حذف الملاحظة</string>
+    <string name="notes_start_typing">ابدأ بكتابة ملاحظتك...</string>
+    <string name="notes_format_bold">عريض</string>
+    <string name="notes_format_italic">مائل</string>
+    <string name="notes_format_underline">تحته خط</string>
+    <string name="notes_format_bullet_list">قائمة نقطية</string>
+    <string name="notes_format_checklist">قائمة مراجعة</string>
+    <string name="notes_editor_not_found">الملاحظة غير موجودة</string>
+    
+    <!-- Notifications -->
+    <string name="notifications_title">الإشعارات</string>
+    <string name="notifications_empty_title">لا توجد إشعارات</string>
+    <string name="notifications_empty_message">سترى اقتراحات تقسيم المهام الذكية هنا</string>
+    <string name="notifications_smart_suggestion">اقتراح ذكي</string>
+    <string name="notifications_task_breakdown">تقسيم المهمة</string>
+    <string name="notifications_reminder">تذكير</string>
+    <string name="notifications_achievement">إنجاز</string>
+    <string name="notifications_mark_read">وضع علامة مقروء</string>
+    <string name="notifications_mark_all_read">وضع علامة مقروء للكل</string>
+    <string name="notifications_clear_all">مسح الكل</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_general">عام</string>
+    <string name="settings_notifications">الإشعارات</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="settings_about">حول</string>
+    <string name="settings_theme">المظهر</string>
+    <string name="settings_theme_system">النظام</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_dark">داكن</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_arabic">العربية</string>
+    
+    <!-- Recurring Tasks -->
+    <string name="recurring_tasks_title">المهام المتكررة</string>
+    <string name="recurring_tasks_create">إنشاء مهمة متكررة</string>
+    <string name="recurring_tasks_edit">تعديل المهمة المتكررة</string>
+    <string name="recurring_tasks_empty_title">لا توجد مهام متكررة</string>
+    <string name="recurring_tasks_empty_message">أنشئ مهام متكررة لأتمتة سير عملك</string>
+    <string name="recurring_tasks_frequency">التكرار</string>
+    <string name="recurring_tasks_daily">يومي</string>
+    <string name="recurring_tasks_weekly">أسبوعي</string>
+    <string name="recurring_tasks_monthly">شهري</string>
+    <string name="recurring_tasks_yearly">سنوي</string>
+    <string name="recurring_tasks_next_due">الاستحقاق التالي: %1$s</string>
+    <string name="recurring_tasks_instances">الحالات</string>
+    
+    <!-- Common -->
+    <string name="loading">جاري التحميل...</string>
+    <string name="error_generic">حدث خطأ ما</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="cancel">إلغاء</string>
+    <string name="ok">موافق</string>
+    <string name="save">حفظ</string>
+    <string name="edit">تعديل</string>
+    <string name="delete">حذف</string>
+    <string name="create">إنشاء</string>
+    <string name="update">تحديث</string>
+    <string name="navigate_back">العودة</string>
+    <string name="close">إغلاق</string>
+    <string name="done">تم</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+    <string name="confirm">تأكيد</string>
+    <string name="success">نجح</string>
+    <string name="error">خطأ</string>
+    <string name="warning">تحذير</string>
+    <string name="info">معلومات</string>
+    <string name="attachment">مرفق</string>
+    
+    <!-- Sections Management -->
+    <string name="section_add">إضافة قسم</string>
+    <string name="section_name">اسم القسم</string>
+</resources>

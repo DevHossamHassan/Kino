@@ -1,0 +1,112 @@
+# ---- OS / Editor ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon\r
+._*
+
+# JetBrains / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+
+# VSCode
+.vscode/
+
+# JetBrains Fleet
+.fleet/
+
+# ---- Build / Gradle ----
+.gradle/
+**/.gradle/
+build/
+**/build/
+
+# Do not ignore the Gradle wrapper
+!gradle/wrapper/
+!gradlew
+!gradlew.bat
+
+# Local configuration
+local.properties
+**/local.properties
+
+# Android NDK/External builds
+.externalNativeBuild/
+**/.externalNativeBuild/
+.cxx/
+**/.cxx/
+
+# Captures / Profilers
+captures/
+*.hprof
+
+# Logs
+*.log
+hs_err_pid*.log
+replay_pid*.log
+
+# Kotlin/Java compiled classes (usually inside build/ but safe to ignore)
+*.class
+
+# ---- Signing / Secrets ----
+*.jks
+*.keystore
+*.keystore.properties
+*.p12
+*.pem
+*.key
+*.der
+.env
+.env.*
+
+# Crashlytics/Firebase (if used)
+firebase-debug.log
+crashlytics-build.properties
+
+# ---- Android / Misc Generated ----
+.navigation/
+*.apk
+*.aab
+*.ap_ 
+output.json
+
+# Lint / Reports / Coverage (kept out of VCS; CI can artifact them)
+lint/                
+**/lint-results*.*
+**/test-results/
+**/reports/
+**/jacoco/
+**/coverage/
+
+# KSP / KAPT (we use KSP, but ignore generated outputs)
+**/ksp/
+**/kapt*/
+
+# Compose compiler metrics (opt-in paths)
+compose_metrics/
+compose_reports/
+
+# ---- Keep important generated schemas ----
+# Room schema JSON files should be committed for migrations.
+# Ensure your Room schema location points to a tracked directory, e.g., app/schemas
+#!app/schemas/
+
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties

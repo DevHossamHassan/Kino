@@ -1,0 +1,450 @@
+---
+alwaysApply: true
+---
+# Cursor AI Project Prompt & Rules
+
+## Project Overview
+
+Build a modern Android task management application with Kanban board, notes system, and media management following the latest Android best practices.
+
+---
+
+## Core Requirements
+
+### Application Purpose
+- Task/Todo management system with Kanban-style board
+- Rich note-taking with organization features
+- Comprehensive media manager
+- Smart AI-powered task breakdown notifications
+- Gamification for productivity
+
+### Main Features
+1. **Kanban Board** with collapsible sections (Personal, Work, Family)
+2. **Notes System** with rich text formatting, tags, and attachments
+3. **Media Manager** with grid/list views and navigation to source
+4. **Smart Notifications** using ML for task breakdown
+5. **Task Details** with checklists, progress tracking, and rich formatting
+
+---
+
+## Android Architecture Rules
+
+### MUST USE - Modern Architecture Components
+
+```kotlin
+// Architecture Pattern: CLEAN + MVVM
+app/
+├── data/
+│   ├── local/          // Room Database, DataStore
+│   ├── remote/         // Retrofit APIs (if needed)
+│   ├── repository/     // Single source of truth
+│   └── model/          // Data models
+├── domain/
+│   ├── model/          // Domain models
+│   ├── usecase/        // Business logic
+│   └── repository/     // Repository interfaces
+├── presentation/
+│   ├── ui/
+│   │   ├── kanban/     // Composables
+│   │   ├── notes/
+│   │   └── media/
+│   ├── viewmodel/      // ViewModels
+│   └── navigation/     // Navigation component
+└── di/                 // Dependency Injection (Hilt)
+```
+
+### Required Technologies
+
+**MANDATORY Stack:**
+- Kotlin 1.9+
+- Jetpack Compose (latest stable) - NO XML layouts
+- Material3 Design System
+- Kotlin Coroutines + Flow
+- Room Database (latest version)
+- Hilt for Dependency Injection
+- ViewModel + StateFlow/SharedFlow
+- Navigation Compose
+- Coil for image loading
+- DataStore for preferences (NOT SharedPreferences)
+
+**Optional but Recommended:**
+- WorkManager for background tasks
+- Paging3 for large lists
+- CameraX for camera features
+- MLKit or TensorFlow Lite for AI features
+
+---
+
+## Code Quality Standards
+
+### Critical Rules - NEVER VIOLATE
+
+1. **NO Deprecated APIs**
+   - NEVER use deprecated functions or classes
+   - Always use the latest recommended alternatives
+   - Check deprecation status before implementation
+
+2. **Proper State Management**
+   ```kotlin
+   // CORRECT - Use StateFlow with sealed classes
+   sealed class UiState<out T> {
+       data object Loading : UiState<Nothing>()
+       data class Success<T>(val data: T) : UiState<T>()
+       data class Error(val message: String) : UiState<Nothing>()
+   }
+   
+   // ViewModel
+   private val _uiState = MutableStateFlow<UiState<List<Task>>>(UiState.Loading)
+   val uiState: StateFlow<UiState<List<Task>>> = _uiState.asStateFlow()
+   ```
+
+3. **Compose Best Practices**
+   ```kotlin
+   // CORRECT - Stable parameters, proper state hoisting
+   @Composable
+   fun TaskCard(
+       task: Task,
+       onTaskClick: (String) -> Unit,
+       modifier: Modifier = Modifier
+   ) {
+       // Use remember for computed values
+       val progress = remember(task.checklist) { 
+           calculateProgress(task.checklist) 
+       }
+       // Implementation
+   }
+   
+   // WRONG - Avoid
+   @Composable
+   fun TaskCard(task: Task, viewModel: TaskViewModel) { } // Don't pass ViewModels
+   ```
+
+4. **Database - Room Best Practices**
+   ```kotlin
+   // CORRECT - Use Flow for reactive queries
+   @Dao
+   interface TaskDao {
+       @Query("SELECT * FROM tasks WHERE section = :section")
+       fun getTasksBySection(section: String): Flow<List<TaskEntity>>
+       
+       @Upsert // Use Upsert instead of separate insert/update
+       suspend fun upsertTask(task: TaskEntity)
+   }
+   
+   // Use Type Converters for complex types
+   @TypeConverter
+   fun fromLabelList(labels: List<Label>): String = Json.encodeToString(labels)
+   ```
+
+5. **Coroutine Scoping**
+   ```kotlin
+   // CORRECT - Use appropriate scopes
+   class TaskViewModel @Inject constructor(
+       private val repository: TaskRepository
+   ) : ViewModel() {
+       
+       fun loadTasks() {
+           viewModelScope.launch {
+               repository.getTasks()
+                   .catch { emit(UiState.Error(it.message)) }
+                   .collect { tasks ->
+                       _uiState.value = UiState.Success(tasks)
+                   }
+           }
+       }
+   }
+   ```
+
+6. **Dependency Injection with Hilt**
+   ```kotlin
+   // CORRECT - Proper Hilt setup
+   @HiltAndroidApp
+   class TaskApp : Application()
+   
+   @Module
+   @InstallIn(SingletonComponent::class)
+   object DatabaseModule {
+       @Provides
+       @Singleton
+       fun provideDatabase(@ApplicationContext context: Context): TaskDatabase {
+           return Room.databaseBuilder(context, TaskDatabase::class.java, "task_db")
+               .fallbackToDestructiveMigration()
+               .build()
+       }
+   }
+   ```
+
+7. **Navigation**
+   ```kotlin
+   // CORRECT - Type-safe navigation
+   sealed class Screen(val route: String) {
+       object Kanban : Screen("kanban")
+       object Notes : Screen("notes")
+       data object TaskDetail : Screen("task/{taskId}") {
+           fun createRoute(taskId: String) = "task/$taskId"
+       }
+   }
+   ```
+
+8. **Error Handling**
+   ```kotlin
+   // CORRECT - Proper error handling
+   suspend fun loadTasks(): Result<List<Task>> = runCatching {
+       taskDao.getAllTasks().first()
+   }.fold(
+       onSuccess = { Result.success(it.map { entity -> entity.toDomain() }) },
+       onFailure = { Result.failure(it) }
+   )
+   ```
+
+---
+
+## Problem-Solving Guidelines
+
+### When Encountering Issues
+
+**DO:**
+- Research the latest official Android documentation
+- Check if there's a newer, recommended approach
+- Use Kotlin idiomatic solutions
+- Implement proper error handling
+- Add appropriate logging
+- Write unit tests for critical logic
+
+**DON'T:**
+- Replace modern practices with legacy solutions
+- Use deprecated APIs because they "work"
+- Ignore compiler warnings
+- Add hacky workarounds without proper investigation
+- Skip error handling to "make it work"
+- Use Thread() instead of Coroutines
+- Use findViewById() or XML layouts when Compose is specified
+
+### Example Problem Resolution
+
+```kotlin
+// PROBLEM: Large list causing performance issues
+// WRONG SOLUTION: Load all items at once with simple List
+// CORRECT SOLUTION: Use Paging3
+
+@Dao
+interface TaskDao {
+    @Query("SELECT * FROM tasks ORDER BY created_date DESC")
+    fun getTasksPaged(): PagingSource<Int, TaskEntity>
+}
+
+@OptIn(ExperimentalPagingApi::class)
+class TaskRepository @Inject constructor(private val dao: TaskDao) {
+    fun getTasks(): Flow<PagingData<Task>> = Pager(
+        config = PagingConfig(pageSize = 20, prefetchDistance = 5),
+        pagingSourceFactory = { dao.getTasksPaged() }
+    ).flow.map { pagingData ->
+        pagingData.map { it.toDomain() }
+    }
+}
+```
+
+---
+
+## UI Implementation Rules
+
+### Material3 Design System
+
+```kotlin
+// CORRECT - Use Material3 components
+@Composable
+fun TaskScreen() {
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("Tasks") }) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Task")
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        // Content with proper padding
+        LazyColumn(modifier = Modifier.padding(paddingValues)) {
+            // Items
+        }
+    }
+}
+```
+
+### Theme Configuration
+
+```kotlin
+// Use Material3 color scheme from design specs
+val LightColorScheme = lightColorScheme(
+    primary = Color(0xFF6366F1),      // Indigo
+    secondary = Color(0xFF10B981),    // Emerald
+    tertiary = Color(0xFFF59E0B),     // Amber
+    error = Color(0xFFEF4444),        // Red
+    background = Color(0xFFF9FAFB),   // Light Gray
+    surface = Color(0xFFFFFFFF),      // White
+)
+```
+
+### Accessibility
+
+```kotlin
+// ALWAYS include accessibility
+Text(
+    text = "Task Title",
+    modifier = Modifier.semantics {
+        contentDescription = "Task title: ${task.title}"
+        role = Role.Button
+    }
+)
+```
+
+---
+
+## Performance Optimization
+
+### Mandatory Optimizations
+
+1. **Use derivedStateOf for computed values**
+   ```kotlin
+   val filteredTasks by remember {
+       derivedStateOf { tasks.filter { it.section == selectedSection } }
+   }
+   ```
+
+2. **LazyColumn keys for efficient recomposition**
+   ```kotlin
+   LazyColumn {
+       items(tasks, key = { it.id }) { task ->
+           TaskCard(task = task)
+       }
+   }
+   ```
+
+3. **Image loading with Coil**
+   ```kotlin
+   AsyncImage(
+       model = ImageRequest.Builder(LocalContext.current)
+           .data(imageUrl)
+           .crossfade(true)
+           .memoryCachePolicy(CachePolicy.ENABLED)
+           .build(),
+       contentDescription = "Task attachment"
+   )
+   ```
+
+4. **Background work with WorkManager**
+   ```kotlin
+   // For notifications and sync
+   class TaskNotificationWorker(context: Context, params: WorkerParameters) 
+       : CoroutineWorker(context, params) {
+       override suspend fun doWork(): Result { }
+   }
+   ```
+
+---
+
+## Testing Requirements
+
+```kotlin
+// ViewModel Test Example
+@Test
+fun `loadTasks emits success state with tasks`() = runTest {
+    // Given
+    val tasks = listOf(Task(id = "1", title = "Test"))
+    coEvery { repository.getTasks() } returns flowOf(tasks)
+    
+    // When
+    viewModel.loadTasks()
+    
+    // Then
+    viewModel.uiState.test {
+        assert(awaitItem() is UiState.Success)
+    }
+}
+```
+
+---
+
+## Git Commit Standards
+
+```
+feat: Add task creation with rich text editor
+fix: Resolve notification timing issue
+refactor: Migrate to Compose Navigation
+perf: Optimize task list rendering
+test: Add unit tests for TaskRepository
+```
+
+---
+
+## Documentation Requirements
+
+Every complex function must have KDoc:
+
+```kotlin
+/**
+ * Breaks down a task into smaller actionable steps using ML model.
+ * 
+ * @param task The task to analyze
+ * @param dueDate The task's due date
+ * @return List of suggested micro-tasks ordered by priority
+ * @throws TaskAnalysisException if ML model fails
+ */
+suspend fun analyzeTaskBreakdown(task: Task, dueDate: LocalDateTime): List<MicroTask>
+```
+
+---
+
+## AI/ML Integration Guidelines
+
+For smart notifications:
+
+```kotlin
+// Use ML Kit or TensorFlow Lite
+class TaskBreakdownAnalyzer @Inject constructor() {
+    
+    suspend fun suggestNextStep(task: Task): MicroTask? {
+        // Implement using ML model
+        // Analyze task description, checklist, due date
+        // Return next actionable micro-task
+    }
+}
+```
+
+---
+
+## Final Checklist Before Any Commit
+
+- [ ] No deprecated API usage
+- [ ] Proper error handling everywhere
+- [ ] StateFlow/SharedFlow used correctly
+- [ ] Compose best practices followed
+- [ ] Hilt injection working
+- [ ] No memory leaks (check with LeakCanary)
+- [ ] Proper coroutine scoping
+- [ ] Material3 components used
+- [ ] Accessibility considered
+- [ ] Performance optimized
+- [ ] Unit tests added for business logic
+- [ ] KDoc for complex functions
+
+---
+
+## References
+
+- [Android Developers Guide](https://developer.android.com)
+- [Jetpack Compose Guidelines](https://developer.android.com/jetpack/compose)
+- [Kotlin Coroutines Best Practices](https://kotlinlang.org/docs/coroutines-guide.html)
+- [Material3 Design System](https://m3.material.io)
+
+---
+
+## When In Doubt
+
+1. Check official Android documentation FIRST
+2. Use the most modern, recommended approach
+3. Never compromise code quality for quick fixes
+4. Ask "Is there a better way?" before implementing
+5. Prioritize maintainability and scalability
+
+**Remember: Good code is better than fast code. Modern practices are better than legacy solutions.**
