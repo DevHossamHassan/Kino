@@ -1,25 +1,26 @@
 package com.letsgotoperfection.kino.feature.notes.api
 
-import androidx.navigation.NavController
 import com.letsgotoperfection.kino.core.common.Result
-import com.letsgotoperfection.kino.core.model.Note
+import com.letsgotoperfection.kino.feature.notes.internal.domain.model.Note
 import kotlinx.coroutines.flow.Flow
 
 /**
  * Public API for Notes feature.
+ * This allows other feature modules to access notes data and operations.
  * 
- * This API allows other feature modules to:
- * - Query notes
- * - Create/update notes
- * - Link notes to tasks
+ * This API provides:
+ * - Data queries (get, search, observe)
+ * - Data mutations (create, update, delete)
+ * - Business operations (attach to tasks, tag management)
  * 
  * @since 1.0.0
  * @see com.letsgotoperfection.kino.feature.kanban.api.KanbanApi for task operations
+ * @see com.letsgotoperfection.kino.feature.media.api.MediaApi for media operations
  */
 interface NotesApi {
     
     /**
-     * Retrieves a note by its unique identifier.
+     * Get note by ID.
      * 
      * @param noteId The unique note identifier
      * @return Result containing the Note or an error
@@ -27,23 +28,56 @@ interface NotesApi {
     suspend fun getNote(noteId: String): Result<Note>
     
     /**
-     * Creates a new note
+     * Get all notes for a user.
      * 
-     * @param note The note to create
-     * @return Result containing the created note ID or an error
+     * @return Flow of all notes
      */
-    suspend fun createNote(note: Note): Result<String>
+    fun getAllNotes(): Flow<List<Note>>
     
     /**
-     * Updates an existing note
+     * Search notes by query.
      * 
-     * @param note The note to update
+     * @param query The search query
+     * @return Result containing matching notes
+     */
+    suspend fun searchNotes(query: String): Result<List<Note>>
+    
+    /**
+     * Get notes by tag.
+     * 
+     * @param tag The tag to filter by
+     * @return Flow of notes with the specified tag
+     */
+    fun getNotesByTag(tag: String): Flow<List<Note>>
+    
+    /**
+     * Create a new note.
+     * 
+     * @param title The note title
+     * @param content The note content
+     * @param tags Optional list of tags
+     * @return Result containing the created Note ID or an error
+     */
+    suspend fun createNote(title: String, content: String, tags: List<String> = emptyList()): Result<String>
+    
+    /**
+     * Update an existing note.
+     * 
+     * @param noteId The note ID to update
+     * @param title Optional new title
+     * @param content Optional new content
+     * @param tags Optional new tags
      * @return Result indicating success or failure
      */
-    suspend fun updateNote(note: Note): Result<Unit>
+    suspend fun updateNote(
+        noteId: String, 
+        title: String? = null, 
+        content: String? = null, 
+        tags: List<String>? = null
+    ): Result<Unit>
     
     /**
-     * Deletes a note by ID
+     * Delete a note.
      * 
      * @param noteId The note ID to delete
      * @return Result indicating success or failure
@@ -51,40 +85,36 @@ interface NotesApi {
     suspend fun deleteNote(noteId: String): Result<Unit>
     
     /**
-     * Links a note to a task
+     * Attach note to a task.
      * 
-     * @param noteId The note ID to link
-     * @param taskId The task ID to link to
+     * @param noteId The note ID
+     * @param taskId The task ID to attach to
      * @return Result indicating success or failure
      */
-    suspend fun linkNoteToTask(noteId: String, taskId: String): Result<Unit>
+    suspend fun attachNoteToTask(noteId: String, taskId: String): Result<Unit>
     
     /**
-     * Navigate to note editor screen
+     * Detach note from a task.
      * 
-     * @param navController The navigation controller
-     * @param noteId The note ID to edit (null for new note)
+     * @param noteId The note ID
+     * @param taskId The task ID to detach from
+     * @return Result indicating success or failure
      */
-    fun navigateToNoteEditor(navController: NavController, noteId: String? = null)
+    suspend fun detachNoteFromTask(noteId: String, taskId: String): Result<Unit>
     
     /**
-     * Get observable note updates
+     * Get all tags used in notes.
      * 
-     * @return Flow of note update events
+     * @return Flow of all unique tags
      */
-    fun observeNoteUpdates(): Flow<NoteUpdate>
-}
-
-/**
- * Note update event for cross-feature communication
- */
-data class NoteUpdate(
-    val noteId: String,
-    val type: UpdateType,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-enum class UpdateType {
-    CREATED, UPDATED, DELETED, LINKED_TO_TASK, UNLINKED_FROM_TASK
+    fun getAllTags(): Flow<List<String>>
+    
+    /**
+     * Get notes attached to a specific task.
+     * 
+     * @param taskId The task ID
+     * @return Flow of notes attached to the task
+     */
+    fun getNotesForTask(taskId: String): Flow<List<Note>>
 }
 

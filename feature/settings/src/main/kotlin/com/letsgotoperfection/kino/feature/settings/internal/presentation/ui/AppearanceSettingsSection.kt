@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -80,33 +81,32 @@ internal fun SettingsSwitch(
     onCheckedChange: (Boolean) -> Unit,
     modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier
 ) {
-    androidx.compose.foundation.layout.Row(
+    ListItem(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-    ) {
-        androidx.compose.foundation.layout.Column(modifier = androidx.compose.ui.Modifier.weight(1f)) {
+            .clickable { onCheckedChange(!checked) },
+        headlineContent = {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge
             )
-            subtitle?.let {
+        },
+        supportingContent = subtitle?.let {
+            {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        },
+        trailingContent = {
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange
+            )
         }
-        
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
-    }
+    )
 }
 
 @Composable
@@ -121,31 +121,30 @@ internal fun SettingsDropdown(
     var expanded by remember { mutableStateOf(false) }
     
     androidx.compose.foundation.layout.Column(modifier = modifier) {
-        androidx.compose.foundation.layout.Row(
+        ListItem(
             modifier = androidx.compose.ui.Modifier
                 .fillMaxWidth()
-                .clickable { expanded = true }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            androidx.compose.foundation.layout.Column(modifier = androidx.compose.ui.Modifier.weight(1f)) {
+                .clickable { expanded = true },
+            headlineContent = {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge
                 )
+            },
+            supportingContent = {
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            },
+            trailingContent = {
+                Icon(
+                    Icons.Filled.ArrowDropDown,
+                    contentDescription = "Expand options"
+                )
             }
-            
-            Icon(
-                Icons.Filled.ArrowDropDown,
-                contentDescription = null
-            )
-        }
+        )
         
         DropdownMenu(
             expanded = expanded,

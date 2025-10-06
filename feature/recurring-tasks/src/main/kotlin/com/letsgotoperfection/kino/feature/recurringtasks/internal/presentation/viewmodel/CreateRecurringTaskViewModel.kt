@@ -140,7 +140,7 @@ class CreateRecurringTaskViewModel @Inject constructor(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false) }
                     _uiEvent.trySend(RecurringTaskEvent.ShowSuccess("Recurring task created successfully"))
-                    _uiEvent.trySend(RecurringTaskEvent.NavigateBack)
+                    // Navigation handled by UI callbacks
                 },
                 onFailure = { error ->
                     _uiState.update { 

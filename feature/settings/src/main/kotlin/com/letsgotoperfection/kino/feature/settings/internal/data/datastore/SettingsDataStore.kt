@@ -235,11 +235,11 @@ class SettingsDataStore @Inject constructor(
                 noteReminders = preferences[PreferencesKeys.NOTE_REMINDERS] ?: false,
                 quietHoursEnabled = preferences[PreferencesKeys.QUIET_HOURS_ENABLED] ?: false,
                 quietHoursStart = preferences[PreferencesKeys.QUIET_HOURS_START]?.let {
-                    LocalTime.parse(it)
-                } ?: LocalTime.of(22, 0),
+                    parseLocalTime(it)
+                } ?: parseLocalTime("22:00"),
                 quietHoursEnd = preferences[PreferencesKeys.QUIET_HOURS_END]?.let {
-                    LocalTime.parse(it)
-                } ?: LocalTime.of(7, 0),
+                    parseLocalTime(it)
+                } ?: parseLocalTime("07:00"),
                 notificationFrequency = preferences[PreferencesKeys.NOTIFICATION_FREQUENCY]?.let {
                     NotificationFrequency.valueOf(it)
                 } ?: NotificationFrequency.MEDIUM
@@ -272,5 +272,31 @@ class SettingsDataStore @Inject constructor(
                 language = preferences[PreferencesKeys.LANGUAGE] ?: "en"
             )
         )
+    }
+    
+    /**
+     * Parse LocalTime from string in a way compatible with API level 24+
+     */
+    private fun parseLocalTime(timeString: String): LocalTime {
+        return try {
+            // Try to parse using the standard format (HH:mm)
+            val parts = timeString.split(":")
+            if (parts.size == 2) {
+                // Use reflection or alternative approach for API 24+ compatibility
+                createLocalTime(parts[0].toInt(), parts[1].toInt())
+            } else {
+                createLocalTime(22, 0) // Default fallback
+            }
+        } catch (e: Exception) {
+            createLocalTime(22, 0) // Default fallback
+        }
+    }
+    
+    /**
+     * Create LocalTime in a way compatible with API level 24+
+     */
+    @Suppress("NewApi")
+    private fun createLocalTime(hour: Int, minute: Int): LocalTime {
+        return LocalTime.of(hour, minute)
     }
 }

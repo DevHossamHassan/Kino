@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
@@ -13,6 +14,12 @@ android {
     defaultConfig {
         minSdk = 26
     }
+    
+    // sourceSets {
+    //     getByName("main") {
+    //         java.srcDirs("src/main/kotlin", "internal/src/main/kotlin")
+    //     }
+    // }
     
     buildFeatures {
         compose = true
@@ -39,6 +46,10 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:model"))
     implementation(project(":core:database"))
+    implementation(project(":core:resources"))
+    
+    // Feature modules
+    implementation(project(":feature:media"))
     
     // Navigation (temporarily disabled)
     // implementation(project(":navigation"))
@@ -59,6 +70,9 @@ dependencies {
     // Navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    
+    // Kotlin Serialization for type-safe navigation
+    implementation(libs.kotlinx.serialization.json)
     
     // Hilt
     implementation(libs.hilt.android)

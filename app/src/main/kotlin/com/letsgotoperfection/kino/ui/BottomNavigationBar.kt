@@ -14,7 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.letsgotoperfection.kino.navigation.AppDestinations
+import com.letsgotoperfection.kino.feature.kanban.navigation.KanbanBoardRoute
+import com.letsgotoperfection.kino.feature.media.navigation.MediaManagerRoute
+import com.letsgotoperfection.kino.feature.notes.navigation.NotesListRoute
+import com.letsgotoperfection.kino.feature.recurringtasks.navigation.RecurringTasksListRoute
 
 /**
  * Bottom navigation bar for the main app tabs
@@ -32,7 +35,7 @@ fun BottomNavigationBar(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val startDestination = AppDestinations.KANBAN
+    val startDestination = KanbanBoardRoute
     
     NavigationBar(modifier = modifier) {
         // Kanban Board Tab
@@ -40,7 +43,7 @@ fun BottomNavigationBar(
             selected = currentRoute?.startsWith("kanban") == true ||
                       currentRoute?.startsWith("task") == true,
             onClick = {
-                navController.navigate(AppDestinations.KANBAN) {
+                navController.navigate(KanbanBoardRoute) {
                     popUpTo(startDestination) {
                         inclusive = false
                         saveState = true
@@ -62,7 +65,7 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = currentRoute?.startsWith("note") == true,
             onClick = {
-                navController.navigate(AppDestinations.NOTES) {
+                navController.navigate(NotesListRoute) {
                     popUpTo(startDestination) {
                         inclusive = false
                         saveState = true
@@ -84,7 +87,7 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = currentRoute?.startsWith("media") == true,
             onClick = {
-                navController.navigate(AppDestinations.MEDIA) {
+                navController.navigate(MediaManagerRoute) {
                     popUpTo(startDestination) {
                         inclusive = false
                         saveState = true
@@ -106,7 +109,7 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = currentRoute?.startsWith("recurring_tasks") == true,
             onClick = {
-                navController.navigate(AppDestinations.RECURRING_TASKS) {
+                navController.navigate(RecurringTasksListRoute) {
                     popUpTo(startDestination) {
                         inclusive = false
                         saveState = true

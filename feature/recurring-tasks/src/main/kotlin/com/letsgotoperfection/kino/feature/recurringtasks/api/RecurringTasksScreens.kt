@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.ui.CreateRecurringTaskScreen
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.ui.EditRecurringTaskScreen
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.ui.RecurringTasksListScreen
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.ui.RecurringTaskInstancesScreen
 
 /**
  * Public API composables for Recurring Tasks feature.
@@ -51,6 +52,20 @@ fun EditRecurringTaskScreenApi(
     onNavigateBack: () -> Unit
 ) {
     EditRecurringTaskScreen(
+        recurringTaskId = recurringTaskId,
+        onNavigateBack = onNavigateBack
+    )
+}
+
+/**
+ * Recurring Task Instances Screen - Public API
+ */
+@Composable
+fun RecurringTaskInstancesScreenApi(
+    recurringTaskId: String,
+    onNavigateBack: () -> Unit
+) {
+    RecurringTaskInstancesScreen(
         recurringTaskId = recurringTaskId,
         onNavigateBack = onNavigateBack
     )

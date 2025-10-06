@@ -1,15 +1,29 @@
 package com.letsgotoperfection.kino.feature.settings.internal.presentation.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -20,12 +34,15 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.letsgotoperfection.kino.feature.settings.internal.presentation.state.SettingsAction
@@ -48,9 +65,6 @@ fun SettingsScreen(
                 }
                 is SettingsUiEvent.ShowSuccess -> {
                     snackbarHostState.showSnackbar(event.message)
-                }
-                is SettingsUiEvent.NavigateBack -> {
-                    onNavigateBack()
                 }
             }
         }
@@ -90,7 +104,13 @@ fun SettingsScreen(
 @Composable
 private fun SettingsTopBar(onNavigateBack: () -> Unit) {
     TopAppBar(
-        title = { Text("Settings") },
+        title = { 
+            Text(
+                text = "Settings",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+        },
         navigationIcon = {
             IconButton(onClick = onNavigateBack) {
                 Icon(
@@ -98,7 +118,12 @@ private fun SettingsTopBar(onNavigateBack: () -> Unit) {
                     contentDescription = "Navigate back"
                 )
             }
-        }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+        )
     )
 }
 
@@ -149,75 +174,89 @@ private fun SettingsContent(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp)
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Appearance Section
+        // Appearance & Language Section
         item {
-            SettingsSectionHeader(title = "Appearance")
-        }
-        
-        item {
-            AppearanceSettingsSection(
-                themeSettings = settings.theme,
-                onAction = onAction
-            )
+            SettingsCard(
+                title = "Appearance & Language",
+                icon = Icons.Default.Palette
+            ) {
+                AppearanceSettingsSection(
+                    themeSettings = settings.theme,
+                    onAction = onAction
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                LanguageSettingsSection(
+                    currentLanguage = settings.general.language,
+                    onAction = onAction
+                )
+            }
         }
         
         // Notifications Section
         item {
-            SettingsSectionHeader(title = "Notifications")
-        }
-        
-        item {
-            NotificationSettingsSection(
-                notificationSettings = settings.notifications,
-                onAction = onAction
-            )
+            SettingsCard(
+                title = "Notifications",
+                icon = Icons.Default.Notifications
+            ) {
+                NotificationSettingsSection(
+                    notificationSettings = settings.notifications,
+                    onAction = onAction
+                )
+            }
         }
         
         // AI & Smart Features Section
         item {
-            SettingsSectionHeader(title = "AI & Smart Features")
-        }
-        
-        item {
-            AiSettingsSection(
-                aiSettings = settings.ai,
-                onAction = onAction
-            )
+            SettingsCard(
+                title = "AI & Smart Features",
+                icon = Icons.Default.SmartToy
+            ) {
+                AiSettingsSection(
+                    aiSettings = settings.ai,
+                    onAction = onAction
+                )
+            }
         }
         
         // Gamification Section
         item {
-            SettingsSectionHeader(title = "Gamification")
-        }
-        
-        item {
-            GamificationSettingsSection(
-                gamificationSettings = settings.gamification,
-                onAction = onAction
-            )
+            SettingsCard(
+                title = "Gamification",
+                icon = Icons.Default.EmojiEvents
+            ) {
+                GamificationSettingsSection(
+                    gamificationSettings = settings.gamification,
+                    onAction = onAction
+                )
+            }
         }
         
         // Privacy Section
         item {
-            SettingsSectionHeader(title = "Privacy")
-        }
-        
-        item {
-            PrivacySettingsSection(
-                privacySettings = settings.privacy,
-                onAction = onAction
-            )
+            SettingsCard(
+                title = "Privacy & Data",
+                icon = Icons.Default.PrivacyTip
+            ) {
+                PrivacySettingsSection(
+                    privacySettings = settings.privacy,
+                    onAction = onAction
+                )
+            }
         }
         
         // About Section
         item {
-            SettingsSectionHeader(title = "About")
-        }
-        
-        item {
-            AboutSettingsSection()
+            SettingsCard(
+                title = "About",
+                icon = Icons.Default.Info
+            ) {
+                AboutSettingsSection()
+            }
         }
         
         // Reset Settings
@@ -227,22 +266,104 @@ private fun SettingsContent(
                 onClick = { onAction(SettingsAction.ShowResetDialog) },
                 modifier = androidx.compose.ui.Modifier.padding(horizontal = 16.dp)
             ) {
-                Text(
-                    text = "Reset to Defaults",
-                    color = MaterialTheme.colorScheme.error
-                )
+                Text("Reset to Defaults")
             }
         }
     }
+}
+
+/**
+ * Modern Material 3 Card for Settings Sections
+ */
+@Composable
+private fun SettingsCard(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Card Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(4.dp)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Card Content
+            content()
+        }
+    }
+}
+
+/**
+ * Language Settings Section
+ */
+@Composable
+private fun LanguageSettingsSection(
+    currentLanguage: String,
+    onAction: (SettingsAction) -> Unit
+) {
+    val languages = listOf(
+        "en" to "English",
+        "ar" to "العربية",
+        "es" to "Español",
+        "fr" to "Français",
+        "de" to "Deutsch",
+        "it" to "Italiano",
+        "pt" to "Português",
+        "ru" to "Русский",
+        "zh" to "中文",
+        "ja" to "日本語",
+        "ko" to "한국어"
+    )
+    
+    val currentLanguageName = languages.find { it.first == currentLanguage }?.second ?: "English"
+    
+    SettingsDropdown(
+        title = "Language",
+        subtitle = currentLanguageName,
+        options = languages.map { it.second },
+        selectedOption = currentLanguageName,
+        onOptionSelected = { selected ->
+            val languageCode = languages.find { it.second == selected }?.first ?: "en"
+            onAction(SettingsAction.UpdateLanguage(languageCode))
+        }
+    )
 }
 
 @Composable
 private fun SettingsSectionHeader(title: String) {
     Text(
         text = title,
-        modifier = androidx.compose.ui.Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        fontWeight = FontWeight.Bold
     )
 }

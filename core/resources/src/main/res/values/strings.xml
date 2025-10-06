@@ -9,6 +9,8 @@
     <string name="kanban_search_tasks">Search tasks</string>
     <string name="kanban_filter">Filter</string>
     <string name="kanban_clear_priority_filter">Clear priority filter</string>
+    <string name="kanban_clear_search">Clear search</string>
+    <string name="kanban_no_matching_tasks">No tasks match your filters</string>
     <string name="kanban_profile">Profile</string>
     <string name="kanban_add_task">Add Task</string>
     
@@ -241,4 +243,449 @@
     <string name="warning">Warning</string>
     <string name="info">Info</string>
     <string name="attachment">Attachment</string>
+    
+    <!-- ============================================================================ -->
+    <!-- ACCESSIBILITY CONTENT DESCRIPTIONS - COMPREHENSIVE COVERAGE -->
+    <!-- ============================================================================ -->
+    
+    <!-- Navigation & Actions -->
+    <string name="cd_back">Back</string>
+    <string name="cd_navigate_back">Navigate back</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_done">Done</string>
+    <string name="cd_cancel">Cancel</string>
+    <string name="cd_ok">OK</string>
+    <string name="cd_confirm">Confirm</string>
+    <string name="cd_save">Save</string>
+    <string name="cd_edit">Edit</string>
+    <string name="cd_delete">Delete</string>
+    <string name="cd_share">Share</string>
+    <string name="cd_copy">Copy</string>
+    <string name="cd_paste">Paste</string>
+    <string name="cd_cut">Cut</string>
+    <string name="cd_undo">Undo</string>
+    <string name="cd_redo">Redo</string>
+    
+    <!-- Add/Create Actions -->
+    <string name="cd_add">Add</string>
+    <string name="cd_add_task">Add task</string>
+    <string name="cd_add_note">Add note</string>
+    <string name="cd_add_checklist_item">Add checklist item</string>
+    <string name="cd_add_label">Add label</string>
+    <string name="cd_add_attachment">Add attachment</string>
+    <string name="cd_add_media">Add media</string>
+    <string name="cd_create_task">Create new task</string>
+    <string name="cd_create_note">Create new note</string>
+    <string name="cd_create_recurring_task">Create recurring task</string>
+    
+    <!-- Remove/Delete Actions -->
+    <string name="cd_remove">Remove</string>
+    <string name="cd_remove_label">Remove label</string>
+    <string name="cd_remove_attachment">Remove attachment</string>
+    <string name="cd_remove_media">Remove media</string>
+    <string name="cd_delete_task">Delete task</string>
+    <string name="cd_delete_note">Delete note</string>
+    <string name="cd_delete_media">Delete media</string>
+    <string name="cd_delete_attachment">Delete attachment</string>
+    
+    <!-- Settings & Configuration -->
+    <string name="cd_settings">Settings</string>
+    <string name="cd_preferences">Preferences</string>
+    <string name="cd_theme_settings">Theme settings</string>
+    <string name="cd_language_settings">Language settings</string>
+    <string name="cd_notification_settings">Notification settings</string>
+    <string name="cd_accessibility_settings">Accessibility settings</string>
+    
+    <!-- Search & Filter -->
+    <string name="cd_search">Search</string>
+    <string name="cd_search_tasks">Search tasks</string>
+    <string name="cd_search_notes">Search notes</string>
+    <string name="cd_search_media">Search media</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_filter">Filter</string>
+    <string name="cd_clear_filter">Clear filter</string>
+    <string name="cd_sort">Sort</string>
+    <string name="cd_sort_by">Sort by %1$s</string>
+    
+    <!-- View Controls -->
+    <string name="cd_toggle_view">Toggle view</string>
+    <string name="cd_grid_view">Grid view</string>
+    <string name="cd_list_view">List view</string>
+    <string name="cd_expand">Expand</string>
+    <string name="cd_collapse">Collapse</string>
+    <string name="cd_show_more">Show more</string>
+    <string name="cd_show_less">Show less</string>
+    <string name="cd_refresh">Refresh</string>
+    <string name="cd_reload">Reload</string>
+    
+    <!-- Media Controls -->
+    <string name="cd_play">Play</string>
+    <string name="cd_pause">Pause</string>
+    <string name="cd_stop">Stop</string>
+    <string name="cd_play_video">Play video</string>
+    <string name="cd_pause_video">Pause video</string>
+    <string name="cd_play_audio">Play audio</string>
+    <string name="cd_pause_audio">Pause audio</string>
+    <string name="cd_stop_audio">Stop audio</string>
+    <string name="cd_volume_up">Volume up</string>
+    <string name="cd_volume_down">Volume down</string>
+    <string name="cd_mute">Mute</string>
+    <string name="cd_unmute">Unmute</string>
+    <string name="cd_fullscreen">Fullscreen</string>
+    <string name="cd_exit_fullscreen">Exit fullscreen</string>
+    
+    <!-- File & Media Types -->
+    <string name="cd_image">Image</string>
+    <string name="cd_video">Video</string>
+    <string name="cd_audio">Audio</string>
+    <string name="cd_document">Document</string>
+    <string name="cd_pdf">PDF document</string>
+    <string name="cd_file">File</string>
+    <string name="cd_folder">Folder</string>
+    <string name="cd_attachment">Attachment</string>
+    <string name="cd_media_file">Media file</string>
+    
+    <!-- Task Management -->
+    <string name="cd_task">Task</string>
+    <string name="cd_task_title">Task title: %1$s</string>
+    <string name="cd_task_description">Task description: %1$s</string>
+    <string name="cd_task_priority">Priority: %1$s</string>
+    <string name="cd_task_progress">Progress: %1$d percent</string>
+    <string name="cd_task_due_date">Due date: %1$s</string>
+    <string name="cd_task_section">Section: %1$s</string>
+    <string name="cd_task_column">Column: %1$s</string>
+    <string name="cd_task_labels">Labels: %1$s</string>
+    <string name="cd_task_attachments">Attachments: %1$d</string>
+    <string name="cd_task_checklist">Checklist: %1$d of %2$d completed</string>
+    <string name="cd_complete_task">Complete task</string>
+    <string name="cd_uncomplete_task">Mark task as incomplete</string>
+    <string name="cd_high_priority">High priority</string>
+    <string name="cd_medium_priority">Medium priority</string>
+    <string name="cd_low_priority">Low priority</string>
+    <string name="cd_overdue_task">Overdue task</string>
+    <string name="cd_completed_task">Completed task</string>
+    <string name="cd_in_progress_task">Task in progress</string>
+    <string name="cd_pending_task">Pending task</string>
+    
+    <!-- Drag and Drop -->
+    <string name="cd_drag_task">Drag task: %1$s</string>
+    <string name="cd_drop_zone">Drop zone for %1$s column</string>
+    <string name="cd_drag_started">Started dragging %1$s</string>
+    <string name="cd_drag_over">Over %1$s column</string>
+    <string name="cd_drag_dropped">Task moved to %1$s</string>
+    <string name="cd_drag_cancelled">Drag cancelled</string>
+    <string name="cd_cannot_drop">Cannot drop here</string>
+    <string name="cd_drop_allowed">Drop allowed</string>
+    
+    <!-- Notes -->
+    <string name="cd_note">Note</string>
+    <string name="cd_note_card">Note card: %1$s</string>
+    <string name="cd_note_title">Note title: %1$s</string>
+    <string name="cd_note_content">Note content: %1$s</string>
+    <string name="cd_pinned_note">Pinned note</string>
+    <string name="cd_unpinned_note">Unpinned note</string>
+    <string name="cd_pin_note">Pin note</string>
+    <string name="cd_unpin_note">Unpin note</string>
+    <string name="cd_note_tags">Tags: %1$s</string>
+    <string name="cd_note_attachments">Note attachments: %1$d</string>
+    
+    <!-- Kanban Board -->
+    <string name="cd_kanban_board">Kanban Board</string>
+    <string name="cd_kanban_section">%1$s section</string>
+    <string name="cd_kanban_column">%1$s column</string>
+    <string name="cd_column_task_count">%1$s column with %2$d tasks</string>
+    <string name="cd_section_task_count">%1$s section with %2$d tasks</string>
+    <string name="cd_personal_section">Personal section</string>
+    <string name="cd_work_section">Work section</string>
+    <string name="cd_family_section">Family section</string>
+    <string name="cd_backlog_column">Backlog column</string>
+    <string name="cd_todo_column">To do this week column</string>
+    <string name="cd_in_progress_column">In progress column</string>
+    <string name="cd_pending_column">Pending column</string>
+    <string name="cd_done_column">Done column</string>
+    
+    <!-- Media Manager -->
+    <string name="cd_media_manager">Media Manager</string>
+    <string name="cd_media_item">Media item: %1$s</string>
+    <string name="cd_media_filename">Filename: %1$s</string>
+    <string name="cd_media_size">File size: %1$s</string>
+    <string name="cd_media_type">File type: %1$s</string>
+    <string name="cd_media_duration">Duration: %1$s</string>
+    <string name="cd_media_thumbnail">Thumbnail for %1$s</string>
+    <string name="cd_go_to_source">Go to source</string>
+    <string name="cd_view_media">View media</string>
+    <string name="cd_download_media">Download media</string>
+    <string name="cd_share_media">Share media</string>
+    
+    <!-- Notifications -->
+    <string name="cd_notification">Notification</string>
+    <string name="cd_smart_suggestion">Smart suggestion</string>
+    <string name="cd_task_breakdown">Task breakdown suggestion</string>
+    <string name="cd_reminder">Reminder</string>
+    <string name="cd_achievement">Achievement</string>
+    <string name="cd_mark_read">Mark as read</string>
+    <string name="cd_mark_unread">Mark as unread</string>
+    <string name="cd_mark_all_read">Mark all as read</string>
+    <string name="cd_clear_all">Clear all</string>
+    <string name="cd_dismiss_notification">Dismiss notification</string>
+    
+    <!-- Recurring Tasks -->
+    <string name="cd_recurring_task">Recurring task</string>
+    <string name="cd_recurring_frequency">Frequency: %1$s</string>
+    <string name="cd_daily_recurring">Daily recurring</string>
+    <string name="cd_weekly_recurring">Weekly recurring</string>
+    <string name="cd_monthly_recurring">Monthly recurring</string>
+    <string name="cd_yearly_recurring">Yearly recurring</string>
+    <string name="cd_next_due">Next due: %1$s</string>
+    <string name="cd_instances_count">Instances: %1$d</string>
+    
+    <!-- Form Controls -->
+    <string name="cd_text_input">Text input field</string>
+    <string name="cd_task_title_input">Task title input field</string>
+    <string name="cd_task_description_input">Task description input field</string>
+    <string name="cd_note_title_input">Note title input field</string>
+    <string name="cd_note_content_input">Note content input field</string>
+    <string name="cd_search_input">Search input field</string>
+    <string name="cd_dropdown">Dropdown menu</string>
+    <string name="cd_task_section_dropdown">Task section dropdown</string>
+    <string name="cd_task_column_dropdown">Task column dropdown</string>
+    <string name="cd_task_priority_dropdown">Task priority dropdown</string>
+    <string name="cd_date_picker">Date picker</string>
+    <string name="cd_task_due_date_picker">Task due date picker</string>
+    <string name="cd_time_picker">Time picker</string>
+    <string name="cd_checkbox">Checkbox</string>
+    <string name="cd_radio_button">Radio button</string>
+    <string name="cd_switch">Switch</string>
+    <string name="cd_slider">Slider</string>
+    <string name="cd_button">Button</string>
+    <string name="cd_create_task_button">Create task button</string>
+    <string name="cd_cancel_task_creation">Cancel task creation button</string>
+    <string name="cd_save_note_button">Save note button</string>
+    <string name="cd_cancel_note_editing">Cancel note editing button</string>
+    
+    <!-- Selection & States -->
+    <string name="cd_selected">Selected</string>
+    <string name="cd_unselected">Unselected</string>
+    <string name="cd_checked">Checked</string>
+    <string name="cd_unchecked">Unchecked</string>
+    <string name="cd_enabled">Enabled</string>
+    <string name="cd_disabled">Disabled</string>
+    <string name="cd_expanded">Expanded</string>
+    <string name="cd_collapsed">Collapsed</string>
+    <string name="cd_loading">Loading</string>
+    <string name="cd_loaded">Loaded</string>
+    <string name="cd_error">Error</string>
+    <string name="cd_success">Success</string>
+    <string name="cd_warning">Warning</string>
+    <string name="cd_info">Information</string>
+    
+    <!-- Progress & Status -->
+    <string name="cd_progress_bar">Progress bar: %1$d percent</string>
+    <string name="cd_loading_indicator">Loading indicator</string>
+    <string name="cd_loading_complete">Loading complete</string>
+    <string name="cd_uploading">Uploading</string>
+    <string name="cd_downloading">Downloading</string>
+    <string name="cd_processing">Processing</string>
+    <string name="cd_syncing">Syncing</string>
+    <string name="cd_offline">Offline</string>
+    <string name="cd_online">Online</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="cd_kanban_tab">Tasks tab</string>
+    <string name="cd_notes_tab">Notes tab</string>
+    <string name="cd_media_tab">Media tab</string>
+    <string name="cd_recurring_tasks_tab">Recurring Tasks tab</string>
+    <string name="cd_settings_tab">Settings tab</string>
+    <string name="cd_selected_tab">Selected %1$s tab</string>
+    <string name="cd_unselected_tab">Unselected %1$s tab</string>
+    
+    <!-- Actions & Gestures -->
+    <string name="cd_tap">Tap</string>
+    <string name="cd_double_tap">Double tap</string>
+    <string name="cd_long_press">Long press</string>
+    <string name="cd_swipe_left">Swipe left</string>
+    <string name="cd_swipe_right">Swipe right</string>
+    <string name="cd_swipe_up">Swipe up</string>
+    <string name="cd_swipe_down">Swipe down</string>
+    <string name="cd_pinch_zoom">Pinch to zoom</string>
+    <string name="cd_scroll">Scroll</string>
+    <string name="cd_scroll_up">Scroll up</string>
+    <string name="cd_scroll_down">Scroll down</string>
+    <string name="cd_scroll_left">Scroll left</string>
+    <string name="cd_scroll_right">Scroll right</string>
+    
+    <!-- Screen Reader Announcements -->
+    <string name="cd_task_created">Task created successfully</string>
+    <string name="cd_task_updated">Task updated successfully</string>
+    <string name="cd_task_deleted">Task deleted successfully</string>
+    <string name="cd_task_moved">Task moved to %1$s</string>
+    <string name="cd_note_created">Note created successfully</string>
+    <string name="cd_note_updated">Note updated successfully</string>
+    <string name="cd_note_deleted">Note deleted successfully</string>
+    <string name="cd_media_attached">Media attached successfully</string>
+    <string name="cd_media_removed">Media removed successfully</string>
+    <string name="cd_filter_applied">Filter applied: %1$s</string>
+    <string name="cd_filter_cleared">Filter cleared</string>
+    <string name="cd_search_results">%1$d search results found</string>
+    <string name="cd_no_results">No results found</string>
+    <string name="cd_loading_failed">Loading failed</string>
+    <string name="cd_network_error">Network error</string>
+    <string name="cd_permission_denied">Permission denied</string>
+    <string name="cd_storage_full">Storage is full</string>
+    
+    <!-- Context & Help -->
+    <string name="cd_help">Help</string>
+    <string name="cd_help_tooltip">Help tooltip</string>
+    <string name="cd_context_menu">Context menu</string>
+    <string name="cd_menu">Menu</string>
+    <string name="cd_submenu">Submenu</string>
+    <string name="cd_toolbar">Toolbar</string>
+    <string name="cd_action_bar">Action bar</string>
+    <string name="cd_bottom_navigation">Bottom navigation</string>
+    <string name="cd_side_navigation">Side navigation</string>
+    <string name="cd_floating_action_button">Floating action button</string>
+    
+    <!-- Time & Date -->
+    <string name="cd_today">Today</string>
+    <string name="cd_yesterday">Yesterday</string>
+    <string name="cd_tomorrow">Tomorrow</string>
+    <string name="cd_this_week">This week</string>
+    <string name="cd_last_week">Last week</string>
+    <string name="cd_next_week">Next week</string>
+    <string name="cd_this_month">This month</string>
+    <string name="cd_last_month">Last month</string>
+    <string name="cd_next_month">Next month</string>
+    <string name="cd_overdue">Overdue</string>
+    <string name="cd_due_soon">Due soon</string>
+    <string name="cd_due_later">Due later</string>
+    
+    <!-- Accessibility Features -->
+    <string name="cd_high_contrast">High contrast mode</string>
+    <string name="cd_large_text">Large text mode</string>
+    <string name="cd_screen_reader">Screen reader</string>
+    <string name="cd_voice_control">Voice control</string>
+    <string name="cd_switch_control">Switch control</string>
+    <string name="cd_assistive_touch">Assistive touch</string>
+    <string name="cd_zoom">Zoom</string>
+    <string name="cd_magnification">Magnification</string>
+    <string name="cd_color_inversion">Color inversion</string>
+    <string name="cd_reduce_motion">Reduce motion</string>
+    <string name="cd_reduce_transparency">Reduce transparency</string>
+    
+    <!-- Empty States -->
+    <string name="cd_empty_kanban">No tasks in this section</string>
+    <string name="cd_empty_notes">No notes available</string>
+    <string name="cd_empty_media">No media files</string>
+    <string name="cd_empty_notifications">No notifications</string>
+    <string name="cd_empty_search">No search results</string>
+    <string name="cd_empty_filter">No items match the filter</string>
+    <string name="cd_empty_attachments">No attachments</string>
+    <string name="cd_empty_checklist">No checklist items</string>
+    <string name="cd_empty_labels">No labels</string>
+    
+    <!-- Error States -->
+    <string name="cd_error_loading_tasks">Error loading tasks</string>
+    <string name="cd_error_loading_notes">Error loading notes</string>
+    <string name="cd_error_loading_media">Error loading media</string>
+    <string name="cd_error_saving_task">Error saving task</string>
+    <string name="cd_error_saving_note">Error saving note</string>
+    <string name="cd_error_uploading_media">Error uploading media</string>
+    <string name="cd_error_network">Network connection error</string>
+    <string name="cd_error_permission">Permission error</string>
+    <string name="cd_error_storage">Storage error</string>
+    <string name="cd_error_unknown">Unknown error occurred</string>
+    
+    <!-- Success States -->
+    <string name="cd_success_task_created">Task created successfully</string>
+    <string name="cd_success_task_updated">Task updated successfully</string>
+    <string name="cd_success_task_deleted">Task deleted successfully</string>
+    <string name="cd_success_note_created">Note created successfully</string>
+    <string name="cd_success_note_updated">Note updated successfully</string>
+    <string name="cd_success_note_deleted">Note deleted successfully</string>
+    <string name="cd_success_media_uploaded">Media uploaded successfully</string>
+    <string name="cd_success_media_deleted">Media deleted successfully</string>
+    <string name="cd_success_settings_saved">Settings saved successfully</string>
+    <string name="cd_success_sync_completed">Sync completed successfully</string>
+    <string name="cd_expand_options">Expand options</string>
+    <string name="cd_more_options">More options</string>
+    <string name="cd_open">Open</string>
+    <string name="cd_pinned">Pinned</string>
+    <string name="cd_notes">Notes</string>
+    <string name="cd_media">Media</string>
+    <string name="cd_recurring_tasks">Recurring Tasks</string>
+    <string name="cd_select_section">Select Section</string>
+    <string name="cd_select_priority">Select priority %1$s</string>
+    <string name="cd_select_priority_dropdown">Select Priority</string>
+    <string name="cd_select_date">Select Date</string>
+    <string name="cd_select_frequency">Select Frequency</string>
+    <string name="cd_select_time">Select Time</string>
+    <string name="cd_select_start_date">Select Start Date</string>
+    <string name="cd_select_end_date">Select End Date</string>
+    <string name="cd_arrow_dropdown">Arrow dropdown</string>
+    <string name="cd_bold_formatting">Bold</string>
+    <string name="cd_italic_formatting">Italic</string>
+    <string name="cd_underline_formatting">Underline</string>
+    <string name="cd_strikethrough_formatting">Strikethrough</string>
+    <string name="cd_inline_code_formatting">Inline code</string>
+    <string name="cd_quote_formatting">Quote</string>
+    <string name="cd_bullet_list_formatting">Bullet list</string>
+    <string name="cd_numbered_list_formatting">Numbered list</string>
+    <string name="cd_checklist_formatting">Checklist</string>
+    <string name="cd_code_block_formatting">Code block</string>
+    <string name="cd_forward">Forward</string>
+    <string name="cd_arrow_back">Arrow back</string>
+    <string name="cd_arrow_forward">Arrow forward</string>
+    
+    <!-- Error Messages -->
+    <string name="error_task_not_found">Task not found: %1$s</string>
+    <string name="error_checklist_item_not_found">Item not found: %1$s</string>
+    <string name="error_task_id_required">taskId is required</string>
+    <string name="error_failed_to_load_task">Failed to load task</string>
+    <string name="error_failed_to_save_changes">Failed to save changes: %1$s</string>
+    <string name="error_failed_to_delete_task">Failed to delete task: %1$s</string>
+    <string name="error_failed_to_update_checklist_item">Failed to update checklist item: %1$s</string>
+    <string name="error_failed_to_add_checklist_item">Failed to add checklist item: %1$s</string>
+    <string name="error_failed_to_delete_checklist_item">Failed to delete checklist item: %1$s</string>
+    <string name="error_failed_to_update_task">Failed to update task: %1$s</string>
+    <string name="error_failed_to_attach_media">Failed to attach some media</string>
+    <string name="error_unknown_action">Unknown action: %1$s</string>
+    <string name="error_handling_notification_dismiss">Error handling notification dismiss</string>
+    <string name="error_network">Network error</string>
+    <string name="error_database">Database error</string>
+    <string name="error_unknown">Unknown error</string>
+    
+    <!-- Success Messages -->
+    <string name="success_checklist_item_updated">Checklist item updated</string>
+    <string name="success_checklist_item_added">Checklist item added</string>
+    <string name="success_checklist_item_deleted">Checklist item deleted</string>
+    <string name="success_media_attached_single">Attached 1 media item</string>
+    <string name="success_media_attached_multiple">Attached %1$d media items</string>
+    <string name="success_notification_dismissed">Notification dismissed: id=%1$s, type=%2$s</string>
+    <string name="success_scheduled_notification_started">ScheduledNotificationWorker started</string>
+    <string name="success_scheduled_notification_completed">ScheduledNotificationWorker completed successfully</string>
+    
+    <!-- Notification Constants -->
+    <string name="notification_work_name">scheduled_notification_work</string>
+    <string name="notification_key_type">notification_type</string>
+    <string name="notification_key_task_id">task_id</string>
+    <string name="notification_key_scheduled_time">scheduled_time</string>
+    <string name="notification_type_task_reminder">task_reminder</string>
+    <string name="notification_type_smart_suggestion">smart_suggestion</string>
+    <string name="notification_type_achievement">achievement</string>
+    <string name="notification_type_recurring">recurring</string>
+    <string name="notification_action_dismissed">com.letsgotoperfection.kino.ACTION_NOTIFICATION_DISMISSED</string>
+    <string name="notification_extra_id">notification_id</string>
+    <string name="notification_extra_type">notification_type</string>
+    
+    <!-- Log Tags -->
+    <string name="log_tag_scheduled_notification_worker">ScheduledNotificationWorker</string>
+    <string name="log_tag_notification_dismiss_receiver">NotificationDismissReceiver</string>
+    
+    <!-- Test Data -->
+    <string name="test_default_section">personal</string>
+    <string name="test_default_column">todo_this_week</string>
+    <string name="test_default_language">en</string>
+    
+    <!-- Attachment Types -->
+    <string name="attachment_type_task">task</string>
 </resources>

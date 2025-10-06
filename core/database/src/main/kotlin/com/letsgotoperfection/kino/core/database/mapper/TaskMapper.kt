@@ -12,7 +12,6 @@ import com.letsgotoperfection.kino.core.model.Attachment
 import com.letsgotoperfection.kino.core.model.TaskSection
 import com.letsgotoperfection.kino.core.model.TaskColumn
 import com.letsgotoperfection.kino.core.model.Priority
-// TaskDetail will be added when task-detail feature is implemented
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -26,8 +25,12 @@ fun TaskEntity.toDomain(
         id = id,
         title = title,
         description = description,
-        section = TaskSection.valueOf(section.uppercase()),
-        column = TaskColumn.valueOf(column.uppercase()),
+        section = TaskSection.values().find { 
+            it.name.lowercase() == section.lowercase() 
+        } ?: TaskSection.PERSONAL,
+        column = TaskColumn.values().find { 
+            it.name.lowercase() == column.lowercase() 
+        } ?: TaskColumn.TODO_THIS_WEEK,
         priority = Priority.valueOf(priority.uppercase()),
         createdAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(createdAt), ZoneId.systemDefault()),
         updatedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(updatedAt), ZoneId.systemDefault()),
@@ -120,4 +123,4 @@ fun Attachment.toEntity(): AttachmentEntity {
     )
 }
 
-// toDomainDetail function will be added when TaskDetail model is implemented
+// Task detail specific mapping lives in the feature module to avoid a reverse dependency.

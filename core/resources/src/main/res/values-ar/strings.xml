@@ -9,6 +9,8 @@
     <string name="kanban_search_tasks">البحث في المهام</string>
     <string name="kanban_filter">تصفية</string>
     <string name="kanban_clear_priority_filter">مسح تصفية الأولوية</string>
+    <string name="kanban_clear_search">مسح البحث</string>
+    <string name="kanban_no_matching_tasks">لا توجد مهام مطابقة لبحثك أو التصفية</string>
     <string name="kanban_profile">الملف الشخصي</string>
     <string name="kanban_add_task">إضافة مهمة</string>
     
@@ -40,13 +42,6 @@
     <string name="drag_task_over_column">فوق عمود %1$s</string>
     <string name="drag_task_dropped">تم نقل المهمة إلى %1$s</string>
     <string name="drag_task_cancelled">تم إلغاء السحب</string>
-    
-    <!-- Accessibility -->
-    <string name="cd_task_card">بطاقة المهمة: %1$s</string>
-    <string name="cd_drag_handle">اسحب لنقل المهمة</string>
-    <string name="cd_priority_badge">الأولوية: %1$s</string>
-    <string name="cd_column_drop_zone">منطقة الإسقاط لعمود %1$s</string>
-    <string name="cd_empty_column">عمود %1$s فارغ</string>
     
     <!-- Feedback Messages -->
     <string name="feedback_task_moved">تم نقل المهمة بنجاح</string>
@@ -88,6 +83,375 @@
     <string name="media_delete_failed">فشل في حذف الوسائط</string>
     <string name="media_loading">جاري تحميل الوسائط...</string>
     <string name="media_error_loading">فشل في تحميل الوسائط</string>
+    
+    <!-- Accessibility Content Descriptions - Arabic -->
+    <string name="cd_back">رجوع</string>
+    <string name="cd_navigate_back">الانتقال للخلف</string>
+    <string name="cd_close">إغلاق</string>
+    <string name="cd_done">تم</string>
+    <string name="cd_cancel">إلغاء</string>
+    <string name="cd_ok">موافق</string>
+    <string name="cd_confirm">تأكيد</string>
+    <string name="cd_save">حفظ</string>
+    <string name="cd_edit">تعديل</string>
+    <string name="cd_delete">حذف</string>
+    <string name="cd_share">مشاركة</string>
+    <string name="cd_copy">نسخ</string>
+    <string name="cd_paste">لصق</string>
+    <string name="cd_cut">قص</string>
+    <string name="cd_undo">تراجع</string>
+    <string name="cd_redo">إعادة</string>
+    
+    <!-- Add/Create Actions -->
+    <string name="cd_add">إضافة</string>
+    <string name="cd_add_task">إضافة مهمة</string>
+    <string name="cd_add_note">إضافة ملاحظة</string>
+    <string name="cd_add_checklist_item">إضافة عنصر قائمة مراجعة</string>
+    <string name="cd_add_label">إضافة تسمية</string>
+    <string name="cd_add_attachment">إضافة مرفق</string>
+    <string name="cd_add_media">إضافة وسائط</string>
+    <string name="cd_create_task">إنشاء مهمة جديدة</string>
+    <string name="cd_create_note">إنشاء ملاحظة جديدة</string>
+    <string name="cd_create_recurring_task">إنشاء مهمة متكررة</string>
+    
+    <!-- Remove/Delete Actions -->
+    <string name="cd_remove">إزالة</string>
+    <string name="cd_remove_label">إزالة التسمية</string>
+    <string name="cd_remove_attachment">إزالة المرفق</string>
+    <string name="cd_remove_media">إزالة الوسائط</string>
+    <string name="cd_delete_task">حذف المهمة</string>
+    <string name="cd_delete_note">حذف الملاحظة</string>
+    <string name="cd_delete_media">حذف الوسائط</string>
+    <string name="cd_delete_attachment">حذف المرفق</string>
+    
+    <!-- Settings & Configuration -->
+    <string name="cd_settings">الإعدادات</string>
+    <string name="cd_preferences">التفضيلات</string>
+    <string name="cd_theme_settings">إعدادات المظهر</string>
+    <string name="cd_language_settings">إعدادات اللغة</string>
+    <string name="cd_notification_settings">إعدادات الإشعارات</string>
+    <string name="cd_accessibility_settings">إعدادات إمكانية الوصول</string>
+    
+    <!-- Search & Filter -->
+    <string name="cd_search">بحث</string>
+    <string name="cd_search_tasks">البحث في المهام</string>
+    <string name="cd_search_notes">البحث في الملاحظات</string>
+    <string name="cd_search_media">البحث في الوسائط</string>
+    <string name="cd_clear_search">مسح البحث</string>
+    <string name="cd_filter">تصفية</string>
+    <string name="cd_clear_filter">مسح التصفية</string>
+    <string name="cd_sort">ترتيب</string>
+    <string name="cd_sort_by">ترتيب حسب %1$s</string>
+    
+    <!-- View Controls -->
+    <string name="cd_toggle_view">تبديل العرض</string>
+    <string name="cd_grid_view">عرض الشبكة</string>
+    <string name="cd_list_view">عرض القائمة</string>
+    <string name="cd_expand">توسيع</string>
+    <string name="cd_collapse">طي</string>
+    <string name="cd_show_more">إظهار المزيد</string>
+    <string name="cd_show_less">إظهار أقل</string>
+    <string name="cd_refresh">تحديث</string>
+    <string name="cd_reload">إعادة تحميل</string>
+    
+    <!-- Media Controls -->
+    <string name="cd_play">تشغيل</string>
+    <string name="cd_pause">إيقاف مؤقت</string>
+    <string name="cd_stop">إيقاف</string>
+    <string name="cd_play_video">تشغيل الفيديو</string>
+    <string name="cd_pause_video">إيقاف الفيديو مؤقتاً</string>
+    <string name="cd_play_audio">تشغيل الصوت</string>
+    <string name="cd_pause_audio">إيقاف الصوت مؤقتاً</string>
+    <string name="cd_stop_audio">إيقاف الصوت</string>
+    <string name="cd_volume_up">رفع الصوت</string>
+    <string name="cd_volume_down">خفض الصوت</string>
+    <string name="cd_mute">كتم الصوت</string>
+    <string name="cd_unmute">إلغاء كتم الصوت</string>
+    <string name="cd_fullscreen">ملء الشاشة</string>
+    <string name="cd_exit_fullscreen">الخروج من ملء الشاشة</string>
+    
+    <!-- File & Media Types -->
+    <string name="cd_image">صورة</string>
+    <string name="cd_video">فيديو</string>
+    <string name="cd_audio">صوت</string>
+    <string name="cd_document">وثيقة</string>
+    <string name="cd_pdf">وثيقة PDF</string>
+    <string name="cd_file">ملف</string>
+    <string name="cd_folder">مجلد</string>
+    <string name="cd_attachment">مرفق</string>
+    <string name="cd_media_file">ملف وسائط</string>
+    
+    <!-- Task Management -->
+    <string name="cd_task">مهمة</string>
+    <string name="cd_task_card">بطاقة المهمة: %1$s</string>
+    <string name="cd_priority_badge">الأولوية: %1$s</string>
+    <string name="cd_column_drop_zone">منطقة الإسقاط لعمود %1$s</string>
+    <string name="cd_empty_column">عمود %1$s فارغ</string>
+    <string name="cd_task_title">عنوان المهمة: %1$s</string>
+    <string name="cd_task_description">وصف المهمة: %1$s</string>
+    <string name="cd_task_priority">الأولوية: %1$s</string>
+    <string name="cd_task_progress">التقدم: %1$d بالمئة</string>
+    <string name="cd_task_due_date">تاريخ الاستحقاق: %1$s</string>
+    <string name="cd_task_section">القسم: %1$s</string>
+    <string name="cd_task_column">العمود: %1$s</string>
+    <string name="cd_task_labels">التسميات: %1$s</string>
+    <string name="cd_task_attachments">المرفقات: %1$d</string>
+    <string name="cd_task_checklist">قائمة المراجعة: %1$d من %2$d مكتمل</string>
+    <string name="cd_complete_task">إكمال المهمة</string>
+    <string name="cd_uncomplete_task">وضع علامة على المهمة كغير مكتملة</string>
+    <string name="cd_high_priority">أولوية عالية</string>
+    <string name="cd_medium_priority">أولوية متوسطة</string>
+    <string name="cd_low_priority">أولوية منخفضة</string>
+    <string name="cd_overdue_task">مهمة متأخرة</string>
+    <string name="cd_completed_task">مهمة مكتملة</string>
+    <string name="cd_in_progress_task">مهمة قيد التنفيذ</string>
+    <string name="cd_pending_task">مهمة معلقة</string>
+    
+    <!-- Drag and Drop -->
+    <string name="cd_drag_handle">اسحب لتحريك المهمة</string>
+    <string name="cd_drag_task">اسحب المهمة: %1$s</string>
+    <string name="cd_drop_zone">منطقة الإفلات لعمود %1$s</string>
+    <string name="cd_drag_started">بدأ سحب %1$s</string>
+    <string name="cd_drag_over">فوق عمود %1$s</string>
+    <string name="cd_drag_dropped">تم نقل المهمة إلى %1$s</string>
+    <string name="cd_drag_cancelled">تم إلغاء السحب</string>
+    <string name="cd_cannot_drop">لا يمكن الإفلات هنا</string>
+    <string name="cd_drop_allowed">الإفلات مسموح</string>
+    
+    <!-- Notes -->
+    <string name="cd_note">ملاحظة</string>
+    <string name="cd_note_card">بطاقة الملاحظة: %1$s</string>
+    <string name="cd_note_title">عنوان الملاحظة: %1$s</string>
+    <string name="cd_note_content">محتوى الملاحظة: %1$s</string>
+    <string name="cd_pinned_note">ملاحظة مثبتة</string>
+    <string name="cd_unpinned_note">ملاحظة غير مثبتة</string>
+    <string name="cd_pin_note">تثبيت الملاحظة</string>
+    <string name="cd_unpin_note">إلغاء تثبيت الملاحظة</string>
+    <string name="cd_note_tags">العلامات: %1$s</string>
+    <string name="cd_note_attachments">مرفقات الملاحظة: %1$d</string>
+    
+    <!-- Kanban Board -->
+    <string name="cd_kanban_board">لوحة كانبان</string>
+    <string name="cd_kanban_section">قسم %1$s</string>
+    <string name="cd_kanban_column">عمود %1$s</string>
+    <string name="cd_column_task_count">عمود %1$s مع %2$d مهام</string>
+    <string name="cd_section_task_count">قسم %1$s مع %2$d مهام</string>
+    <string name="cd_personal_section">القسم الشخصي</string>
+    <string name="cd_work_section">قسم العمل</string>
+    <string name="cd_family_section">قسم العائلة</string>
+    <string name="cd_backlog_column">عمود المؤجلة</string>
+    <string name="cd_todo_column">عمود لهذا الأسبوع</string>
+    <string name="cd_in_progress_column">عمود قيد التنفيذ</string>
+    <string name="cd_pending_column">عمود المعلقة</string>
+    <string name="cd_done_column">عمود المكتملة</string>
+    
+    <!-- Media Manager -->
+    <string name="cd_media_manager">مدير الوسائط</string>
+    <string name="cd_media_item">عنصر وسائط: %1$s</string>
+    <string name="cd_media_filename">اسم الملف: %1$s</string>
+    <string name="cd_media_size">حجم الملف: %1$s</string>
+    <string name="cd_media_type">نوع الملف: %1$s</string>
+    <string name="cd_media_duration">المدة: %1$s</string>
+    <string name="cd_media_thumbnail">صورة مصغرة لـ %1$s</string>
+    <string name="cd_go_to_source">الذهاب إلى المصدر</string>
+    <string name="cd_view_media">عرض الوسائط</string>
+    <string name="cd_download_media">تحميل الوسائط</string>
+    <string name="cd_share_media">مشاركة الوسائط</string>
+    
+    <!-- Notifications -->
+    <string name="cd_notification">إشعار</string>
+    <string name="cd_smart_suggestion">اقتراح ذكي</string>
+    <string name="cd_task_breakdown">اقتراح تقسيم المهمة</string>
+    <string name="cd_reminder">تذكير</string>
+    <string name="cd_achievement">إنجاز</string>
+    <string name="cd_mark_read">وضع علامة كمقروء</string>
+    <string name="cd_mark_unread">وضع علامة كغير مقروء</string>
+    <string name="cd_mark_all_read">وضع علامة على الكل كمقروء</string>
+    <string name="cd_clear_all">مسح الكل</string>
+    <string name="cd_dismiss_notification">رفض الإشعار</string>
+    
+    <!-- Recurring Tasks -->
+    <string name="cd_recurring_task">مهمة متكررة</string>
+    <string name="cd_recurring_frequency">التكرار: %1$s</string>
+    <string name="cd_daily_recurring">متكرر يومياً</string>
+    <string name="cd_weekly_recurring">متكرر أسبوعياً</string>
+    <string name="cd_monthly_recurring">متكرر شهرياً</string>
+    <string name="cd_yearly_recurring">متكرر سنوياً</string>
+    <string name="cd_next_due">المستحق التالي: %1$s</string>
+    <string name="cd_instances_count">الحالات: %1$d</string>
+    
+    <!-- Form Controls -->
+    <string name="cd_text_input">حقل إدخال النص</string>
+    <string name="cd_task_title_input">حقل إدخال عنوان المهمة</string>
+    <string name="cd_task_description_input">حقل إدخال وصف المهمة</string>
+    <string name="cd_note_title_input">حقل إدخال عنوان الملاحظة</string>
+    <string name="cd_note_content_input">حقل إدخال محتوى الملاحظة</string>
+    <string name="cd_search_input">حقل إدخال البحث</string>
+    <string name="cd_dropdown">قائمة منسدلة</string>
+    <string name="cd_task_section_dropdown">قائمة منسدلة لقسم المهمة</string>
+    <string name="cd_task_column_dropdown">قائمة منسدلة لعمود المهمة</string>
+    <string name="cd_task_priority_dropdown">قائمة منسدلة لأولوية المهمة</string>
+    <string name="cd_date_picker">منتقي التاريخ</string>
+    <string name="cd_task_due_date_picker">منتقي تاريخ استحقاق المهمة</string>
+    <string name="cd_time_picker">منتقي الوقت</string>
+    <string name="cd_checkbox">مربع اختيار</string>
+    <string name="cd_radio_button">زر اختيار</string>
+    <string name="cd_switch">مفتاح</string>
+    <string name="cd_slider">منزلق</string>
+    <string name="cd_button">زر</string>
+    <string name="cd_create_task_button">زر إنشاء المهمة</string>
+    <string name="cd_cancel_task_creation">زر إلغاء إنشاء المهمة</string>
+    <string name="cd_save_note_button">زر حفظ الملاحظة</string>
+    <string name="cd_cancel_note_editing">زر إلغاء تحرير الملاحظة</string>
+    
+    <!-- Selection & States -->
+    <string name="cd_selected">محدد</string>
+    <string name="cd_unselected">غير محدد</string>
+    <string name="cd_checked">محدد</string>
+    <string name="cd_unchecked">غير محدد</string>
+    <string name="cd_enabled">مفعل</string>
+    <string name="cd_disabled">معطل</string>
+    <string name="cd_expanded">موسع</string>
+    <string name="cd_collapsed">مطوي</string>
+    <string name="cd_loading">جاري التحميل</string>
+    <string name="cd_loaded">محمل</string>
+    <string name="cd_error">خطأ</string>
+    <string name="cd_success">نجح</string>
+    <string name="cd_warning">تحذير</string>
+    <string name="cd_info">معلومات</string>
+    
+    <!-- Progress & Status -->
+    <string name="cd_progress_bar">شريط التقدم: %1$d بالمئة</string>
+    <string name="cd_loading_indicator">مؤشر التحميل</string>
+    <string name="cd_loading_complete">اكتمل التحميل</string>
+    <string name="cd_uploading">جاري الرفع</string>
+    <string name="cd_downloading">جاري التحميل</string>
+    <string name="cd_processing">جاري المعالجة</string>
+    <string name="cd_syncing">جاري المزامنة</string>
+    <string name="cd_offline">غير متصل</string>
+    <string name="cd_online">متصل</string>
+    
+    <!-- Navigation Tabs -->
+    <string name="cd_kanban_tab">تبويب المهام</string>
+    <string name="cd_notes_tab">تبويب الملاحظات</string>
+    <string name="cd_media_tab">تبويب الوسائط</string>
+    <string name="cd_recurring_tasks_tab">تبويب المهام المتكررة</string>
+    <string name="cd_settings_tab">تبويب الإعدادات</string>
+    <string name="cd_selected_tab">تبويب %1$s محدد</string>
+    <string name="cd_unselected_tab">تبويب %1$s غير محدد</string>
+    
+    <!-- Actions & Gestures -->
+    <string name="cd_tap">اضغط</string>
+    <string name="cd_double_tap">اضغط مرتين</string>
+    <string name="cd_long_press">اضغط مطولاً</string>
+    <string name="cd_swipe_left">اسحب لليسار</string>
+    <string name="cd_swipe_right">اسحب لليمين</string>
+    <string name="cd_swipe_up">اسحب لأعلى</string>
+    <string name="cd_swipe_down">اسحب لأسفل</string>
+    <string name="cd_pinch_zoom">قرصة للتكبير</string>
+    <string name="cd_scroll">تمرير</string>
+    <string name="cd_scroll_up">تمرير لأعلى</string>
+    <string name="cd_scroll_down">تمرير لأسفل</string>
+    <string name="cd_scroll_left">تمرير لليسار</string>
+    <string name="cd_scroll_right">تمرير لليمين</string>
+    
+    <!-- Screen Reader Announcements -->
+    <string name="cd_task_created">تم إنشاء المهمة بنجاح</string>
+    <string name="cd_task_updated">تم تحديث المهمة بنجاح</string>
+    <string name="cd_task_deleted">تم حذف المهمة بنجاح</string>
+    <string name="cd_task_moved">تم نقل المهمة إلى %1$s</string>
+    <string name="cd_note_created">تم إنشاء الملاحظة بنجاح</string>
+    <string name="cd_note_updated">تم تحديث الملاحظة بنجاح</string>
+    <string name="cd_note_deleted">تم حذف الملاحظة بنجاح</string>
+    <string name="cd_media_attached">تم إرفاق الوسائط بنجاح</string>
+    <string name="cd_media_removed">تم إزالة الوسائط بنجاح</string>
+    <string name="cd_filter_applied">تم تطبيق التصفية: %1$s</string>
+    <string name="cd_filter_cleared">تم مسح التصفية</string>
+    <string name="cd_search_results">تم العثور على %1$d نتيجة بحث</string>
+    <string name="cd_no_results">لم يتم العثور على نتائج</string>
+    <string name="cd_loading_failed">فشل التحميل</string>
+    <string name="cd_network_error">خطأ في الشبكة</string>
+    <string name="cd_permission_denied">تم رفض الإذن</string>
+    <string name="cd_storage_full">التخزين ممتلئ</string>
+    
+    <!-- Context & Help -->
+    <string name="cd_help">مساعدة</string>
+    <string name="cd_help_tooltip">تلميح المساعدة</string>
+    <string name="cd_context_menu">قائمة السياق</string>
+    <string name="cd_menu">قائمة</string>
+    <string name="cd_submenu">قائمة فرعية</string>
+    <string name="cd_toolbar">شريط الأدوات</string>
+    <string name="cd_action_bar">شريط الإجراءات</string>
+    <string name="cd_bottom_navigation">التنقل السفلي</string>
+    <string name="cd_side_navigation">التنقل الجانبي</string>
+    <string name="cd_floating_action_button">زر الإجراء العائم</string>
+    
+    <!-- Time & Date -->
+    <string name="cd_today">اليوم</string>
+    <string name="cd_yesterday">أمس</string>
+    <string name="cd_tomorrow">غداً</string>
+    <string name="cd_this_week">هذا الأسبوع</string>
+    <string name="cd_last_week">الأسبوع الماضي</string>
+    <string name="cd_next_week">الأسبوع القادم</string>
+    <string name="cd_this_month">هذا الشهر</string>
+    <string name="cd_last_month">الشهر الماضي</string>
+    <string name="cd_next_month">الشهر القادم</string>
+    <string name="cd_overdue">متأخر</string>
+    <string name="cd_due_soon">مستحق قريباً</string>
+    <string name="cd_due_later">مستحق لاحقاً</string>
+    
+    <!-- Accessibility Features -->
+    <string name="cd_high_contrast">وضع التباين العالي</string>
+    <string name="cd_large_text">وضع النص الكبير</string>
+    <string name="cd_screen_reader">قارئ الشاشة</string>
+    <string name="cd_voice_control">التحكم الصوتي</string>
+    <string name="cd_switch_control">التحكم بالمفتاح</string>
+    <string name="cd_assistive_touch">اللمس المساعد</string>
+    <string name="cd_zoom">تكبير</string>
+    <string name="cd_magnification">تكبير</string>
+    <string name="cd_color_inversion">عكس الألوان</string>
+    <string name="cd_reduce_motion">تقليل الحركة</string>
+    <string name="cd_reduce_transparency">تقليل الشفافية</string>
+    
+    <!-- Empty States -->
+    <string name="cd_empty_kanban">لا توجد مهام في هذا القسم</string>
+    <string name="cd_empty_notes">لا توجد ملاحظات متاحة</string>
+    <string name="cd_empty_media">لا توجد ملفات وسائط</string>
+    <string name="cd_empty_notifications">لا توجد إشعارات</string>
+    <string name="cd_empty_search">لا توجد نتائج بحث</string>
+    <string name="cd_empty_filter">لا توجد عناصر تطابق التصفية</string>
+    <string name="cd_empty_attachments">لا توجد مرفقات</string>
+    <string name="cd_empty_checklist">لا توجد عناصر قائمة مراجعة</string>
+    <string name="cd_empty_labels">لا توجد تسميات</string>
+    
+    <!-- Error States -->
+    <string name="cd_error_loading_tasks">خطأ في تحميل المهام</string>
+    <string name="cd_error_loading_notes">خطأ في تحميل الملاحظات</string>
+    <string name="cd_error_loading_media">خطأ في تحميل الوسائط</string>
+    <string name="cd_error_saving_task">خطأ في حفظ المهمة</string>
+    <string name="cd_error_saving_note">خطأ في حفظ الملاحظة</string>
+    <string name="cd_error_uploading_media">خطأ في رفع الوسائط</string>
+    <string name="cd_error_network">خطأ في اتصال الشبكة</string>
+    <string name="cd_error_permission">خطأ في الإذن</string>
+    <string name="cd_error_storage">خطأ في التخزين</string>
+    <string name="cd_error_unknown">حدث خطأ غير معروف</string>
+    
+    <!-- Success States -->
+    <string name="cd_success_task_created">تم إنشاء المهمة بنجاح</string>
+    <string name="cd_success_task_updated">تم تحديث المهمة بنجاح</string>
+    <string name="cd_success_task_deleted">تم حذف المهمة بنجاح</string>
+    <string name="cd_success_note_created">تم إنشاء الملاحظة بنجاح</string>
+    <string name="cd_success_note_updated">تم تحديث الملاحظة بنجاح</string>
+    <string name="cd_success_note_deleted">تم حذف الملاحظة بنجاح</string>
+    <string name="cd_success_media_uploaded">تم رفع الوسائط بنجاح</string>
+    <string name="cd_success_media_deleted">تم حذف الوسائط بنجاح</string>
+    <string name="cd_success_settings_saved">تم حفظ الإعدادات بنجاح</string>
+    <string name="cd_success_sync_completed">تمت المزامنة بنجاح</string>
+    <string name="cd_expand_options">توسيع الخيارات</string>
+    <string name="cd_select_section">اختر القسم</string>
+    <string name="cd_select_priority_dropdown">اختر الأولوية</string>
+    <string name="cd_select_frequency">اختر التكرار</string>
+    <string name="cd_select_time">اختر الوقت</string>
     <string name="media_viewer_title">عارض الوسائط</string>
     <string name="media_open_source">فتح العنصر المرتبط</string>
     <string name="media_open_external">فتح بتطبيق آخر</string>
@@ -162,6 +526,18 @@
     <string name="notes_format_bullet_list">قائمة نقطية</string>
     <string name="notes_format_checklist">قائمة مراجعة</string>
     <string name="notes_editor_not_found">الملاحظة غير موجودة</string>
+    <string name="notes_editor_new_note">ملاحظة جديدة</string>
+    <string name="notes_editor_edit_note">تعديل الملاحظة</string>
+    <string name="notes_editor_saved">تم حفظ الملاحظة</string>
+    <string name="notes_editor_loading">جاري تحميل الملاحظة…</string>
+    <string name="notes_editor_placeholder">اكتب ملاحظتك…</string>
+    <string name="notes_editor_unable_to_read_file">غير قادر على قراءة الملف المحدد</string>
+    <string name="notes_editor_unable_to_open_attachment">غير قادر على فتح المرفق</string>
+    <string name="notes_editor_no_app_to_open">لم يتم العثور على تطبيق لفتح هذا الملف</string>
+    <string name="notes_editor_back">رجوع</string>
+    <string name="notes_editor_pin">تثبيت الملاحظة</string>
+    <string name="notes_editor_unpin">إلغاء تثبيت الملاحظة</string>
+    <string name="notes_editor_remove_attachment">إزالة المرفق</string>
     
     <!-- Notifications -->
     <string name="notifications_title">الإشعارات</string>
@@ -229,4 +605,83 @@
     <!-- Sections Management -->
     <string name="section_add">إضافة قسم</string>
     <string name="section_name">اسم القسم</string>
+    
+    <!-- New Accessibility Content Descriptions -->
+    <string name="cd_more_options">خيارات أكثر</string>
+    <string name="cd_open">فتح</string>
+    <string name="cd_pinned">مثبت</string>
+    <string name="cd_notes">الملاحظات</string>
+    <string name="cd_media">الوسائط</string>
+    <string name="cd_recurring_tasks">المهام المتكررة</string>
+    <string name="cd_select_priority">اختر أولوية %1$s</string>
+    <string name="cd_select_date">اختر التاريخ</string>
+    <string name="cd_select_start_date">اختر تاريخ البداية</string>
+    <string name="cd_select_end_date">اختر تاريخ النهاية</string>
+    <string name="cd_arrow_dropdown">قائمة منسدلة</string>
+    <string name="cd_bold_formatting">عريض</string>
+    <string name="cd_italic_formatting">مائل</string>
+    <string name="cd_underline_formatting">تحته خط</string>
+    <string name="cd_strikethrough_formatting">مشطوب</string>
+    <string name="cd_inline_code_formatting">كود مضمن</string>
+    <string name="cd_quote_formatting">اقتباس</string>
+    <string name="cd_bullet_list_formatting">قائمة نقطية</string>
+    <string name="cd_numbered_list_formatting">قائمة مرقمة</string>
+    <string name="cd_checklist_formatting">قائمة مراجعة</string>
+    <string name="cd_code_block_formatting">كتلة كود</string>
+    <string name="cd_forward">أمام</string>
+    <string name="cd_arrow_back">سهم للخلف</string>
+    <string name="cd_arrow_forward">سهم للأمام</string>
+    
+    <!-- New Error Messages -->
+    <string name="error_task_not_found">المهمة غير موجودة: %1$s</string>
+    <string name="error_checklist_item_not_found">العنصر غير موجود: %1$s</string>
+    <string name="error_task_id_required">معرف المهمة مطلوب</string>
+    <string name="error_failed_to_load_task">فشل في تحميل المهمة</string>
+    <string name="error_failed_to_save_changes">فشل في حفظ التغييرات: %1$s</string>
+    <string name="error_failed_to_delete_task">فشل في حذف المهمة: %1$s</string>
+    <string name="error_failed_to_update_checklist_item">فشل في تحديث عنصر قائمة المراجعة: %1$s</string>
+    <string name="error_failed_to_add_checklist_item">فشل في إضافة عنصر قائمة المراجعة: %1$s</string>
+    <string name="error_failed_to_delete_checklist_item">فشل في حذف عنصر قائمة المراجعة: %1$s</string>
+    <string name="error_failed_to_update_task">فشل في تحديث المهمة: %1$s</string>
+    <string name="error_failed_to_attach_media">فشل في إرفاق بعض الوسائط</string>
+    <string name="error_unknown_action">إجراء غير معروف: %1$s</string>
+    <string name="error_handling_notification_dismiss">خطأ في معالجة رفض الإشعار</string>
+    <string name="error_network">خطأ في الشبكة</string>
+    <string name="error_database">خطأ في قاعدة البيانات</string>
+    <string name="error_unknown">خطأ غير معروف</string>
+    
+    <!-- New Success Messages -->
+    <string name="success_checklist_item_updated">تم تحديث عنصر قائمة المراجعة</string>
+    <string name="success_checklist_item_added">تم إضافة عنصر قائمة المراجعة</string>
+    <string name="success_checklist_item_deleted">تم حذف عنصر قائمة المراجعة</string>
+    <string name="success_media_attached_single">تم إرفاق عنصر وسائط واحد</string>
+    <string name="success_media_attached_multiple">تم إرفاق %1$d عنصر وسائط</string>
+    <string name="success_notification_dismissed">تم رفض الإشعار: معرف=%1$s، نوع=%2$s</string>
+    <string name="success_scheduled_notification_started">بدأ عامل الإشعارات المجدولة</string>
+    <string name="success_scheduled_notification_completed">اكتمل عامل الإشعارات المجدولة بنجاح</string>
+    
+    <!-- New Notification Constants -->
+    <string name="notification_work_name">عمل_الإشعارات_المجدولة</string>
+    <string name="notification_key_type">نوع_الإشعار</string>
+    <string name="notification_key_task_id">معرف_المهمة</string>
+    <string name="notification_key_scheduled_time">الوقت_المجدول</string>
+    <string name="notification_type_task_reminder">تذكير_المهمة</string>
+    <string name="notification_type_smart_suggestion">اقتراح_ذكي</string>
+    <string name="notification_type_achievement">إنجاز</string>
+    <string name="notification_type_recurring">متكرر</string>
+    <string name="notification_action_dismissed">com.letsgotoperfection.kino.ACTION_NOTIFICATION_DISMISSED</string>
+    <string name="notification_extra_id">معرف_الإشعار</string>
+    <string name="notification_extra_type">نوع_الإشعار</string>
+    
+    <!-- New Log Tags -->
+    <string name="log_tag_scheduled_notification_worker">ScheduledNotificationWorker</string>
+    <string name="log_tag_notification_dismiss_receiver">NotificationDismissReceiver</string>
+    
+    <!-- New Test Data -->
+    <string name="test_default_section">شخصي</string>
+    <string name="test_default_column">لهذا_الأسبوع</string>
+    <string name="test_default_language">ar</string>
+    
+    <!-- New Attachment Types -->
+    <string name="attachment_type_task">مهمة</string>
 </resources>

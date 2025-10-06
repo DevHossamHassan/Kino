@@ -63,7 +63,10 @@ fun RecurringTasksListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToCreate) {
+            FloatingActionButton(
+                onClick = onNavigateToCreate,
+                modifier = Modifier.padding(bottom = 80.dp) // Account for bottom navigation bar
+            ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_recurring_task))
             }
         },

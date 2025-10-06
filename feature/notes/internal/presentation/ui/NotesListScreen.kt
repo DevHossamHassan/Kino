@@ -109,7 +109,8 @@ fun NotesListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { viewModel.onAction(NotesListAction.NavigateToNoteEditor(null)) }
+                onClick = { viewModel.onAction(NotesListAction.NavigateToNoteEditor(null)) },
+                modifier = Modifier.padding(bottom = 80.dp) // Account for bottom navigation bar
             ) {
                 Icon(
                     Icons.Default.Add,

@@ -1,36 +1,41 @@
 package com.letsgotoperfection.kino.core.designsystem.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import com.letsgotoperfection.kino.core.designsystem.KinoTheme
+import com.letsgotoperfection.kino.core.designsystem.accessibility.AccessibilityUtils
+import com.letsgotoperfection.kino.core.designsystem.accessibility.AccessibilityUtils.accessibility
 import com.letsgotoperfection.kino.core.designsystem.preview.ComponentPreviews
 import com.letsgotoperfection.kino.core.designsystem.preview.FontScalePreviews
 import com.letsgotoperfection.kino.core.designsystem.preview.PreviewData
 import com.letsgotoperfection.kino.core.designsystem.preview.TaskPreviewProvider
 import com.letsgotoperfection.kino.core.designsystem.preview.ThemePreviews
-import com.letsgotoperfection.kino.core.designsystem.KinoTheme
 import com.letsgotoperfection.kino.core.model.Task
-
-// Using Task from core model
 
 @Composable
 fun TaskCard(
@@ -38,109 +43,101 @@ fun TaskCard(
     onTaskClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val progressPercent = task.progress.coerceIn(0, 100)
+    val labelTexts = buildList {
+        task.labels
+            .take(2)
+            .mapNotNull { label -> label.name.takeIf { it.isNotBlank() } }
+            .forEach { add(it) }
+        if (task.labels.size > 2) {
+            add("+${task.labels.size - 2}")
+        }
+        add(task.priority.displayName)
+    }.distinct()
+
+    // Build comprehensive accessibility content description using utility
+    val accessibilityDescription = AccessibilityUtils.createTaskCardDescription(task)
+
     Card(
         modifier = modifier
             .width(280.dp)
-            .height(180.dp)
-            .clickable(onClick = onTaskClick),
+            .clickable(onClick = onTaskClick)
+            .semantics {
+                role = Role.Button
+                contentDescription = accessibilityDescription
+            },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(android.graphics.Color.parseColor(task.priorityColor)),
-                            Color.Transparent
-                        ),
-                        startX = 0f,
-                        endX = 20f
-                    )
-                )
-        )
-        
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Priority badge
-            PriorityBadge(priority = task.priority)
-            
-            // Title (2 lines max)
-            Text(
-                text = task.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            
-            // Description (3 lines max)
-            Text(
-                text = task.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
-            
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // Progress bar
-            if (task.progress > 0) {
-                LinearProgressIndicator(
-                    progress = { task.progress / 100f },
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            
-            // Labels
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(task.labels.take(2)) { label ->
-                    LabelChip(label = label)
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (task.description.isNotBlank()) {
+                    Text(
+                        text = task.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
-                if (task.labels.size > 2) {
-                    item {
+            }
+
+            if (progressPercent > 0) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    LinearProgressIndicator(
+                        progress = { progressPercent / 100f },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(50))
+                            .accessibility(
+                                contentDescription = "Progress: $progressPercent percent"
+                            ),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                    )
+                    Text(
+                        text = "$progressPercent%",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.accessibility(
+                            contentDescription = "Progress: $progressPercent percent"
+                        )
+                    )
+                }
+            }
+
+            if (labelTexts.isNotEmpty()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    labelTexts.forEach { label ->
                         Text(
-                            text = "+${task.labels.size - 2}",
-                            style = MaterialTheme.typography.labelSmall
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
-                }
-            }
-            
-            // Meta info
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (task.attachmentCount > 0) {
-                    MetaInfo(
-                        icon = Icons.Default.AttachFile,
-                        text = task.attachmentCount.toString()
-                    )
-                }
-                if (task.checklistTotal > 0) {
-                    MetaInfo(
-                        icon = Icons.Default.CheckBox,
-                        text = "${task.checklistCompleted}/${task.checklistTotal}"
-                    )
-                }
-                if (task.dueDate != null) {
-                    MetaInfo(
-                        icon = Icons.Default.CalendarToday,
-                        text = task.dueDateFormatted ?: ""
-                    )
                 }
             }
         }
@@ -292,28 +289,5 @@ private fun TaskCardInteractivePreview() {
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun MetaInfo(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

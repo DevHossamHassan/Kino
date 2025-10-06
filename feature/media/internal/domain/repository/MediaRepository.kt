@@ -80,6 +80,18 @@ internal interface MediaRepository {
     suspend fun getMediaCount(): Int
     
     /**
+     * Get media count for a specific source
+     * 
+     * @param sourceType Type of source
+     * @param sourceId ID of the source
+     * @return Number of media items attached to the source
+     */
+    suspend fun getMediaCount(
+        sourceType: MediaSourceType,
+        sourceId: String
+    ): Int
+    
+    /**
      * Get total size of all media in bytes
      * 
      * @return Total size in bytes

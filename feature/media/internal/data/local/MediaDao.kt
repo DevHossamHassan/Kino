@@ -65,6 +65,12 @@ internal interface MediaDao {
     suspend fun getMediaCount(): Int
     
     /**
+     * Get media count for a specific source
+     */
+    @Query("SELECT COUNT(*) FROM media WHERE sourceType = :sourceType AND sourceId = :sourceId")
+    suspend fun getMediaCountBySource(sourceType: String, sourceId: String): Int
+    
+    /**
      * Get total size of all media in bytes
      */
     @Query("SELECT SUM(size) FROM media")

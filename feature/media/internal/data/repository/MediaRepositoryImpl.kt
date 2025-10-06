@@ -214,6 +214,13 @@ internal class MediaRepositoryImpl @Inject constructor(
         mediaDao.getMediaCount()
     }
     
+    override suspend fun getMediaCount(
+        sourceType: MediaSourceType,
+        sourceId: String
+    ): Int = withContext(ioDispatcher) {
+        mediaDao.getMediaCountBySource(sourceType.name.lowercase(), sourceId)
+    }
+    
     override suspend fun getTotalSize(): Long = withContext(ioDispatcher) {
         mediaDao.getTotalSize() ?: 0L
     }

@@ -4,7 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.navigation.NavController
-import com.letsgotoperfection.kino.navigation.AppDestinations
+import com.letsgotoperfection.kino.feature.kanban.navigation.KanbanBoardRoute
+import com.letsgotoperfection.kino.feature.media.navigation.MediaManagerRoute
+import com.letsgotoperfection.kino.feature.media.navigation.MediaViewerRoute
+import com.letsgotoperfection.kino.feature.notes.navigation.NotesListRoute
+import com.letsgotoperfection.kino.feature.recurringtasks.navigation.RecurringTasksListRoute
+import com.letsgotoperfection.kino.feature.settings.navigation.SettingsRoute
+import com.letsgotoperfection.kino.feature.taskdetail.navigation.TaskDetailRoute
 
 /**
  * Handles deep links from notifications to navigate to specific screens
@@ -43,7 +49,7 @@ object NotificationDeepLinkHandler {
             path.startsWith("/task/") -> {
                 val taskId = path.removePrefix("/task/")
                 if (taskId.isNotEmpty()) {
-                    navController.navigate(AppDestinations.taskDetailRoute(taskId))
+                    navController.navigate(TaskDetailRoute(taskId))
                     true
                 } else {
                     false
@@ -52,7 +58,7 @@ object NotificationDeepLinkHandler {
             path.startsWith("/note/") -> {
                 val noteId = path.removePrefix("/note/")
                 if (noteId.isNotEmpty()) {
-                    navController.navigate(AppDestinations.noteDetailRoute(noteId))
+                    navController.navigate(com.letsgotoperfection.kino.feature.notes.navigation.NoteDetailRoute(noteId))
                     true
                 } else {
                     false
@@ -61,30 +67,30 @@ object NotificationDeepLinkHandler {
             path.startsWith("/media/viewer/") -> {
                 val mediaId = path.removePrefix("/media/viewer/")
                 if (mediaId.isNotEmpty()) {
-                    navController.navigate(AppDestinations.mediaViewerRoute(mediaId))
+                    navController.navigate(MediaViewerRoute(mediaId))
                     true
                 } else {
                     false
                 }
             }
             path == "/kanban" -> {
-                navController.navigate(AppDestinations.KANBAN)
+                navController.navigate(KanbanBoardRoute)
                 true
             }
             path == "/notes" -> {
-                navController.navigate(AppDestinations.NOTES)
+                navController.navigate(NotesListRoute)
                 true
             }
             path == "/media" -> {
-                navController.navigate(AppDestinations.MEDIA)
+                navController.navigate(MediaManagerRoute)
                 true
             }
             path == "/settings" -> {
-                navController.navigate(AppDestinations.SETTINGS)
+                navController.navigate(SettingsRoute)
                 true
             }
             path == "/recurring_tasks" -> {
-                navController.navigate(AppDestinations.RECURRING_TASKS)
+                navController.navigate(RecurringTasksListRoute)
                 true
             }
             else -> false

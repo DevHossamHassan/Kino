@@ -64,8 +64,12 @@ internal class NotesListViewModel @Inject constructor(
             is NotesListAction.CreateNote -> createNote(action.title, action.content)
             is NotesListAction.DeleteNote -> deleteNote(action.noteId)
             is NotesListAction.TogglePin -> togglePin(action.noteId)
-            is NotesListAction.NavigateToNoteDetail -> navigateToNoteDetail(action.noteId)
-            is NotesListAction.NavigateToNoteEditor -> navigateToNoteEditor(action.noteId)
+            is NotesListAction.NavigateToNoteDetail -> {
+                // Navigation handled by UI callbacks
+            }
+            is NotesListAction.NavigateToNoteEditor -> {
+                // Navigation handled by UI callbacks
+            }
             is NotesListAction.DismissSnackbar -> dismissSnackbar()
         }
     }
@@ -154,13 +158,7 @@ internal class NotesListViewModel @Inject constructor(
         }
     }
     
-    private fun navigateToNoteDetail(noteId: String) {
-        _uiEvent.send(NotesListEvent.NavigateToNoteDetail(noteId))
-    }
-    
-    private fun navigateToNoteEditor(noteId: String?) {
-        _uiEvent.send(NotesListEvent.NavigateToNoteEditor(noteId))
-    }
+    // Navigation methods removed - handled by UI callbacks
     
     private fun dismissSnackbar() {
         _uiState.value = _uiState.value.copy(snackbarMessage = null)

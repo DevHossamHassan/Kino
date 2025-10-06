@@ -38,7 +38,10 @@ fun KanbanScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onCreateTask) {
+            FloatingActionButton(
+                onClick = onCreateTask,
+                modifier = Modifier.padding(bottom = 80.dp) // Account for bottom navigation bar
+            ) {
                 Icon(
                     Icons.Default.Add,
                     contentDescription = "Create new task"

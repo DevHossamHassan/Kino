@@ -1,6 +1,5 @@
 package com.letsgotoperfection.kino.feature.media.api
 
-import androidx.navigation.NavController
 import com.letsgotoperfection.kino.core.common.Result
 import com.letsgotoperfection.kino.core.model.MediaFile
 import kotlinx.coroutines.flow.Flow
@@ -61,13 +60,6 @@ interface MediaApi {
      */
     suspend fun attachMediaToNote(mediaId: String, noteId: String): Result<Unit>
     
-    /**
-     * Navigate to media viewer screen
-     * 
-     * @param navController The navigation controller
-     * @param mediaId The media ID to view
-     */
-    fun navigateToMediaViewer(navController: NavController, mediaId: String)
     
     /**
      * Get observable media updates

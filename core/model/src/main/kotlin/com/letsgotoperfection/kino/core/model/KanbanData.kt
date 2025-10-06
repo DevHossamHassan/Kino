@@ -23,7 +23,8 @@ data class TaskCreationRequest(
     val section: TaskSection,
     val column: TaskColumn,
     val priority: Priority,
-    val dueDate: java.time.LocalDateTime?
+    val dueDate: java.time.LocalDateTime?,
+    val labels: List<Label> = emptyList()
 )
 
 data class TaskFilters(

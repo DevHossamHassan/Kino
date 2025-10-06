@@ -50,5 +50,5 @@ sealed interface SettingsAction {
 sealed interface SettingsUiEvent {
     data class ShowError(val message: String) : SettingsUiEvent
     data class ShowSuccess(val message: String) : SettingsUiEvent
-    data object NavigateBack : SettingsUiEvent
+    // Navigation events removed - handled by UI callbacks
 }

@@ -2,7 +2,6 @@ package com.letsgotoperfection.kino.feature.media.api
 
 import android.net.Uri
 import com.letsgotoperfection.kino.feature.media.internal.domain.model.Media
-import com.letsgotoperfection.kino.feature.media.internal.domain.model.MediaSourceType
 
 /**
  * Public API for Media feature
@@ -74,4 +73,9 @@ interface MediaApi {
      * @return True if all required permissions are granted
      */
     fun hasMediaPermissions(): Boolean
+}
+
+enum class MediaSourceType {
+    TASK,
+    NOTE
 }

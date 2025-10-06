@@ -1,15 +1,19 @@
 package com.letsgotoperfection.kino.data
 
 import com.letsgotoperfection.kino.core.database.dao.TaskDao
+import com.letsgotoperfection.kino.core.database.dao.LabelDao
 import com.letsgotoperfection.kino.core.database.entity.TaskEntity
+import com.letsgotoperfection.kino.core.database.entity.TaskLabelCrossRef
 import com.letsgotoperfection.kino.core.database.mapper.toDomain
 import com.letsgotoperfection.kino.core.database.mapper.toEntity
 import com.letsgotoperfection.kino.core.model.Task
 import com.letsgotoperfection.kino.core.model.TaskSection
 import com.letsgotoperfection.kino.core.model.TaskColumn
 import com.letsgotoperfection.kino.core.model.Priority
+import com.letsgotoperfection.kino.core.model.Label
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
@@ -17,34 +21,50 @@ import javax.inject.Singleton
 
 @Singleton
 class TaskRepository @Inject constructor(
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
+    private val labelDao: LabelDao
 ) {
     
     fun getAllTasks(): Flow<List<Task>> {
         return taskDao.getAllTasks().map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { entity ->
+                // Fetch labels for each task
+                val taskLabels = labelDao.getTaskLabels(entity.id).first()
+                entity.toDomain(labels = taskLabels.map { it.toDomain() })
+            }
         }
     }
     
     fun getTasksBySection(section: TaskSection): Flow<List<Task>> {
         return taskDao.getTasksBySection(section.name.lowercase()).map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { entity ->
+                val taskLabels = labelDao.getTaskLabels(entity.id).first()
+                entity.toDomain(labels = taskLabels.map { it.toDomain() })
+            }
         }
     }
     
     fun getTasksByColumn(column: TaskColumn): Flow<List<Task>> {
         return taskDao.getTasksByColumn(column.name.lowercase()).map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { entity ->
+                val taskLabels = labelDao.getTaskLabels(entity.id).first()
+                entity.toDomain(labels = taskLabels.map { it.toDomain() })
+            }
         }
     }
     
     suspend fun getTaskById(taskId: String): Task? {
-        return taskDao.getTaskById(taskId)?.toDomain()
+        val entity = taskDao.getTaskById(taskId) ?: return null
+        val taskLabels = labelDao.getTaskLabels(taskId).first()
+        return entity.toDomain(labels = taskLabels.map { it.toDomain() })
     }
     
     fun observeTaskById(taskId: String): Flow<Task?> {
         return taskDao.observeTaskById(taskId).map { entity ->
-            entity?.toDomain()
+            entity?.let { taskEntity ->
+                val taskLabels = labelDao.getTaskLabels(taskId).first()
+                taskEntity.toDomain(labels = taskLabels.map { it.toDomain() })
+            }
         }
     }
     
@@ -55,11 +75,13 @@ class TaskRepository @Inject constructor(
         column: TaskColumn = TaskColumn.TODO_THIS_WEEK,
         priority: Priority = Priority.MEDIUM,
         dueDate: LocalDateTime? = null,
-        progress: Int = 0
+        progress: Int = 0,
+        labels: List<Label> = emptyList()
     ): Task {
         val now = LocalDateTime.now()
+        val taskId = UUID.randomUUID().toString()
         val task = Task(
-            id = UUID.randomUUID().toString(),
+            id = taskId,
             title = title,
             description = description,
             section = section,
@@ -68,33 +90,58 @@ class TaskRepository @Inject constructor(
             createdAt = now,
             updatedAt = now,
             dueDate = dueDate,
-            progress = progress
+            progress = progress,
+            labels = labels
         )
         
+        // Save the task
         taskDao.upsertTask(task.toEntity())
+        
+        // Save labels and their relationships
+        labels.forEach { label ->
+            // Save the label if it doesn't exist
+            labelDao.upsertLabel(label.toEntity())
+            // Create the relationship
+            labelDao.addTaskLabel(
+                TaskLabelCrossRef(
+                    taskId = taskId,
+                    labelId = label.id
+                )
+            )
+        }
+        
         return task
     }
     
     suspend fun updateTask(task: Task) {
-        taskDao.upsertTask(task.toEntity())
+        val now = LocalDateTime.now()
+        val updatedTask = task.copy(updatedAt = now)
+        taskDao.upsertTask(updatedTask.toEntity())
     }
     
-    suspend fun deleteTask(taskId: String) {
-        taskDao.getTaskById(taskId)?.let { entity ->
+    suspend fun deleteTask(taskId: String): Boolean {
+        val entity = taskDao.getTaskById(taskId)
+        return if (entity != null) {
             taskDao.deleteTask(entity)
+            true
+        } else {
+            false
         }
     }
     
     suspend fun updateTaskProgress(taskId: String, progress: Int) {
         taskDao.updateProgress(taskId, progress)
+        taskDao.updateTimestamp(taskId, LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli())
     }
     
     suspend fun updateTaskColumn(taskId: String, column: TaskColumn) {
         taskDao.updateColumn(taskId, column.name.lowercase())
+        taskDao.updateTimestamp(taskId, LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli())
     }
     
     suspend fun updateTaskSection(taskId: String, section: TaskSection) {
         taskDao.updateSection(taskId, section.name.lowercase())
+        taskDao.updateTimestamp(taskId, LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli())
     }
 }
 

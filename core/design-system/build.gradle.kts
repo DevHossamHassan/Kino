@@ -36,6 +36,7 @@ dependencies {
     // Core modules
     implementation(project(":core:common"))
     implementation(project(":core:model"))
+    implementation(project(":core:resources"))
     
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
@@ -52,4 +53,12 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    
+    // Testing
+    testImplementation(libs.junit4)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.compose.ui.test.manifest)
+    testImplementation(libs.truth)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 }

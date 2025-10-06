@@ -32,12 +32,6 @@
         <receiver
             android:name=".internal.receiver.NotificationDismissReceiver"
             android:exported="false" />
-            
-        <!-- Scheduled notification worker -->
-        <service
-            android:name=".internal.worker.ScheduledNotificationWorker"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>

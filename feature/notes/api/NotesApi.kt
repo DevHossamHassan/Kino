@@ -1,12 +1,21 @@
 package com.letsgotoperfection.kino.feature.notes.api
 
-import androidx.navigation.NavController
 import com.letsgotoperfection.kino.core.common.Result
 import com.letsgotoperfection.kino.feature.notes.internal.domain.model.Note
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Public API for Notes feature.
- * This allows other feature modules to interact with notes functionality.
+ * This allows other feature modules to access notes data and operations.
+ * 
+ * This API provides:
+ * - Data queries (get, search, observe)
+ * - Data mutations (create, update, delete)
+ * - Business operations (attach to tasks, tag management)
+ * 
+ * @since 1.0.0
+ * @see com.letsgotoperfection.kino.feature.kanban.api.KanbanApi for task operations
+ * @see com.letsgotoperfection.kino.feature.media.api.MediaApi for media operations
  */
 interface NotesApi {
     
@@ -19,46 +28,92 @@ interface NotesApi {
     suspend fun getNote(noteId: String): Result<Note>
     
     /**
+     * Get all notes for a user.
+     * 
+     * @return Flow of all notes
+     */
+    fun getAllNotes(): Flow<List<Note>>
+    
+    /**
+     * Search notes by query.
+     * 
+     * @param query The search query
+     * @return Result containing matching notes
+     */
+    suspend fun searchNotes(query: String): Result<List<Note>>
+    
+    /**
+     * Get notes by tag.
+     * 
+     * @param tag The tag to filter by
+     * @return Flow of notes with the specified tag
+     */
+    fun getNotesByTag(tag: String): Flow<List<Note>>
+    
+    /**
      * Create a new note.
      * 
      * @param title The note title
      * @param content The note content
+     * @param tags Optional list of tags
      * @return Result containing the created Note ID or an error
      */
-    suspend fun createNote(title: String, content: String): Result<String>
+    suspend fun createNote(title: String, content: String, tags: List<String> = emptyList()): Result<String>
     
     /**
-     * Navigate to notes list screen.
+     * Update an existing note.
      * 
-     * @param navController Navigation controller
+     * @param noteId The note ID to update
+     * @param title Optional new title
+     * @param content Optional new content
+     * @param tags Optional new tags
+     * @return Result indicating success or failure
      */
-    fun navigateToNotesList(navController: NavController)
+    suspend fun updateNote(
+        noteId: String, 
+        title: String? = null, 
+        content: String? = null, 
+        tags: List<String>? = null
+    ): Result<Unit>
     
     /**
-     * Navigate to note detail screen.
+     * Delete a note.
      * 
-     * @param navController Navigation controller
-     * @param noteId The unique note identifier
+     * @param noteId The note ID to delete
+     * @return Result indicating success or failure
      */
-    fun navigateToNoteDetail(navController: NavController, noteId: String)
+    suspend fun deleteNote(noteId: String): Result<Unit>
     
     /**
-     * Navigate to note editor screen.
+     * Attach note to a task.
      * 
-     * @param navController Navigation controller
-     * @param noteId Optional note ID for editing existing note
+     * @param noteId The note ID
+     * @param taskId The task ID to attach to
+     * @return Result indicating success or failure
      */
-    fun navigateToNoteEditor(navController: NavController, noteId: String? = null)
-}
-
-/**
- * Navigation destinations for Notes feature.
- */
-object NotesDestinations {
-    const val NOTES_LIST = "notes_list"
-    const val NOTE_DETAIL = "note_detail/{noteId}"
-    const val NOTE_EDITOR = "note_editor/{noteId?}"
+    suspend fun attachNoteToTask(noteId: String, taskId: String): Result<Unit>
     
-    fun noteDetailRoute(noteId: String) = "note_detail/$noteId"
-    fun noteEditorRoute(noteId: String? = null) = "note_editor/$noteId"
+    /**
+     * Detach note from a task.
+     * 
+     * @param noteId The note ID
+     * @param taskId The task ID to detach from
+     * @return Result indicating success or failure
+     */
+    suspend fun detachNoteFromTask(noteId: String, taskId: String): Result<Unit>
+    
+    /**
+     * Get all tags used in notes.
+     * 
+     * @return Flow of all unique tags
+     */
+    fun getAllTags(): Flow<List<String>>
+    
+    /**
+     * Get notes attached to a specific task.
+     * 
+     * @param taskId The task ID
+     * @return Flow of notes attached to the task
+     */
+    fun getNotesForTask(taskId: String): Flow<List<Note>>
 }

@@ -1,57 +1,41 @@
 package com.letsgotoperfection.kino.feature.media
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 /**
- * Public API for Media Viewer Screen
- * This provides a clean interface for other modules to use the Media Viewer screen
+ * Public MediaViewerScreen implementation
+ * Simple placeholder implementation
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaViewerScreen(
+    mediaId: String,
     onNavigateBack: () -> Unit,
     onNavigateToTask: (String) -> Unit,
-    onNavigateToNote: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateToNote: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Media Viewer") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back"
-                        )
+                    TextButton(onClick = onNavigateBack) {
+                        Text("Back")
                     }
                 }
             )
         }
     ) { paddingValues ->
         Box(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -63,12 +47,15 @@ fun MediaViewerScreen(
                     style = MaterialTheme.typography.headlineMedium
                 )
                 Text(
-                    text = "This is a placeholder for the Media Viewer screen. The full implementation will be connected soon.",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "Media ID: $mediaId",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
                 )
-                Button(onClick = { onNavigateToTask("sample-task-id") }) {
-                    Text("View Source Task")
-                }
+                Text(
+                    text = "This is a placeholder implementation",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

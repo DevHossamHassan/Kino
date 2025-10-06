@@ -53,9 +53,6 @@ fun EditRecurringTaskScreen(
                 is RecurringTaskEvent.ShowSuccess -> {
                     snackbarHostState.showSnackbar(event.message)
                 }
-                is RecurringTaskEvent.NavigateBack -> {
-                    onNavigateBack()
-                }
                 else -> {}
             }
         }

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
@@ -62,8 +63,7 @@ dependencies {
     implementation(project(":feature:settings"))
     implementation(project(":feature:recurring-tasks"))
     
-    // Navigation
-    implementation(project(":navigation"))
+    // Navigation - REMOVED: implementation(project(":navigation"))
     
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
@@ -83,6 +83,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     
+    // Kotlin Serialization for type-safe navigation
+    implementation(libs.kotlinx.serialization.json)
+    
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -99,6 +102,11 @@ dependencies {
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
+    
+    // Navigation Testing
+    androidTestImplementation(libs.androidx.navigation.testing)
+    
+    // Compose Testing
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     debugImplementation(libs.androidx.compose.ui.tooling)

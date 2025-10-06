@@ -39,9 +39,8 @@ sealed interface NotesListAction {
 
 /**
  * One-time events for the notes list screen.
+ * Navigation events removed - handled by callbacks in the UI layer.
  */
 sealed interface NotesListEvent {
     data class ShowSnackbar(val message: String) : NotesListEvent
-    data class NavigateToNoteDetail(val noteId: String) : NotesListEvent
-    data class NavigateToNoteEditor(val noteId: String?) : NotesListEvent
 }

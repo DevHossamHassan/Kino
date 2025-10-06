@@ -123,18 +123,6 @@ interface RecurringTasksApi {
     suspend fun getRecurrenceDescription(recurringTaskId: String): Result<String>
 }
 
-/**
- * Navigation destinations for Recurring Tasks feature
- */
-object RecurringTasksDestinations {
-    const val RECURRING_TASKS_LIST = "recurring_tasks_list"
-    const val CREATE_RECURRING_TASK = "create_recurring_task"
-    const val EDIT_RECURRING_TASK = "edit_recurring_task/{recurringTaskId}"
-    const val RECURRING_TASK_INSTANCES = "recurring_task_instances/{recurringTaskId}"
-    
-    fun editRecurringTaskRoute(recurringTaskId: String) = "edit_recurring_task/$recurringTaskId"
-    fun recurringTaskInstancesRoute(recurringTaskId: String) = "recurring_task_instances/$recurringTaskId"
-}
 
 /**
  * Exceptions for Recurring Tasks feature

@@ -95,13 +95,11 @@ data class RecurringTaskInstancesUiState(
 
 /**
  * UI Events for Recurring Tasks feature
+ * Navigation events removed - handled by UI callbacks
  */
 sealed interface RecurringTaskEvent {
     data class ShowError(val message: String) : RecurringTaskEvent
     data class ShowSuccess(val message: String) : RecurringTaskEvent
-    data object NavigateBack : RecurringTaskEvent
-    data class NavigateToEdit(val recurringTaskId: String) : RecurringTaskEvent
-    data class NavigateToInstances(val recurringTaskId: String) : RecurringTaskEvent
 }
 
 /**
