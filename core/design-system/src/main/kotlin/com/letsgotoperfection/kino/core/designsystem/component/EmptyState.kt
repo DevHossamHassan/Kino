@@ -1,135 +1,223 @@
 package com.letsgotoperfection.kino.core.designsystem.component
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.Notes
+import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.letsgotoperfection.kino.core.designsystem.preview.ComponentPreviews
-import com.letsgotoperfection.kino.core.designsystem.preview.ThemePreviews
-import com.letsgotoperfection.kino.core.designsystem.KinoTheme
 
+/**
+ * Empty state component for displaying when there's no content
+ */
 @Composable
 fun EmptyState(
-    icon: ImageVector,
     title: String,
-    message: String,
-    actionLabel: String? = null,
-    onActionClick: (() -> Unit)? = null,
+    description: String,
+    icon: ImageVector,
+    primaryAction: EmptyStateAction? = null,
+    secondaryAction: EmptyStateAction? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
         )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
         Text(
-            text = message,
+            text = description,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
-        if (actionLabel != null && onActionClick != null) {
-            Button(onClick = onActionClick) {
-                Text(actionLabel)
-            }
-        }
-    }
-}
-
-/**
- * Preview with action button
- */
-@ThemePreviews
-@Composable
-private fun EmptyStateWithActionPreview() {
-    KinoTheme {
-        Surface {
-            EmptyState(
-                icon = Icons.Default.TaskAlt,
-                title = "No tasks yet",
-                message = "Create your first task to get started with organizing your work",
-                actionLabel = "Create Task",
-                onActionClick = {}
-            )
-        }
-    }
-}
-
-/**
- * Preview without action button
- */
-@ThemePreviews
-@Composable
-private fun EmptyStateWithoutActionPreview() {
-    KinoTheme {
-        Surface {
-            EmptyState(
-                icon = Icons.Default.Search,
-                title = "No results found",
-                message = "Try adjusting your search or filters",
-                actionLabel = null,
-                onActionClick = null
-            )
-        }
-    }
-}
-
-/**
- * Preview with different icons and states
- */
-@Preview(name = "Empty States - All Types", showBackground = true)
-@Composable
-private fun AllEmptyStatesPreview() {
-    KinoTheme {
-        Surface {
+        
+        if (primaryAction != null || secondaryAction != null) {
+            Spacer(modifier = Modifier.height(32.dp))
+            
             Column(
-                verticalArrangement = Arrangement.spacedBy(32.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                EmptyState(
-                    icon = Icons.Default.TaskAlt,
-                    title = "No tasks",
-                    message = "Create your first task",
-                    actionLabel = "Create Task",
-                    onActionClick = {}
-                )
-                EmptyState(
-                    icon = Icons.AutoMirrored.Filled.Note,
-                    title = "No notes",
-                    message = "Start taking notes",
-                    actionLabel = "Add Note",
-                    onActionClick = {}
-                )
-                EmptyState(
-                    icon = Icons.Default.Search,
-                    title = "No results",
-                    message = "Try different search terms",
-                    actionLabel = null,
-                    onActionClick = null
-                )
+                primaryAction?.let { action ->
+                    Button(
+                        onClick = action.onClick,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        action.icon?.let { icon ->
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                        }
+                        Text(action.text)
+                    }
+                }
+                
+                secondaryAction?.let { action ->
+                    OutlinedButton(
+                        onClick = action.onClick,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        action.icon?.let { icon ->
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                        }
+                        Text(action.text)
+                    }
+                }
             }
         }
+    }
+}
+
+/**
+ * Data class for empty state actions
+ */
+data class EmptyStateAction(
+    val text: String,
+    val onClick: () -> Unit,
+    val icon: ImageVector? = null
+)
+
+/**
+ * Predefined empty states for common scenarios
+ */
+object EmptyStates {
+    
+    @Composable
+    fun TasksEmpty(
+        onCreateTask: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        EmptyState(
+            title = "No tasks yet",
+            description = "Create your first task to get started with organizing your work and personal life.",
+            icon = Icons.Default.TaskAlt,
+            primaryAction = EmptyStateAction(
+                text = "Create Task",
+                onClick = onCreateTask,
+                icon = Icons.Default.Add
+            ),
+            modifier = modifier
+        )
+    }
+    
+    @Composable
+    fun NotesEmpty(
+        onCreateNote: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        EmptyState(
+            title = "No notes yet",
+            description = "Start capturing your thoughts and ideas with rich text notes.",
+            icon = Icons.Default.Notes,
+            primaryAction = EmptyStateAction(
+                text = "Create Note",
+                onClick = onCreateNote,
+                icon = Icons.Default.Add
+            ),
+            modifier = modifier
+        )
+    }
+    
+    @Composable
+    fun MediaEmpty(
+        onAddMedia: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        EmptyState(
+            title = "No media files",
+            description = "Upload images, documents, and other files to keep them organized and accessible.",
+            icon = Icons.Default.ImageNotSupported,
+            primaryAction = EmptyStateAction(
+                text = "Add Media",
+                onClick = onAddMedia,
+                icon = Icons.Default.Add
+            ),
+            modifier = modifier
+        )
+    }
+    
+    @Composable
+    fun BookmarksEmpty(
+        onAddBookmark: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        EmptyState(
+            title = "No bookmarks",
+            description = "Save important links and resources for quick access later.",
+            icon = Icons.Default.BookmarkBorder,
+            primaryAction = EmptyStateAction(
+                text = "Add Bookmark",
+                onClick = onAddBookmark,
+                icon = Icons.Default.Add
+            ),
+            modifier = modifier
+        )
+    }
+    
+    @Composable
+    fun FoldersEmpty(
+        onCreateFolder: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        EmptyState(
+            title = "No folders",
+            description = "Organize your content by creating folders and categories.",
+            icon = Icons.Default.FolderOpen,
+            primaryAction = EmptyStateAction(
+                text = "Create Folder",
+                onClick = onCreateFolder,
+                icon = Icons.Default.Add
+            ),
+            modifier = modifier
+        )
     }
 }

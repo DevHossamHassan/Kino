@@ -118,11 +118,13 @@ private fun EmptyStatePreview() {
     KinoTheme {
         Surface {
             EmptyState(
-                icon = Icons.AutoMirrored.Filled.Note,
                 title = "No notes",
-                message = "Start taking notes",
-                actionLabel = "Add Note",
-                onActionClick = {}
+                description = "Start taking notes",
+                icon = Icons.AutoMirrored.Filled.Note,
+                primaryAction = EmptyStateAction(
+                    text = "Add Note",
+                    onClick = {}
+                )
             )
         }
     }

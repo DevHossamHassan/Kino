@@ -25,45 +25,74 @@ class TaskRepository @Inject constructor(
     private val labelDao: LabelDao
 ) {
     
+    /**
+     * Get all tasks with their labels.
+     * 
+     * PERFORMANCE: Uses @Transaction and @Relation to eliminate N+1 query problem.
+     * Single query instead of 1 + N queries.
+     */
     fun getAllTasks(): Flow<List<Task>> {
-        return taskDao.getAllTasks().map { entities ->
-            entities.map { entity ->
-                // Fetch labels for each task
-                val taskLabels = labelDao.getTaskLabels(entity.id).first()
-                entity.toDomain(labels = taskLabels.map { it.toDomain() })
+        return taskDao.getAllTasksWithLabels().map { tasksWithLabels ->
+            tasksWithLabels.map { taskWithLabels ->
+                taskWithLabels.task.toDomain(
+                    labels = taskWithLabels.labels.map { it.toDomain() }
+                )
             }
         }
     }
     
+    /**
+     * Get tasks by section with their labels.
+     * 
+     * PERFORMANCE: Uses @Transaction and @Relation to eliminate N+1 query problem.
+     */
     fun getTasksBySection(section: TaskSection): Flow<List<Task>> {
-        return taskDao.getTasksBySection(section.name.lowercase()).map { entities ->
-            entities.map { entity ->
-                val taskLabels = labelDao.getTaskLabels(entity.id).first()
-                entity.toDomain(labels = taskLabels.map { it.toDomain() })
+        return taskDao.getTasksWithLabelsBySection(section.name.lowercase()).map { tasksWithLabels ->
+            tasksWithLabels.map { taskWithLabels ->
+                taskWithLabels.task.toDomain(
+                    labels = taskWithLabels.labels.map { it.toDomain() }
+                )
             }
         }
     }
     
+    /**
+     * Get tasks by column with their labels.
+     * 
+     * PERFORMANCE: Uses @Transaction and @Relation to eliminate N+1 query problem.
+     */
     fun getTasksByColumn(column: TaskColumn): Flow<List<Task>> {
-        return taskDao.getTasksByColumn(column.name.lowercase()).map { entities ->
-            entities.map { entity ->
-                val taskLabels = labelDao.getTaskLabels(entity.id).first()
-                entity.toDomain(labels = taskLabels.map { it.toDomain() })
+        return taskDao.getTasksWithLabelsByColumn(column.name.lowercase()).map { tasksWithLabels ->
+            tasksWithLabels.map { taskWithLabels ->
+                taskWithLabels.task.toDomain(
+                    labels = taskWithLabels.labels.map { it.toDomain() }
+                )
             }
         }
     }
     
+    /**
+     * Get a single task by ID with its labels.
+     * 
+     * PERFORMANCE: Uses @Transaction to fetch task and labels in single query.
+     */
     suspend fun getTaskById(taskId: String): Task? {
-        val entity = taskDao.getTaskById(taskId) ?: return null
-        val taskLabels = labelDao.getTaskLabels(taskId).first()
-        return entity.toDomain(labels = taskLabels.map { it.toDomain() })
+        return taskDao.getTaskWithLabelsById(taskId)?.let { taskWithLabels ->
+            taskWithLabels.task.toDomain(
+                labels = taskWithLabels.labels.map { it.toDomain() }
+            )
+        }
     }
     
+    /**
+     * Observe a task by ID with its labels.
+     * 
+     * PERFORMANCE: Uses @Transaction to fetch task and labels in single query.
+     */
     fun observeTaskById(taskId: String): Flow<Task?> {
-        return taskDao.observeTaskById(taskId).map { entity ->
-            entity?.let { taskEntity ->
-                val taskLabels = labelDao.getTaskLabels(taskId).first()
-                taskEntity.toDomain(labels = taskLabels.map { it.toDomain() })
+        return taskDao.observeTaskWithLabelsById(taskId).map { taskWithLabels ->
+            taskWithLabels?.let {
+                it.task.toDomain(labels = it.labels.map { label -> label.toDomain() })
             }
         }
     }

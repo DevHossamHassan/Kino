@@ -71,14 +71,13 @@ fun EditRecurringTaskScreen(
                     if (uiState.isValid && !uiState.isSaving) {
                         TextButton(
                             onClick = { 
-                                // TODO: Create UpdateRecurringTask action with current state
                                 viewModel.onAction(RecurringTaskAction.UpdateRecurringTask(
                                     id = uiState.recurringTask?.id ?: "",
                                     title = uiState.title,
                                     description = uiState.description,
                                     section = uiState.section,
                                     priority = uiState.priority,
-                                    labels = emptyList(), // TODO: Get from state
+                                    labels = uiState.labels,
                                     frequency = uiState.frequency,
                                     interval = uiState.interval,
                                     daysOfWeek = uiState.daysOfWeek,
@@ -531,4 +530,3 @@ private fun DatePickerDialog(
         }
     )
 }
-

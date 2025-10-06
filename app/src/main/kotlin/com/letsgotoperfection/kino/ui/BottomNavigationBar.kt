@@ -5,6 +5,10 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.outlined.Dashboard
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Photo
+import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -54,7 +58,12 @@ fun BottomNavigationBar(
             },
             icon = { 
                 Icon(
-                    imageVector = Icons.Default.Dashboard,
+                    imageVector = if (currentRoute?.startsWith("kanban") == true || 
+                                     currentRoute?.startsWith("task") == true) {
+                        Icons.Filled.Dashboard
+                    } else {
+                        Icons.Outlined.Dashboard
+                    },
                     contentDescription = "Kanban Board"
                 ) 
             },
@@ -76,7 +85,11 @@ fun BottomNavigationBar(
             },
             icon = { 
                 Icon(
-                    imageVector = Icons.Default.Folder,
+                    imageVector = if (currentRoute?.startsWith("note") == true) {
+                        Icons.Filled.Folder
+                    } else {
+                        Icons.Outlined.Folder
+                    },
                     contentDescription = "Notes"
                 ) 
             },
@@ -98,7 +111,11 @@ fun BottomNavigationBar(
             },
             icon = { 
                 Icon(
-                    imageVector = Icons.Default.Photo,
+                    imageVector = if (currentRoute?.startsWith("media") == true) {
+                        Icons.Filled.Photo
+                    } else {
+                        Icons.Outlined.Photo
+                    },
                     contentDescription = "Media"
                 ) 
             },
@@ -120,7 +137,11 @@ fun BottomNavigationBar(
             },
             icon = { 
                 Icon(
-                    imageVector = Icons.Default.Repeat,
+                    imageVector = if (currentRoute?.startsWith("recurring_tasks") == true) {
+                        Icons.Filled.Repeat
+                    } else {
+                        Icons.Outlined.Repeat
+                    },
                     contentDescription = "Recurring Tasks"
                 ) 
             },

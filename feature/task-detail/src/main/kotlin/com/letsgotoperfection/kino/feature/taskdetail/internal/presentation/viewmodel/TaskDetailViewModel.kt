@@ -5,7 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.letsgotoperfection.kino.core.common.Result
+import com.letsgotoperfection.kino.core.common.Result as CommonResult
 import com.letsgotoperfection.kino.core.model.Priority
 import com.letsgotoperfection.kino.core.resources.R
 import com.letsgotoperfection.kino.feature.media.api.MediaApi
@@ -249,9 +249,16 @@ class TaskDetailViewModel @Inject constructor(
                 sourceId = taskId
             )
 
-            val successCount = results.count { it is Result.Success<*> }
-            val errorMessages = results
-                .filterIsInstance<Result.Error>()
+            val normalizedResults: List<CommonResult<Any?>> = results.map { result ->
+                result.fold(
+                    onSuccess = { media -> CommonResult.Success(media) },
+                    onFailure = { throwable -> CommonResult.Error(throwable) }
+                )
+            }
+
+            val successCount = normalizedResults.count { it is CommonResult.Success<*> }
+            val errorMessages = normalizedResults
+                .filterIsInstance<CommonResult.Error>()
                 .mapNotNull { it.exception.message }
 
             if (successCount > 0) {

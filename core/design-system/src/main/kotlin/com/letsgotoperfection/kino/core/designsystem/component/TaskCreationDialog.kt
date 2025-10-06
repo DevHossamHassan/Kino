@@ -49,15 +49,16 @@ fun TaskCreationDialog(
     var dueDate by remember { mutableStateOf<LocalDateTime?>(null) }
     var selectedLabels by remember { mutableStateOf<List<Label>>(emptyList()) }
     var newLabelText by remember { mutableStateOf("") }
-    var showAddLabel by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var isSubmitting by remember { mutableStateOf(false) }
 
-    // Track if form was just submitted to reset on next open
-    var wasSubmitted by remember { mutableStateOf(false) }
-    
-    // Reset form when dialog is dismissed after successful submission
+    // Form validation
+    val isTitleValid = title.trim().isNotBlank()
+    val isFormValid = isTitleValid && !isSubmitting
+
+    // Reset form when dialog is dismissed
     LaunchedEffect(isVisible) {
-        if (!isVisible && wasSubmitted) {
+        if (!isVisible) {
             title = ""
             description = ""
             selectedSection = TaskSection.PERSONAL
@@ -66,8 +67,7 @@ fun TaskCreationDialog(
             dueDate = null
             selectedLabels = emptyList()
             newLabelText = ""
-            showAddLabel = false
-            wasSubmitted = false
+            isSubmitting = false
         }
     }
 
@@ -84,23 +84,33 @@ fun TaskCreationDialog(
     }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
-        modifier = modifier.heightIn(max = 600.dp),
+        onDismissRequest = if (isSubmitting) { {} } else onDismiss,
+        modifier = modifier.heightIn(max = 700.dp),
         title = {
-            Text(
-                text = "Create New Task",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Create New Task",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         },
         text = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp)
+                    .padding(vertical = 8.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Title field
                 OutlinedTextField(
@@ -109,14 +119,17 @@ fun TaskCreationDialog(
                     label = { Text("Task Title *") },
                     placeholder = { Text("Enter task title") },
                     singleLine = true,
-                    isError = title.isBlank(),
+                    isError = title.isNotBlank() && !isTitleValid,
                     supportingText = if (title.isBlank()) {
                         { Text("Title is required", color = MaterialTheme.colorScheme.error) }
+                    } else if (!isTitleValid) {
+                        { Text("Please enter a valid title", color = MaterialTheme.colorScheme.error) }
                     } else null,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Next
                     ),
+                    enabled = !isSubmitting,
                     modifier = Modifier
                         .fillMaxWidth()
                         .semantics { contentDescription = context.getString(R.string.cd_task_title_input) }
@@ -383,7 +396,8 @@ fun TaskCreationDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (title.isNotBlank()) {
+                    if (isFormValid) {
+                        isSubmitting = true
                         val taskRequest = TaskCreationRequest(
                             title = title.trim(),
                             description = description.trim(),
@@ -394,18 +408,36 @@ fun TaskCreationDialog(
                             labels = selectedLabels
                         )
                         onTaskCreated(taskRequest)
-                        wasSubmitted = true
+                        
+                        // Fixed: Reset form after successful submission
+                        title = ""
+                        description = ""
+                        selectedSection = TaskSection.PERSONAL
+                        selectedColumn = TaskColumn.TODO_THIS_WEEK
+                        selectedPriority = Priority.MEDIUM
+                        dueDate = null
+                        selectedLabels = emptyList()
+                        newLabelText = ""
+                        isSubmitting = false
                     }
                 },
-                enabled = title.isNotBlank(),
+                enabled = isFormValid,
                 modifier = Modifier.semantics { contentDescription = context.getString(R.string.cd_create_task_button) }
             ) {
-                Text("Create Task")
+                if (isSubmitting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text(if (isSubmitting) "Creating..." else "Create Task")
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismiss,
+                enabled = !isSubmitting,
                 modifier = Modifier.semantics { contentDescription = context.getString(R.string.cd_cancel_task_creation) }
             ) {
                 Text("Cancel")

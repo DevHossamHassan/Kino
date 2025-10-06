@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -60,7 +61,8 @@ class NoteEditorViewModel @Inject constructor(
 
         currentNoteId?.let { id ->
             // Observe note reactively to auto-update UI on changes
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            // Fixed: Thread-safe state update
+            _uiState.update { it.copy(isLoading = true) }
             viewModelScope.launch(ioDispatcher) {
                 noteDao.observeNoteById(id).collectLatest { entity ->
                     if (entity == null) {
@@ -68,31 +70,37 @@ class NoteEditorViewModel @Inject constructor(
                         _events.send(NoteEditorEvent.Finish)
                     } else {
                         originalCreatedAt = entity.createdAt
-                        _uiState.value = NoteEditorUiState(
-                            noteId = entity.id,
-                            title = entity.title,
-                            content = TextFieldValue(entity.content),
-                            isPinned = entity.isPinned,
-                            createdAt = entity.createdAt.toLocalDateTime(),
-                            updatedAt = entity.updatedAt.toLocalDateTime(),
-                            isLoading = false
-                        )
+                        // Fixed: Thread-safe state update
+                        _uiState.update { 
+                            NoteEditorUiState(
+                                noteId = entity.id,
+                                title = entity.title,
+                                content = TextFieldValue(entity.content),
+                                isPinned = entity.isPinned,
+                                createdAt = entity.createdAt.toLocalDateTime(),
+                                updatedAt = entity.updatedAt.toLocalDateTime(),
+                                isLoading = false
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
+    /**
+     * Fixed: Thread-safe state updates for all UI callbacks
+     */
     fun onTitleChange(value: String) {
-        _uiState.value = _uiState.value.copy(title = value)
+        _uiState.update { it.copy(title = value) }
     }
 
     fun onContentChange(value: TextFieldValue) {
-        _uiState.value = _uiState.value.copy(content = value)
+        _uiState.update { it.copy(content = value) }
     }
 
     fun onTogglePinned() {
-        _uiState.value = _uiState.value.copy(isPinned = !_uiState.value.isPinned)
+        _uiState.update { it.copy(isPinned = !it.isPinned) }
     }
 
     fun onAttachmentAdded(metadata: AttachmentMetadata) {
@@ -131,13 +139,18 @@ class NoteEditorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Saves the current note to the database
+     * Fixed: Used .update{} instead of direct .value assignment to prevent race conditions
+     */
     fun saveNote() {
         val stateSnapshot = _uiState.value
         if (!stateSnapshot.canSave || stateSnapshot.isSaving) return
 
         viewModelScope.launch(ioDispatcher) {
             try {
-                _uiState.value = stateSnapshot.copy(isSaving = true, errorMessage = null)
+                // Fixed: Use .update{} for thread-safe state mutations
+                _uiState.update { it.copy(isSaving = true, errorMessage = null) }
 
                 val now = System.currentTimeMillis()
                 val noteId = currentNoteId ?: UUID.randomUUID().toString()
@@ -162,16 +175,20 @@ class NoteEditorViewModel @Inject constructor(
                 persistPendingAttachments(noteId)
                 updateAttachmentCount(noteId)
 
-                _uiState.value = _uiState.value.copy(
-                    noteId = noteId,
-                    createdAt = entity.createdAt.toLocalDateTime(),
-                    updatedAt = entity.updatedAt.toLocalDateTime(),
-                    isSaving = false
-                )
+                // Fixed: Use .update{} instead of .value for thread safety
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        noteId = noteId,
+                        createdAt = entity.createdAt.toLocalDateTime(),
+                        updatedAt = entity.updatedAt.toLocalDateTime(),
+                        isSaving = false
+                    )
+                }
 
                 _events.send(NoteEditorEvent.Saved(noteId))
             } catch (throwable: Throwable) {
-                _uiState.value = _uiState.value.copy(isSaving = false, errorMessage = throwable.message)
+                // Fixed: Thread-safe error state update
+                _uiState.update { it.copy(isSaving = false, errorMessage = throwable.message) }
                 _events.send(NoteEditorEvent.ShowMessage(throwable.message ?: "Failed to save note"))
             }
         }
@@ -190,16 +207,25 @@ class NoteEditorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Observes attachment state changes and updates UI
+     * Fixed: Used .update{} instead of direct .value assignment to prevent race conditions
+     */
     private fun observeAttachmentUiState() {
         viewModelScope.launch {
             combine(persistedAttachments, pendingAttachments) { persisted, pending ->
                 (persisted + pending).sortedByDescending { it.addedAt }
             }.collect { attachments ->
-                _uiState.value = _uiState.value.copy(attachments = attachments)
+                // Fixed: Thread-safe state update
+                _uiState.update { it.copy(attachments = attachments) }
             }
         }
     }
 
+    /**
+     * Loads an existing note (legacy method, now replaced by reactive observation)
+     * Fixed: Thread-safe state updates
+     */
     private suspend fun loadExistingNote(noteId: String) {
         // Deprecated by reactive observation; kept for compatibility if needed elsewhere
         val entity = noteDao.getNoteById(noteId)
@@ -210,15 +236,18 @@ class NoteEditorViewModel @Inject constructor(
         }
 
         originalCreatedAt = entity.createdAt
-        _uiState.value = NoteEditorUiState(
-            noteId = entity.id,
-            title = entity.title,
-            content = TextFieldValue(entity.content),
-            isPinned = entity.isPinned,
-            createdAt = entity.createdAt.toLocalDateTime(),
-            updatedAt = entity.updatedAt.toLocalDateTime(),
-            isLoading = false
-        )
+        // Fixed: Thread-safe state update
+        _uiState.update { 
+            NoteEditorUiState(
+                noteId = entity.id,
+                title = entity.title,
+                content = TextFieldValue(entity.content),
+                isPinned = entity.isPinned,
+                createdAt = entity.createdAt.toLocalDateTime(),
+                updatedAt = entity.updatedAt.toLocalDateTime(),
+                isLoading = false
+            )
+        }
     }
 
     private suspend fun persistPendingAttachments(noteId: String) {

@@ -2,6 +2,7 @@ package com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.letsgotoperfection.kino.core.model.Label
 import com.letsgotoperfection.kino.feature.recurringtasks.api.RecurringTasksApi
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.EditRecurringTaskUiState
@@ -40,11 +41,13 @@ class EditRecurringTaskViewModel @Inject constructor(
                             description = recurringTask.description,
                             section = recurringTask.section,
                             priority = recurringTask.priority,
+                            labels = recurringTask.labels,
                             frequency = recurringTask.recurrenceRule.frequency,
                             interval = recurringTask.recurrenceRule.interval,
                             daysOfWeek = recurringTask.recurrenceRule.daysOfWeek,
                             dayOfMonth = recurringTask.recurrenceRule.dayOfMonth,
                             monthOfYear = recurringTask.recurrenceRule.monthOfYear,
+                            timeOfDay = recurringTask.recurrenceRule.timeOfDay,
                             startDate = recurringTask.startDate,
                             endDate = recurringTask.endDate,
                             isActive = recurringTask.isActive,
@@ -69,7 +72,6 @@ class EditRecurringTaskViewModel @Inject constructor(
                 loadRecurringTask(action.id)
             }
             is RecurringTaskAction.UpdateRecurringTask -> {
-                // Handle update action
                 saveRecurringTask()
             }
             else -> {
@@ -94,13 +96,17 @@ class EditRecurringTaskViewModel @Inject constructor(
     fun updatePriority(priority: com.letsgotoperfection.kino.core.model.Priority) {
         _uiState.update { it.copy(priority = priority) }
     }
+
+    fun updateLabels(labels: List<Label>) {
+        _uiState.update { it.copy(labels = labels) }
+    }
     
     fun updateFrequency(frequency: com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency) {
         _uiState.update { it.copy(frequency = frequency) }
     }
     
     fun updateInterval(interval: Int) {
-        _uiState.update { it.copy(interval = interval) }
+        _uiState.update { it.copy(interval = maxOf(1, interval)) }
     }
     
     fun updateTimeOfDay(timeOfDay: java.time.LocalTime) {
@@ -128,22 +134,24 @@ class EditRecurringTaskViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
             
-            val updatedTask = recurringTask.copy(
-                title = currentState.title,
-                description = currentState.description,
-                section = currentState.section,
-                priority = currentState.priority,
-                startDate = currentState.startDate,
-                endDate = currentState.endDate,
-                isActive = currentState.isActive,
-                recurrenceRule = recurringTask.recurrenceRule.copy(
-                    frequency = currentState.frequency,
-                    interval = currentState.interval,
-                    daysOfWeek = currentState.daysOfWeek,
-                    dayOfMonth = currentState.dayOfMonth,
-                    monthOfYear = currentState.monthOfYear
-                )
+        val updatedTask = recurringTask.copy(
+            title = currentState.title,
+            description = currentState.description,
+            section = currentState.section,
+            priority = currentState.priority,
+            labels = currentState.labels,
+            startDate = currentState.startDate,
+            endDate = currentState.endDate,
+            isActive = currentState.isActive,
+            recurrenceRule = recurringTask.recurrenceRule.copy(
+                frequency = currentState.frequency,
+                interval = currentState.interval,
+                daysOfWeek = currentState.daysOfWeek,
+                dayOfMonth = currentState.dayOfMonth,
+                monthOfYear = currentState.monthOfYear,
+                timeOfDay = currentState.timeOfDay
             )
+        )
             
             recurringTasksApi.updateRecurringTask(updatedTask)
                 .onSuccess {

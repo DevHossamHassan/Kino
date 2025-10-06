@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.letsgotoperfection.kino.core.designsystem.component.EmptyStates
 
 /**
  * Notes List Screen - Main notes interface
@@ -70,29 +71,13 @@ fun NotesListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // TODO: Implement actual notes list UI
-                Card(
-                    modifier = Modifier.fillMaxSize(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Notes List\n\nTODO: Implement Notes UI\n\n- Rich text notes\n- Tags and categories\n- Search and filter",
-                            style = MaterialTheme.typography.headlineSmall,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
+            EmptyStates.NotesEmpty(
+                onCreateNote = {
+                    // Future: Add navigation to note editor when integrated
+                    android.util.Log.d("NotesListScreen", "Create note requested")
+                },
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

@@ -95,9 +95,8 @@ class GenerateInstancesUseCase @Inject constructor(
         recurringTask: RecurringTask,
         scheduledDate: LocalDate
     ) {
-        // TODO: Implement task creation through proper API
-        // For now, this is a placeholder that will be implemented later
-        // when the KanbanApi integration is properly set up
+        repository.createTaskInstance(recurringTask, scheduledDate)
+            .getOrElse { throw it }
     }
     
     private fun minOfNotNull(vararg values: LocalDate): LocalDate {

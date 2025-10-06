@@ -1,7 +1,10 @@
 package com.letsgotoperfection.kino.feature.notifications.internal.api
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import com.letsgotoperfection.kino.feature.notifications.api.NotificationApi
 import com.letsgotoperfection.kino.feature.notifications.internal.domain.model.NotificationCategory
@@ -58,8 +61,18 @@ class NotificationApiImpl @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .apply {
-                deepLink?.let { 
-                    // TODO: Add PendingIntent for deep link
+                deepLink?.let { link ->
+                    val deepLinkIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link)).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    }
+                    val requestCode = link.hashCode() and 0x7fffffff
+                    val pendingIntent = PendingIntent.getActivity(
+                        context,
+                        requestCode,
+                        deepLinkIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    setContentIntent(pendingIntent)
                 }
             }
             .build()

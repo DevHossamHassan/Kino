@@ -10,6 +10,18 @@ import com.letsgotoperfection.kino.core.database.dao.*
 import com.letsgotoperfection.kino.core.database.entity.*
 // Media entities will be added when media feature is implemented
 
+/**
+ * Kino Database with performance optimizations.
+ * 
+ * Version 5 improvements:
+ * - Added orderPosition field for drag-to-reorder functionality
+ * - Added index on (column, orderPosition) for efficient ordering queries
+ * 
+ * Version 4 improvements:
+ * - Added indices on all frequently queried columns
+ * - Added foreign key constraints with CASCADE delete
+ * - Optimized entity definitions for better query performance
+ */
 @Database(
     entities = [
         TaskEntity::class,
@@ -19,10 +31,10 @@ import com.letsgotoperfection.kino.core.database.entity.*
         NoteLabelCrossRef::class,
         AttachmentEntity::class,
         NoteEntity::class,
-            RecurringTaskEntity::class,
-            SectionEntity::class
+        RecurringTaskEntity::class,
+        SectionEntity::class
     ],
-        version = 3,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -34,25 +46,6 @@ abstract class KinoDatabase : RoomDatabase() {
     abstract fun attachmentDao(): AttachmentDao
     abstract fun noteDao(): NoteDao
     abstract fun recurringTaskDao(): RecurringTaskDao
-        abstract fun sectionDao(): SectionDao
+    abstract fun sectionDao(): SectionDao
     // Media DAO will be added when media feature is implemented
-    
-    companion object {
-        @Volatile
-        private var INSTANCE: KinoDatabase? = null
-        
-        fun getDatabase(context: Context): KinoDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    KinoDatabase::class.java,
-                    "kino_database"
-                )
-                .fallbackToDestructiveMigration()
-                .build()
-                INSTANCE = instance
-                instance
-            }
-        }
-    }
 }

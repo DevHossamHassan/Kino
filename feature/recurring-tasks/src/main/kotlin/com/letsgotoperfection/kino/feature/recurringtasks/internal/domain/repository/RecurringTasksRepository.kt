@@ -57,4 +57,12 @@ interface RecurringTasksRepository {
      * Get recurring tasks that need instance generation
      */
     suspend fun getRecurringTasksNeedingGeneration(): List<RecurringTask>
+
+    /**
+     * Create a concrete task instance for the provided recurring task on the given date.
+     */
+    suspend fun createTaskInstance(
+        recurringTask: RecurringTask,
+        scheduledDate: java.time.LocalDate
+    ): Result<Unit>
 }

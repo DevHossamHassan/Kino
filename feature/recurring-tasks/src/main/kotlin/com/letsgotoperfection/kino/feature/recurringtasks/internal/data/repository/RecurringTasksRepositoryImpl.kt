@@ -2,7 +2,8 @@ package com.letsgotoperfection.kino.feature.recurringtasks.internal.data.reposit
 
 import com.letsgotoperfection.kino.core.database.dao.RecurringTaskDao
 import com.letsgotoperfection.kino.core.database.dao.TaskDao
-import com.letsgotoperfection.kino.core.model.Label
+import com.letsgotoperfection.kino.core.database.entity.TaskEntity
+import com.letsgotoperfection.kino.core.model.TaskColumn
 import com.letsgotoperfection.kino.feature.recurringtasks.api.RecurringTaskNotFoundException
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.data.mapper.toDomain
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.data.mapper.toEntity
@@ -11,6 +12,10 @@ import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.reposi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -91,5 +96,37 @@ class RecurringTasksRepositoryImpl @Inject constructor(
         val currentDate = LocalDate.now().toEpochDay()
         return recurringTaskDao.getRecurringTasksNeedingGeneration(currentDate)
             .map { it.toDomain() }
+    }
+
+    override suspend fun createTaskInstance(
+        recurringTask: RecurringTask,
+        scheduledDate: LocalDate
+    ): Result<Unit> {
+        return try {
+            val scheduledDateTime = scheduledDate.atTime(recurringTask.recurrenceRule.timeOfDay)
+            val now = LocalDateTime.now()
+            val zone = ZoneId.systemDefault()
+            val formatter = DateTimeFormatter.ofPattern("MMM dd")
+            val taskIdSeed = "${recurringTask.id}_${scheduledDate.toEpochDay()}"
+            val taskEntity = TaskEntity(
+                id = UUID.nameUUIDFromBytes(taskIdSeed.toByteArray()).toString(),
+                title = "${recurringTask.title} - ${scheduledDate.format(formatter)}",
+                description = recurringTask.description,
+                section = recurringTask.section.name.lowercase(),
+                column = TaskColumn.TODO_THIS_WEEK.name.lowercase(),
+                priority = recurringTask.priority.name.lowercase(),
+                createdAt = now.atZone(zone).toInstant().toEpochMilli(),
+                updatedAt = now.atZone(zone).toInstant().toEpochMilli(),
+                dueDate = scheduledDateTime.atZone(zone).toInstant().toEpochMilli(),
+                progress = 0,
+                recurringTaskId = recurringTask.id,
+                scheduledDate = scheduledDate.toEpochDay()
+            )
+
+            taskDao.upsertTask(taskEntity)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

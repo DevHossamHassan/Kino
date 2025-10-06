@@ -71,6 +71,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.letsgotoperfection.kino.core.designsystem.component.ErrorState
+import com.letsgotoperfection.kino.core.designsystem.component.LoadingState
 import com.letsgotoperfection.kino.core.model.Priority
 import com.letsgotoperfection.kino.core.model.TaskColumn
 import com.letsgotoperfection.kino.core.model.TaskSection
@@ -96,6 +98,20 @@ fun TaskDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showAddChecklistDialog by remember { mutableStateOf(false) }
     var newChecklistText by remember { mutableStateOf("") }
+    
+    // Fixed: Add local state for edit mode values
+    var editTitle by remember { mutableStateOf("") }
+    var editDescription by remember { mutableStateOf("") }
+    
+    // Fixed: Initialize edit values when task loads or edit mode changes
+    LaunchedEffect(uiState.taskDetail, uiState.editMode) {
+        uiState.taskDetail?.let { task ->
+            if (uiState.editMode) {
+                editTitle = task.title
+                editDescription = task.description ?: ""
+            }
+        }
+    }
 
     val mediaPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
@@ -142,7 +158,18 @@ fun TaskDetailScreen(
                 actions = {
                     if (uiState.taskDetail != null) {
                         IconButton(
-                            onClick = { viewModel.onAction(TaskDetailAction.ToggleEditMode) }
+                            onClick = {
+                                if (uiState.editMode) {
+                                    // Fixed: Save changes before toggling edit mode
+                                    viewModel.onAction(
+                                        TaskDetailAction.UpdateTask(
+                                            title = editTitle,
+                                            description = editDescription
+                                        )
+                                    )
+                                }
+                                viewModel.onAction(TaskDetailAction.ToggleEditMode)
+                            }
                         ) {
                             Icon(
                                 if (uiState.editMode) Icons.Default.Check else Icons.Default.Edit,
@@ -176,40 +203,22 @@ fun TaskDetailScreen(
     ) { innerPadding ->
         when {
             uiState.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                LoadingState(
+                    message = "Loading task details...",
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
             uiState.error != null -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        Icons.Default.Error,
-                        contentDescription = "Error",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Error: ${uiState.error}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
+                ErrorState(
+                    title = "Failed to load task",
+                    message = uiState.error ?: "An unexpected error occurred",
+                    onRetry = { viewModel.onAction(TaskDetailAction.LoadTask) },
+                    onDismiss = onNavigateBack,
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
             uiState.taskDetail != null -> {
-                val task = uiState.taskDetail!!
+                val task = checkNotNull(uiState.taskDetail)
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -220,13 +229,23 @@ fun TaskDetailScreen(
                     // Task Header Card
                     item {
                         TaskHeaderCard(
-                            task = task,
+                            task = if (uiState.editMode) {
+                                // Fixed: Use local edit state in edit mode
+                                task.copy(
+                                    title = editTitle,
+                                    description = editDescription
+                                )
+                            } else {
+                                task
+                            },
                             editMode = uiState.editMode,
                             onTitleChange = { newTitle ->
-                                // Update task title in edit mode
+                                // Fixed: Update local edit state
+                                editTitle = newTitle
                             },
                             onDescriptionChange = { newDescription ->
-                                // Update task description in edit mode
+                                // Fixed: Update local edit state
+                                editDescription = newDescription
                             }
                         )
                     }

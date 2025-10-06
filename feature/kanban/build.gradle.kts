@@ -46,7 +46,8 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:model"))
     implementation(project(":core:database"))
-    
+    implementation(project(":core:resources"))
+
     // Navigation (for deep links) - REMOVED to avoid circular dependency
     // Navigation should only be used in the app module
     
