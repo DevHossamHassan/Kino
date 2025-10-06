@@ -302,6 +302,7 @@
     <string name="cd_search_notes">Search notes</string>
     <string name="cd_search_media">Search media</string>
     <string name="cd_clear_search">Clear search</string>
+    <string name="cd_close_search">Close search</string>
     <string name="cd_filter">Filter</string>
     <string name="cd_clear_filter">Clear filter</string>
     <string name="cd_sort">Sort</string>

@@ -139,6 +139,7 @@ fun KanbanBoardScreen(
 
     // State for search and filter
     var isFilterSheetOpen by remember { mutableStateOf(false) }
+    var isSearchExpanded by remember { mutableStateOf(false) }
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val filters by viewModel.filterCriteria.collectAsStateWithLifecycle()
     
@@ -211,11 +212,38 @@ fun KanbanBoardScreen(
                             }
 
                             // Actions section
+                            // Search icon - toggles between Search and Close
+                            IconButton(onClick = { 
+                                isSearchExpanded = !isSearchExpanded
+                                if (!isSearchExpanded) {
+                                    viewModel.onSearchQueryChange("")
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = if (isSearchExpanded) {
+                                        CustomIcons.Close
+                                    } else {
+                                        CustomIcons.Search
+                                    },
+                                    contentDescription = if (isSearchExpanded) {
+                                        stringResource(R.string.cd_close_search)
+                                    } else {
+                                        stringResource(R.string.cd_search)
+                                    },
+                                    tint = if (isSearchExpanded) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    }
+                                )
+                            }
+                            
+                            // Filter icon with badge
                             Box(contentAlignment = Alignment.Center) {
                                 IconButton(onClick = { isFilterSheetOpen = true }) {
                                     Icon(
                                         CustomIcons.FilterList,
-                                        contentDescription = "Filter tasks",
+                                        contentDescription = stringResource(R.string.cd_filter),
                                         tint = if (filters.isActive) {
                                             MaterialTheme.colorScheme.primary
                                         } else {
@@ -245,14 +273,20 @@ fun KanbanBoardScreen(
                             }
                         }
                     }
-                    // Search Bar
-                    SearchBar(
-                        searchQuery = searchQuery,
-                        onSearchQueryChange = viewModel::onSearchQueryChange,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
+                    // Search Bar - collapsible
+                    AnimatedVisibility(
+                        visible = isSearchExpanded,
+                        enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()
+                    ) {
+                        SearchBar(
+                            searchQuery = searchQuery,
+                            onSearchQueryChange = viewModel::onSearchQueryChange,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
                     
                     // Active Filters Chips
                     AnimatedVisibility(

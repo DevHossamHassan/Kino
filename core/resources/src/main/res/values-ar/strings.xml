@@ -138,6 +138,7 @@
     <string name="cd_search_notes">البحث في الملاحظات</string>
     <string name="cd_search_media">البحث في الوسائط</string>
     <string name="cd_clear_search">مسح البحث</string>
+    <string name="cd_close_search">إغلاق البحث</string>
     <string name="cd_filter">تصفية</string>
     <string name="cd_clear_filter">مسح التصفية</string>
     <string name="cd_sort">ترتيب</string>
