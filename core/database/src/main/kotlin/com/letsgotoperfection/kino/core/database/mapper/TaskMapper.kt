@@ -36,6 +36,7 @@ fun TaskEntity.toDomain(
         updatedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(updatedAt), ZoneId.systemDefault()),
         dueDate = dueDate?.let { LocalDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault()) },
         progress = progress,
+        orderPosition = orderPosition,
         labels = labels,
         checklist = checklist,
         attachments = attachments
@@ -55,7 +56,8 @@ fun Task.toEntity(): TaskEntity {
         createdAt = createdAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
         updatedAt = updatedAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
         dueDate = dueDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-        progress = progress
+        progress = progress,
+        orderPosition = orderPosition
     )
 }
 

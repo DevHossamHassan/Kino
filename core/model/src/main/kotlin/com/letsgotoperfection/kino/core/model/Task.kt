@@ -12,6 +12,7 @@ data class Task(
     val updatedAt: LocalDateTime,
     val dueDate: LocalDateTime?,
     val progress: Int = 0,
+    val orderPosition: Int = 0,
     val labels: List<Label> = emptyList(),
     val checklist: List<ChecklistItem> = emptyList(),
     val attachments: List<Attachment> = emptyList()
