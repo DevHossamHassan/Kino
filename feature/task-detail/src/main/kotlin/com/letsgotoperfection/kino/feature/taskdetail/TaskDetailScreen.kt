@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +28,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
@@ -39,7 +42,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,8 +61,11 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -67,6 +78,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -79,6 +91,10 @@ import com.letsgotoperfection.kino.core.model.TaskSection
 import com.letsgotoperfection.kino.feature.taskdetail.internal.presentation.state.TaskDetailAction
 import com.letsgotoperfection.kino.feature.taskdetail.internal.presentation.state.TaskDetailEvent
 import com.letsgotoperfection.kino.feature.taskdetail.internal.presentation.viewmodel.TaskDetailViewModel
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
@@ -98,20 +114,7 @@ fun TaskDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showAddChecklistDialog by remember { mutableStateOf(false) }
     var newChecklistText by remember { mutableStateOf("") }
-    
-    // Fixed: Add local state for edit mode values
-    var editTitle by remember { mutableStateOf("") }
-    var editDescription by remember { mutableStateOf("") }
-    
-    // Fixed: Initialize edit values when task loads or edit mode changes
-    LaunchedEffect(uiState.taskDetail, uiState.editMode) {
-        uiState.taskDetail?.let { task ->
-            if (uiState.editMode) {
-                editTitle = task.title
-                editDescription = task.description ?: ""
-            }
-        }
-    }
+    val context = LocalContext.current
 
     val mediaPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
@@ -144,11 +147,14 @@ fun TaskDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
-                    Text(
-                        text = uiState.taskDetail?.title ?: "Task Details",
-                        maxLines = 1
-                    )
+                title = {
+                    val toolbarTitle = when {
+                        uiState.editMode -> uiState.editForm?.title?.takeIf { it.isNotBlank() }
+                            ?: uiState.taskDetail?.title
+                            ?: "Task Details"
+                        else -> uiState.taskDetail?.title ?: "Task Details"
+                    }
+                    Text(text = toolbarTitle, maxLines = 1)
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -157,27 +163,39 @@ fun TaskDetailScreen(
                 },
                 actions = {
                     if (uiState.taskDetail != null) {
-                        IconButton(
-                            onClick = {
-                                if (uiState.editMode) {
-                                    // Fixed: Save changes before toggling edit mode
-                                    viewModel.onAction(
-                                        TaskDetailAction.UpdateTask(
-                                            title = editTitle,
-                                            description = editDescription
+                        val editForm = uiState.editForm
+                        if (uiState.editMode) {
+                            IconButton(
+                                onClick = {
+                                    editForm?.let {
+                                        viewModel.onAction(
+                                            TaskDetailAction.UpdateTask(
+                                                title = it.title,
+                                                description = it.description,
+                                                priority = it.priority,
+                                                dueDate = it.dueDate,
+                                                section = it.section,
+                                                column = it.column,
+                                                dueDateExplicit = true
+                                            )
                                         )
-                                    )
-                                }
-                                viewModel.onAction(TaskDetailAction.ToggleEditMode)
+                                    }
+                                },
+                                enabled = editForm != null
+                            ) {
+                                Icon(Icons.Default.Check, contentDescription = "Save")
                             }
-                        ) {
-                            Icon(
-                                if (uiState.editMode) Icons.Default.Check else Icons.Default.Edit,
-                                contentDescription = if (uiState.editMode) "Save" else "Edit"
-                            )
+                            IconButton(onClick = { viewModel.onAction(TaskDetailAction.ToggleEditMode) }) {
+                                Icon(Icons.Default.Close, contentDescription = "Cancel editing")
+                            }
+                        } else {
+                            IconButton(onClick = { viewModel.onAction(TaskDetailAction.ToggleEditMode) }) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit")
+                            }
                         }
                         IconButton(
-                            onClick = { viewModel.onAction(TaskDetailAction.ShowDeleteDialog) }
+                            onClick = { viewModel.onAction(TaskDetailAction.ShowDeleteDialog) },
+                            enabled = !uiState.editMode
                         ) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }
@@ -226,46 +244,82 @@ fun TaskDetailScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    val editForm = uiState.editForm
+                    val currentTitle = if (uiState.editMode) {
+                        editForm?.title ?: task.title
+                    } else {
+                        task.title
+                    }
+                    val currentDescription = if (uiState.editMode) {
+                        editForm?.description ?: task.description
+                    } else {
+                        task.description
+                    }
+                    val currentPriority = if (uiState.editMode) {
+                        editForm?.priority ?: task.priority
+                    } else {
+                        task.priority
+                    }
+                    val currentSection = if (uiState.editMode) {
+                        editForm?.section ?: task.section
+                    } else {
+                        task.section
+                    }
+                    val currentColumn = if (uiState.editMode) {
+                        editForm?.column ?: task.column
+                    } else {
+                        task.column
+                    }
+                    val currentDueDate = if (uiState.editMode) {
+                        editForm?.dueDate ?: task.dueDate
+                    } else {
+                        task.dueDate
+                    }
+
                     // Task Header Card
                     item {
                         TaskHeaderCard(
-                            task = if (uiState.editMode) {
-                                // Fixed: Use local edit state in edit mode
-                                task.copy(
-                                    title = editTitle,
-                                    description = editDescription
-                                )
-                            } else {
-                                task
-                            },
                             editMode = uiState.editMode,
+                            title = currentTitle,
+                            description = currentDescription,
                             onTitleChange = { newTitle ->
-                                // Fixed: Update local edit state
-                                editTitle = newTitle
+                                viewModel.onAction(TaskDetailAction.EditTitle(newTitle))
                             },
                             onDescriptionChange = { newDescription ->
-                                // Fixed: Update local edit state
-                                editDescription = newDescription
+                                viewModel.onAction(TaskDetailAction.EditDescription(newDescription))
                             }
                         )
                     }
 
                     // Priority and Status Row
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            PriorityChip(priority = task.priority)
-                            SectionChip(section = task.section)
-                            ColumnChip(column = task.column)
-                        }
+                        TaskMetadataSection(
+                            editMode = uiState.editMode,
+                            priority = currentPriority,
+                            section = currentSection,
+                            column = currentColumn,
+                            onPriorityChange = { viewModel.onAction(TaskDetailAction.EditPriority(it)) },
+                            onSectionChange = { viewModel.onAction(TaskDetailAction.EditSection(it)) },
+                            onColumnChange = { viewModel.onAction(TaskDetailAction.EditColumn(it)) }
+                        )
                     }
 
                     // Due Date Card
-                    task.dueDate?.let { dueDate ->
+                    if (uiState.editMode) {
                         item {
-                            DueDateCard(dueDate = dueDate)
+                            DueDateEditor(
+                                dueDate = currentDueDate,
+                                onRequestChange = { newDueDate ->
+                                    viewModel.onAction(TaskDetailAction.EditDueDate(newDueDate))
+                                },
+                                onClearDueDate = {
+                                    viewModel.onAction(TaskDetailAction.EditDueDate(null))
+                                }
+                            )
+                        }
+                    } else {
+                        currentDueDate?.let { dueDate ->
+                            item { DueDateCard(dueDate = dueDate) }
                         }
                     }
 
@@ -413,13 +467,20 @@ fun TaskDetailScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TaskHeaderCard(
-    task: com.letsgotoperfection.kino.core.model.Task,
+    title: String,
+    description: String,
     editMode: Boolean,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit
 ) {
+    var showRichTextEditor by remember { mutableStateOf(false) }
+    var descriptionTextFieldValue by remember(description) {
+        mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(description))
+    }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -430,30 +491,194 @@ private fun TaskHeaderCard(
         ) {
             if (editMode) {
                 OutlinedTextField(
-                    value = task.title,
+                    value = title,
                     onValueChange = onTitleChange,
                     label = { Text("Title") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = task.description ?: "",
-                    onValueChange = onDescriptionChange,
-                    label = { Text("Description") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
-                )
+                
+                // Rich text description editor
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Description",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                    )
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showRichTextEditor = true },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                if (description.isNotBlank()) {
+                                    // Show formatted markdown preview (limited to 4 lines)
+                                    Box(
+                                        modifier = Modifier.heightIn(max = 100.dp)
+                                    ) {
+                                        com.letsgotoperfection.kino.core.designsystem.component.MarkdownPreview(
+                                            markdown = description,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                } else {
+                                    Text(
+                                        text = "Tap to add rich text description",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(onClick = { showRichTextEditor = true }) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit description with rich text",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
             } else {
                 Text(
-                    text = task.title,
+                    text = title,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
-                if (!task.description.isNullOrBlank()) {
-                    Text(
-                        text = task.description,
-                        style = MaterialTheme.typography.bodyLarge
+                if (description.isNotBlank()) {
+                    // Show formatted markdown preview in read mode
+                    com.letsgotoperfection.kino.core.designsystem.component.MarkdownPreview(
+                        markdown = description,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
+        }
+    }
+    
+    // Rich Text Editor Dialog
+    if (showRichTextEditor) {
+        com.letsgotoperfection.kino.core.designsystem.component.RichTextEditorDialog(
+            initialValue = descriptionTextFieldValue,
+            onDismiss = { showRichTextEditor = false },
+            onSave = { textFieldValue ->
+                descriptionTextFieldValue = textFieldValue
+                onDescriptionChange(textFieldValue.text)
+                showRichTextEditor = false
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TaskMetadataSection(
+    editMode: Boolean,
+    priority: Priority,
+    section: TaskSection,
+    column: TaskColumn,
+    onPriorityChange: (Priority) -> Unit,
+    onSectionChange: (TaskSection) -> Unit,
+    onColumnChange: (TaskColumn) -> Unit
+) {
+    if (editMode) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MetadataDropdown(
+                    label = "Priority",
+                    selectedLabel = priority.displayName,
+                    options = Priority.values().toList(),
+                    onOptionSelected = onPriorityChange,
+                    optionLabel = { it.displayName },
+                    modifier = Modifier.weight(1f)
+                )
+                MetadataDropdown(
+                    label = "Section",
+                    selectedLabel = section.displayName,
+                    options = TaskSection.values().toList(),
+                    onOptionSelected = onSectionChange,
+                    optionLabel = { it.displayName },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            MetadataDropdown(
+                label = "Column",
+                selectedLabel = column.displayName,
+                options = TaskColumn.values().toList(),
+                onOptionSelected = onColumnChange,
+                optionLabel = { it.displayName },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            PriorityChip(priority = priority)
+            SectionChip(section = section)
+            ColumnChip(column = column)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> MetadataDropdown(
+    label: String,
+    selectedLabel: String,
+    options: List<T>,
+    onOptionSelected: (T) -> Unit,
+    optionLabel: (T) -> String,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(optionLabel(option)) },
+                    onClick = {
+                        expanded = false
+                        onOptionSelected(option)
+                    }
+                )
             }
         }
     }
@@ -537,6 +762,171 @@ private fun DueDateCard(dueDate: java.time.LocalDateTime) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DueDateEditor(
+    dueDate: LocalDateTime?,
+    onRequestChange: (LocalDateTime?) -> Unit,
+    onClearDueDate: () -> Unit
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    var tempDueDate by remember(dueDate) { mutableStateOf(dueDate) }
+    
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Due Date & Time",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        
+        // Date selection
+        OutlinedTextField(
+            value = tempDueDate?.let {
+                it.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+            } ?: "",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Due Date") },
+            placeholder = { Text("Select due date") },
+            trailingIcon = {
+                Row {
+                    if (tempDueDate != null) {
+                        IconButton(onClick = { 
+                            tempDueDate = null
+                            onRequestChange(null)
+                        }) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Clear date",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = "Select date"
+                        )
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        // Time selection (only shown when date is selected)
+        if (tempDueDate != null) {
+            OutlinedTextField(
+                value = tempDueDate?.let {
+                    it.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                } ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Time") },
+                placeholder = { Text("Select time") },
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = {
+                            // Reset time to start of day
+                            tempDueDate = tempDueDate?.toLocalDate()?.atStartOfDay()
+                            onRequestChange(tempDueDate)
+                        }) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Clear time",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        IconButton(onClick = { showTimePicker = true }) {
+                            Icon(
+                                Icons.Default.Schedule,
+                                contentDescription = "Select time"
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+    
+    // Date Picker Dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = (tempDueDate?.toLocalDate() ?: java.time.LocalDate.now())
+                .atStartOfDay(java.time.ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val selectedDate = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            val time = tempDueDate?.toLocalTime() ?: java.time.LocalTime.of(0, 0)
+                            tempDueDate = LocalDateTime.of(selectedDate, time)
+                            onRequestChange(tempDueDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+    
+    // Time Picker Dialog
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = tempDueDate?.toLocalTime()?.hour ?: 9,
+            initialMinute = tempDueDate?.toLocalTime()?.minute ?: 0,
+            is24Hour = true
+        )
+        
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val selectedTime = java.time.LocalTime.of(
+                            timePickerState.hour,
+                            timePickerState.minute
+                        )
+                        tempDueDate = tempDueDate?.let { 
+                            LocalDateTime.of(it.toLocalDate(), selectedTime) 
+                        }
+                        onRequestChange(tempDueDate)
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
     }
 }
 

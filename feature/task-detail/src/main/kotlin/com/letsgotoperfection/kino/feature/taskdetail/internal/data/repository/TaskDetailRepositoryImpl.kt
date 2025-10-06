@@ -104,6 +104,7 @@ class TaskDetailRepositoryImpl @Inject constructor(
         description: String?,
         priority: Priority?,
         dueDate: LocalDateTime?,
+        dueDateExplicit: Boolean,
         labels: List<Label>?,
         section: TaskSection?,
         column: TaskColumn?
@@ -115,7 +116,11 @@ class TaskDetailRepositoryImpl @Inject constructor(
             val updatedTitle = title ?: task.title
             val updatedDescription = description ?: task.description
             val updatedPriority = priority?.name?.lowercase() ?: task.priority
-            val updatedDueDate = dueDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli() ?: task.dueDate
+            val updatedDueDate = when {
+                dueDateExplicit && dueDate == null -> null
+                dueDate != null -> dueDate.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                else -> task.dueDate
+            }
             val updatedAt = System.currentTimeMillis()
             
             taskDao.updateTaskDetails(

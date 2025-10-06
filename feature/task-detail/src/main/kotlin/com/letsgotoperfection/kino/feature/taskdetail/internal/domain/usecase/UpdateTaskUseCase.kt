@@ -39,6 +39,7 @@ class UpdateTaskUseCase @Inject constructor(
         description: String? = null,
         priority: Priority? = null,
         dueDate: LocalDateTime? = null,
+        dueDateExplicit: Boolean = false,
         labels: List<Label>? = null,
         section: TaskSection? = null,
         column: TaskColumn? = null
@@ -49,6 +50,7 @@ class UpdateTaskUseCase @Inject constructor(
             description = description,
             priority = priority,
             dueDate = dueDate,
+            dueDateExplicit = dueDateExplicit,
             labels = labels,
             section = section,
             column = column

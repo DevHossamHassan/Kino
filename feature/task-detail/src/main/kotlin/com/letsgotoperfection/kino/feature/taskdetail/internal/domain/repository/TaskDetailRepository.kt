@@ -59,6 +59,7 @@ interface TaskDetailRepository {
         description: String? = null,
         priority: Priority? = null,
         dueDate: LocalDateTime? = null,
+        dueDateExplicit: Boolean = false,
         labels: List<Label>? = null,
         section: TaskSection? = null,
         column: TaskColumn? = null

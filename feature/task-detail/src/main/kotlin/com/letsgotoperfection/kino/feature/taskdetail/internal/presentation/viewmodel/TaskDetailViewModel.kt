@@ -20,6 +20,7 @@ import com.letsgotoperfection.kino.feature.taskdetail.internal.domain.usecase.Up
 import com.letsgotoperfection.kino.feature.taskdetail.internal.presentation.state.TaskDetailAction
 import com.letsgotoperfection.kino.feature.taskdetail.internal.presentation.state.TaskDetailEvent
 import com.letsgotoperfection.kino.feature.taskdetail.internal.presentation.state.TaskDetailUiState
+import com.letsgotoperfection.kino.feature.taskdetail.internal.presentation.state.TaskEditForm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.nio.file.Files.copy
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -75,13 +77,20 @@ class TaskDetailViewModel @Inject constructor(
             is TaskDetailAction.ToggleChecklistItem -> toggleChecklistItem(action.itemId)
             is TaskDetailAction.AddChecklistItem -> addChecklistItem(action.text)
             is TaskDetailAction.DeleteChecklistItem -> deleteChecklistItem(action.itemId)
+            is TaskDetailAction.EditTitle -> updateEditForm { it.copy(title = action.title) }
+            is TaskDetailAction.EditDescription -> updateEditForm { it.copy(description = action.description) }
+            is TaskDetailAction.EditPriority -> updateEditForm { it.copy(priority = action.priority) }
+            is TaskDetailAction.EditSection -> updateEditForm { it.copy(section = action.section) }
+            is TaskDetailAction.EditColumn -> updateEditForm { it.copy(column = action.column) }
+            is TaskDetailAction.EditDueDate -> updateEditForm { it.copy(dueDate = action.dueDate) }
             is TaskDetailAction.UpdateTask -> updateTask(
                 title = action.title,
                 description = action.description,
                 priority = action.priority,
                 dueDate = action.dueDate,
                 section = action.section,
-                column = action.column
+                column = action.column,
+                dueDateExplicit = action.dueDateExplicit
             )
             is TaskDetailAction.AttachMedia -> attachMedia(action.uris)
             is TaskDetailAction.DismissSnackbar -> dismissSnackbar()
@@ -110,27 +119,32 @@ class TaskDetailViewModel @Inject constructor(
     }
     
     private fun toggleEditMode() {
-        _uiState.value = _uiState.value.copy(
-            editMode = !_uiState.value.editMode
+        val current = _uiState.value
+        val enableEditMode = !current.editMode
+        _uiState.value = current.copy(
+            editMode = enableEditMode,
+            editForm = if (enableEditMode) current.taskDetail?.toEditForm() else null
         )
     }
     
     private fun saveChanges() {
         viewModelScope.launch {
-            val currentTask = _uiState.value.taskDetail
-            if (currentTask != null) {
+            val editForm = _uiState.value.editForm
+            if (editForm != null) {
                 updateTaskUseCase(
-                    taskId = currentTask.id,
-                    title = currentTask.title,
-                    description = currentTask.description,
-                    priority = currentTask.priority,
-                    dueDate = currentTask.dueDate,
-                    section = currentTask.section,
-                    column = currentTask.column
+                    taskId = taskId,
+                    title = editForm.title,
+                    description = editForm.description,
+                    priority = editForm.priority,
+                    dueDate = editForm.dueDate,
+                    section = editForm.section,
+                    column = editForm.column,
+                    dueDateExplicit = true
                 ).fold(
                     onSuccess = {
-                        _uiState.value = _uiState.value.copy(editMode = false)
+                        _uiState.value = _uiState.value.copy(editMode = false, editForm = null)
                         _uiEvent.send(TaskDetailEvent.TaskSaved)
+                        loadTask()
                     },
                     onError = { error ->
                         _uiEvent.send(TaskDetailEvent.ShowSnackbar(context.getString(R.string.error_failed_to_save_changes, error.message)))
@@ -217,7 +231,8 @@ class TaskDetailViewModel @Inject constructor(
         priority: Priority? = null,
         dueDate: LocalDateTime? = null,
         section: com.letsgotoperfection.kino.core.model.TaskSection? = null,
-        column: com.letsgotoperfection.kino.core.model.TaskColumn? = null
+        column: com.letsgotoperfection.kino.core.model.TaskColumn? = null,
+        dueDateExplicit: Boolean = false
     ) {
         viewModelScope.launch {
             updateTaskUseCase(
@@ -226,10 +241,12 @@ class TaskDetailViewModel @Inject constructor(
                 description = description,
                 priority = priority,
                 dueDate = dueDate,
+                dueDateExplicit = dueDateExplicit,
                 section = section,
                 column = column
             ).fold(
                 onSuccess = {
+                    _uiState.value = _uiState.value.copy(editMode = false, editForm = null)
                     _uiEvent.send(TaskDetailEvent.TaskSaved)
                     loadTask()
                 },
@@ -283,6 +300,11 @@ class TaskDetailViewModel @Inject constructor(
     private fun dismissSnackbar() {
         _uiState.value = _uiState.value.copy(snackbarMessage = null)
     }
+
+    private fun updateEditForm(transform: (TaskEditForm) -> TaskEditForm) {
+        val currentForm = _uiState.value.editForm ?: return
+        _uiState.value = _uiState.value.copy(editForm = transform(currentForm))
+    }
 }
 
 /**
@@ -303,5 +325,16 @@ private fun TaskDetail.toTask(): com.letsgotoperfection.kino.core.model.Task {
         labels = this.labels,
         checklist = this.checklist,
         attachments = this.attachments
+    )
+}
+
+private fun com.letsgotoperfection.kino.core.model.Task.toEditForm(): TaskEditForm {
+    return TaskEditForm(
+        title = title,
+        description = description,
+        priority = priority,
+        section = section,
+        column = column,
+        dueDate = dueDate
     )
 }

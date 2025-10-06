@@ -1,5 +1,7 @@
 package com.letsgotoperfection.kino.core.designsystem.component
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -13,14 +15,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.letsgotoperfection.kino.core.designsystem.KinoTheme
 import com.letsgotoperfection.kino.core.model.*
 import java.time.LocalDateTime
@@ -44,6 +54,7 @@ fun TaskCreationDialog(
     val context = LocalContext.current
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var descriptionTextFieldValue by remember { mutableStateOf(TextFieldValue("")) }
     var selectedSection by remember { mutableStateOf(TaskSection.PERSONAL) }
     var selectedColumn by remember { mutableStateOf(TaskColumn.TODO_THIS_WEEK) }
     var selectedPriority by remember { mutableStateOf(Priority.MEDIUM) }
@@ -52,6 +63,7 @@ fun TaskCreationDialog(
     var newLabelText by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showRichTextEditor by remember { mutableStateOf(false) }
 
     // Form validation - use derivedStateOf for performance
     val isTitleValid by remember { derivedStateOf { title.trim().isNotBlank() } }
@@ -122,22 +134,62 @@ fun TaskCreationDialog(
                         .semantics { contentDescription = context.getString(R.string.cd_task_title_input) }
                 )
 
-                // Description field
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description") },
-                    placeholder = { Text("Enter task description (optional)") },
-                    minLines = 2,
-                    maxLines = 4,
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Sentences,
-                        imeAction = ImeAction.Done
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { contentDescription = context.getString(R.string.cd_task_description_input) }
-                )
+                // Description field - click to open rich text editor with preview
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Description",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+                    )
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    showRichTextEditor = true
+                                }
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                if (description.isNotBlank()) {
+                                    // Show formatted preview
+                                    MarkdownPreview(
+                                        markdown = description,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                } else {
+                                    Text(
+                                        text = "Tap to add rich text description (optional)",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(onClick = { showRichTextEditor = true }) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit description with rich text",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // Section and Column selection
                 Row(
@@ -463,6 +515,19 @@ fun TaskCreationDialog(
         }
     )
 
+    // Rich Text Editor Dialog
+    if (showRichTextEditor) {
+        RichTextEditorDialog(
+            initialValue = descriptionTextFieldValue,
+            onDismiss = { showRichTextEditor = false },
+            onSave = { textFieldValue ->
+                descriptionTextFieldValue = textFieldValue
+                description = textFieldValue.text
+                showRichTextEditor = false
+            }
+        )
+    }
+
     // Date Picker Dialog
     if (showDatePicker) {
         DatePickerDialog(
@@ -489,6 +554,65 @@ fun TaskCreationDialog(
             onDismiss = { showTimePicker = false }
         )
     }
+}
+
+/**
+ * Rich Text Editor Dialog for task description
+ * Public component that can be reused across the app
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RichTextEditorDialog(
+    initialValue: TextFieldValue,
+    onDismiss: () -> Unit,
+    onSave: (TextFieldValue) -> Unit
+) {
+    var editorValue by remember { mutableStateOf(initialValue) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.9f),
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Edit Description",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+                MarkdownTextEditor(
+                    value = editorValue,
+                    onValueChange = { editorValue = it },
+                    placeholder = "Add a detailed description with rich text formatting...",
+                    minLines = 15,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onSave(editorValue) }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 /**
@@ -571,6 +695,188 @@ private fun TimePickerDialog(
             TimePicker(state = timePickerState)
         }
     )
+}
+
+/**
+ * Renders markdown text with basic formatting support
+ * Public component for reuse across the app
+ */
+@Composable
+fun MarkdownPreview(
+    markdown: String,
+    modifier: Modifier = Modifier
+) {
+    val lines = remember(markdown) { markdown.split('\n') }
+    
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        lines.forEach { line ->
+            when {
+                // Checklist item
+                line.trim().startsWith("- [ ]") || line.trim().startsWith("- [x]") -> {
+                    val isChecked = line.contains("[x]")
+                    val text = line.removePrefix("- [ ]").removePrefix("- [x]").trim()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isChecked) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
+                            contentDescription = if (isChecked) "Checked" else "Unchecked",
+                            modifier = Modifier.size(20.dp),
+                            tint = if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = formatInlineMarkdown(text),
+                            style = MaterialTheme.typography.bodyMedium,
+                            textDecoration = if (isChecked) TextDecoration.LineThrough else null
+                        )
+                    }
+                }
+                // Bullet list
+                line.trim().startsWith("- ") -> {
+                    val text = line.removePrefix("- ").trim()
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("•", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = formatInlineMarkdown(text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+                // Numbered list
+                line.trim().matches(Regex("^\\d+\\.\\s.*")) -> {
+                    val parts = line.trim().split(". ", limit = 2)
+                    if (parts.size == 2) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text("${parts[0]}.", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = formatInlineMarkdown(parts[1]),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+                // Quote
+                line.trim().startsWith("> ") -> {
+                    val text = line.removePrefix("> ").trim()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(3.dp)
+                                .height(20.dp)
+                                .padding(vertical = 2.dp)
+                        )
+                        Text(
+                            text = formatInlineMarkdown(text),
+                            style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                // Code block
+                line.trim().startsWith("```") -> {
+                    // Skip code block markers
+                }
+                // Regular text
+                line.isNotBlank() -> {
+                    Text(
+                        text = formatInlineMarkdown(line),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Formats inline markdown (bold, italic, strikethrough, code)
+ * Public composable for formatting inline markdown text
+ */
+@Composable
+fun formatInlineMarkdown(text: String): androidx.compose.ui.text.AnnotatedString {
+    return buildAnnotatedString {
+        var currentIndex = 0
+        val processedText = text
+        
+        // Simple regex-based formatting
+        val boldRegex = Regex("""\*\*(.*?)\*\*""")
+        val italicRegex = Regex("""_(.*?)_""")
+        val strikethroughRegex = Regex("""~~(.*?)~~""")
+        val codeRegex = Regex("""`(.*?)`""")
+        
+        var workingText = processedText
+        val segments = mutableListOf<Pair<String, SpanStyle?>>()
+        
+        // Process all formatting
+        while (workingText.isNotEmpty()) {
+            val boldMatch = boldRegex.find(workingText)
+            val italicMatch = italicRegex.find(workingText)
+            val strikeMatch = strikethroughRegex.find(workingText)
+            val codeMatch = codeRegex.find(workingText)
+            
+            // Find the earliest match
+            val matches = listOfNotNull(
+                boldMatch?.let { it to "bold" },
+                italicMatch?.let { it to "italic" },
+                strikeMatch?.let { it to "strike" },
+                codeMatch?.let { it to "code" }
+            ).sortedBy { it.first.range.first }
+            
+            if (matches.isEmpty()) {
+                // No more formatting, add remaining text
+                segments.add(workingText to null)
+                break
+            }
+            
+            val (match, type) = matches.first()
+            
+            // Add text before match
+            if (match.range.first > 0) {
+                segments.add(workingText.substring(0, match.range.first) to null)
+            }
+            
+            // Add formatted text
+            val style = when (type) {
+                "bold" -> SpanStyle(fontWeight = FontWeight.Bold)
+                "italic" -> SpanStyle(fontStyle = FontStyle.Italic)
+                "strike" -> SpanStyle(textDecoration = TextDecoration.LineThrough)
+                "code" -> SpanStyle(
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    background = MaterialTheme.colorScheme.surfaceVariant,
+                    fontSize = 14.sp
+                )
+                else -> null
+            }
+            segments.add(match.groupValues[1] to style)
+            
+            // Continue with remaining text
+            workingText = workingText.substring(match.range.last + 1)
+        }
+        
+        // Build the annotated string
+        segments.forEach { (text, style) ->
+            if (style != null) {
+                withStyle(style) {
+                    append(text)
+                }
+            } else {
+                append(text)
+            }
+        }
+    }
 }
 
 /**
