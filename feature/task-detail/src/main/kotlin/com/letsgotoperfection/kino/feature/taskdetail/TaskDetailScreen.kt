@@ -211,13 +211,20 @@ fun TaskDetailScreen(
             if (uiState.taskDetail != null) {
                 FloatingActionButton(
                     onClick = { showAddChecklistDialog = true },
-                    modifier = Modifier.padding(bottom = 80.dp) // Account for bottom navigation bar
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add checklist item")
                 }
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { 
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) 
+        }
     ) { innerPadding ->
         when {
             uiState.isLoading -> {

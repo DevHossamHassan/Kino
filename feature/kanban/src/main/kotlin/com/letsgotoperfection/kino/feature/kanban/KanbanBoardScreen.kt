@@ -148,9 +148,7 @@ fun KanbanBoardScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onCreateTask,
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp),
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
@@ -160,7 +158,12 @@ fun KanbanBoardScreen(
                 )
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { 
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) 
+        }
     ) { _ ->
         Column(modifier = Modifier.fillMaxSize()) {
             Box(

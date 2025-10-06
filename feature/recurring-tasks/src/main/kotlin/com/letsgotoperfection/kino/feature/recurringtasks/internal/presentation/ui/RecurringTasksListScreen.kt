@@ -1,5 +1,6 @@
 package com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,56 +54,104 @@ fun RecurringTasksListScreen(
     }
     
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.recurring_tasks_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                }
-            )
-        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // Disable default insets
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToCreate,
-                modifier = Modifier.padding(bottom = 80.dp) // Account for bottom navigation bar
+                modifier = Modifier.padding(bottom = 16.dp),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_recurring_task))
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
-                LoadingScreen(modifier = Modifier.padding(paddingValues))
+        snackbarHost = { 
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) 
+        }
+    ) { _ ->
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Custom Top Bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Back button
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                    
+                    // Title
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.recurring_tasks_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (uiState.recurringTasks.isNotEmpty()) {
+                                Text(
+                                    text = "${uiState.recurringTasks.size} recurring tasks",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
             }
-            uiState.error != null -> {
-                ErrorScreen(
-                    message = uiState.error!!,
-                    onRetry = { viewModel.onAction(RecurringTaskAction.RefreshRecurringTasks) },
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-            uiState.recurringTasks.isEmpty() -> {
-                EmptyRecurringTasksState(
-                    onCreateClick = onNavigateToCreate,
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-            else -> {
-                RecurringTasksList(
-                    tasks = uiState.recurringTasks,
-                    onTaskClick = onNavigateToEdit,
-                    onViewInstances = onNavigateToInstances,
-                    onToggleActive = { id, isActive ->
-                        viewModel.onAction(RecurringTaskAction.ToggleRecurringTaskActive(id, isActive))
-                    },
-                    onDelete = { id ->
-                        viewModel.onAction(RecurringTaskAction.DeleteRecurringTask(id))
-                    },
-                    modifier = Modifier.padding(paddingValues)
-                )
+            
+            // Content
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        LoadingScreen(modifier = Modifier.fillMaxSize())
+                    }
+                    uiState.error != null -> {
+                        ErrorScreen(
+                            message = uiState.error!!,
+                            onRetry = { viewModel.onAction(RecurringTaskAction.RefreshRecurringTasks) },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    uiState.recurringTasks.isEmpty() -> {
+                        EmptyRecurringTasksState(
+                            onCreateClick = onNavigateToCreate,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    else -> {
+                        RecurringTasksList(
+                            tasks = uiState.recurringTasks,
+                            onTaskClick = onNavigateToEdit,
+                            onViewInstances = onNavigateToInstances,
+                            onToggleActive = { id, isActive ->
+                                viewModel.onAction(RecurringTaskAction.ToggleRecurringTaskActive(id, isActive))
+                            },
+                            onDelete = { id ->
+                                viewModel.onAction(RecurringTaskAction.DeleteRecurringTask(id))
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
             }
         }
     }
