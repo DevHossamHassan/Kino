@@ -19,6 +19,42 @@ object CustomIcons {
         @Composable
         get() = Icons.Default.Link
     
+    val Search: ImageVector
+        @Composable
+        get() = Icons.Default.Search
+    
+    val Close: ImageVector
+        @Composable
+        get() = Icons.Default.Close
+    
+    val ClearAll: ImageVector
+        @Composable
+        get() = Icons.Default.ClearAll
+    
+    val PriorityHigh: ImageVector
+        @Composable
+        get() = Icons.Default.PriorityHigh
+    
+    val Work: ImageVector
+        @Composable
+        get() = Icons.Default.Work
+    
+    val Person: ImageVector
+        @Composable
+        get() = Icons.Default.Person
+    
+    val Family: ImageVector
+        @Composable
+        get() = Icons.Default.FamilyRestroom
+    
+    val Today: ImageVector
+        @Composable
+        get() = Icons.Default.Today
+    
+    val VisibilityOff: ImageVector
+        @Composable
+        get() = Icons.Default.VisibilityOff
+    
     val Download: ImageVector
         @Composable
         get() = Icons.Default.Download

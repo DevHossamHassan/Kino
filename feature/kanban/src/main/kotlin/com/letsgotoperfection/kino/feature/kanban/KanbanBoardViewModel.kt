@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
@@ -95,14 +96,34 @@ class KanbanBoardViewModel @Inject constructor(
      * - Error state with actionable message
      * - Empty state guidance for users
      */
-    val uiState: StateFlow<KanbanUiState> = taskDao.getAllTasks()
-        .map { entities ->
-            val tasks = entities.map { it.toDomain() }
-            val board = TaskColumn.values().associateWith { column ->
-                tasks.filter { it.column == column }
-            }
-            KanbanUiState.Success(board) as KanbanUiState
+    // Search and Filter State
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    
+    private val debouncedSearchQuery = _searchQuery
+        .debounce(300)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+    
+    private val _filterCriteria = MutableStateFlow(TaskFilterCriteria())
+    val filterCriteria: StateFlow<TaskFilterCriteria> = _filterCriteria.asStateFlow()
+
+    val uiState: StateFlow<KanbanUiState> = combine(
+        taskDao.getAllTasks(),
+        debouncedSearchQuery,
+        _filterCriteria
+    ) { entities, search, filters ->
+        val tasks = entities.map { it.toDomain() }
+        val filteredTasks = applyFilters(tasks, search, filters)
+        val board = TaskColumn.values().associateWith { column ->
+            filteredTasks.filter { it.column == column }
         }
+        KanbanUiState.Success(
+            board = board,
+            totalTasks = tasks.size,
+            filteredTasks = filteredTasks.size,
+            filters = filters.copy(searchQuery = search)
+        ) as KanbanUiState
+    }
         .onStart { emit(KanbanUiState.Loading) }
         .catch { error ->
             emit(KanbanUiState.Error(error.message ?: "Failed to load tasks"))
@@ -112,6 +133,84 @@ class KanbanBoardViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = KanbanUiState.Loading
         )
+    
+    private fun applyFilters(
+        tasks: List<Task>,
+        searchQuery: String,
+        filters: TaskFilterCriteria
+    ): List<Task> {
+        return tasks.filter { task ->
+            if (searchQuery.isNotBlank()) {
+                val query = searchQuery.lowercase()
+                if (!task.title.lowercase().contains(query) &&
+                    !task.description.lowercase().contains(query)) {
+                    return@filter false
+                }
+            }
+            
+            if (filters.selectedPriorities.isNotEmpty() &&
+                !filters.selectedPriorities.contains(task.priority)) {
+                return@filter false
+            }
+            
+            if (filters.selectedSections.isNotEmpty() &&
+                !filters.selectedSections.contains(task.section)) {
+                return@filter false
+            }
+            
+            if (filters.showOverdueOnly) {
+                val dueDate = task.dueDate ?: return@filter false
+                if (dueDate >= LocalDateTime.now()) {
+                    return@filter false
+                }
+            }
+            
+            if (!filters.showCompletedTasks && task.column == TaskColumn.DONE) {
+                return@filter false
+            }
+            
+            true
+        }
+    }
+    
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
+    
+    fun togglePriorityFilter(priority: Priority) {
+        _filterCriteria.update { current ->
+            val newPriorities = if (current.selectedPriorities.contains(priority)) {
+                current.selectedPriorities - priority
+            } else {
+                current.selectedPriorities + priority
+            }
+            current.copy(selectedPriorities = newPriorities)
+        }
+    }
+    
+    fun toggleSectionFilter(section: TaskSection) {
+        _filterCriteria.update { current ->
+            val newSections = if (current.selectedSections.contains(section)) {
+                current.selectedSections - section
+            } else {
+                current.selectedSections + section
+            }
+            current.copy(selectedSections = newSections)
+        }
+    }
+    
+    fun toggleOverdueFilter() {
+        _filterCriteria.update { it.copy(showOverdueOnly = !it.showOverdueOnly) }
+    }
+    
+    fun toggleCompletedTasksFilter() {
+        _filterCriteria.update { it.copy(showCompletedTasks = !it.showCompletedTasks) }
+    }
+    
+    fun clearFilters() {
+        _searchQuery.value = ""
+        _filterCriteria.value = TaskFilterCriteria()
+    }
     
     // Legacy support - maintain backward compatibility
     val boardState: StateFlow<Map<TaskColumn, List<Task>>> = uiState

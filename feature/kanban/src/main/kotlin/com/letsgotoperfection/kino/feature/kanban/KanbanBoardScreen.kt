@@ -12,8 +12,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontWeight
+import com.letsgotoperfection.kino.core.designsystem.CustomIcons
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -66,7 +85,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -74,6 +92,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.letsgotoperfection.kino.core.designsystem.component.TaskCard
 import com.letsgotoperfection.kino.core.model.Task
 import com.letsgotoperfection.kino.core.model.TaskColumn
+import com.letsgotoperfection.kino.core.model.Priority
+import com.letsgotoperfection.kino.core.model.TaskSection
 import com.letsgotoperfection.kino.core.resources.R
 import kotlinx.coroutines.launch
 
@@ -117,36 +137,21 @@ fun KanbanBoardScreen(
             ?.key
     }
 
+    // State for search and filter
+    var isFilterSheetOpen by remember { mutableStateOf(false) }
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val filters by viewModel.filterCriteria.collectAsStateWithLifecycle()
+    
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.kanban_board_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = stringResource(R.string.cd_navigate_back)
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.cd_settings)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // Disable default insets
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onCreateTask,
-                modifier = Modifier.padding(bottom = 80.dp) // Account for bottom navigation bar
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(bottom = 16.dp),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
                 Icon(
                     Icons.Default.Add,
@@ -155,30 +160,138 @@ fun KanbanBoardScreen(
             }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-        
-        when (uiState) {
-            is KanbanUiState.Loading -> {
-                LoadingState(modifier = Modifier.padding(paddingValues))
-            }
-            is KanbanUiState.Error -> {
-                ErrorState(
-                    message = (uiState as KanbanUiState.Error).message,
-                    onRetry = { /* ViewModel will automatically retry */ },
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-            is KanbanUiState.Success -> {
-                val context = LocalContext.current
-
-                val boardData = (uiState as KanbanUiState.Success).board
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LazyRow(
+    ) { _ ->
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Top App Bar with edge-to-edge support
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface) // Background extends to screen edge
+                    .statusBarsPadding() // Padding for content only
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    TopAppBar(
+                        title = { 
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.kanban_board_title),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                // Task count indicator
+                                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                                if (uiState is KanbanUiState.Success) {
+                                    val state = uiState as KanbanUiState.Success
+                                    Text(
+                                        text = if (state.filters.isActive) {
+                                            "${state.filteredTasks} of ${state.totalTasks} tasks"
+                                        } else {
+                                            "${state.totalTasks} tasks"
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = onBackClick) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.cd_navigate_back)
+                                )
+                            }
+                        },
+                        actions = {
+                            // Filter button with badge
+                            BadgedBox(
+                                badge = {
+                                    if (filters.isActive) {
+                                        Badge(containerColor = MaterialTheme.colorScheme.error) {
+                                            Text("${filters.activeFilterCount}")
+                                        }
+                                    }
+                                }
+                            ) {
+                                IconButton(onClick = { isFilterSheetOpen = true }) {
+                                    Icon(
+                                        CustomIcons.FilterList,
+                                        contentDescription = "Filter tasks",
+                                        tint = if (filters.isActive) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface
+                                        }
+                                    )
+                                }
+                            }
+                            IconButton(onClick = onNavigateToSettings) {
+                                Icon(
+                                    Icons.Default.Settings,
+                                    contentDescription = stringResource(R.string.cd_settings)
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent, // Transparent to show Box background
+                            titleContentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                    
+                    // Search Bar
+                    SearchBar(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = viewModel::onSearchQueryChange,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .padding(16.dp),
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                    
+                    // Active Filters Chips
+                    AnimatedVisibility(
+                        visible = filters.isActive || searchQuery.isNotBlank(),
+                        enter = slideInVertically() + fadeIn(),
+                        exit = slideOutVertically() + fadeOut()
+                    ) {
+                        ActiveFiltersChips(
+                            filters = filters.copy(searchQuery = searchQuery),
+                            onClearFilters = viewModel::clearFilters,
+                            onRemovePriority = viewModel::togglePriorityFilter,
+                            onRemoveSection = viewModel::toggleSectionFilter,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+            
+            // Board Content
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            
+            when (uiState) {
+                is KanbanUiState.Loading -> {
+                    LoadingState(modifier = Modifier.fillMaxSize())
+                }
+                is KanbanUiState.Error -> {
+                    ErrorState(
+                        message = (uiState as KanbanUiState.Error).message,
+                        onRetry = { /* ViewModel will automatically retry */ },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                is KanbanUiState.Success -> {
+                    val context = LocalContext.current
+
+                    val boardData = (uiState as KanbanUiState.Success).board
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(TaskColumn.values(), key = { it.name }) { column ->
@@ -290,6 +403,24 @@ fun KanbanBoardScreen(
                     }
                 }
             }
+            }
+        }
+        }
+        
+        // Filter Bottom Sheet
+        if (isFilterSheetOpen) {
+            FilterBottomSheet(
+                filters = filters,
+                onDismiss = { isFilterSheetOpen = false },
+                onTogglePriority = viewModel::togglePriorityFilter,
+                onToggleSection = viewModel::toggleSectionFilter,
+                onToggleOverdue = viewModel::toggleOverdueFilter,
+                onToggleCompleted = viewModel::toggleCompletedTasksFilter,
+                onClearAll = {
+                    viewModel.clearFilters()
+                    isFilterSheetOpen = false
+                }
+            )
         }
     }
 }
@@ -614,4 +745,258 @@ private fun KanbanTaskCard(
 }
 
 private val Rect.center: Offset get() = Offset((left + right) / 2f, (top + bottom) / 2f)
+
+/**
+ * Search bar for filtering tasks
+ */
+@Composable
+private fun SearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = onSearchQueryChange,
+        modifier = modifier,
+        placeholder = {
+            Text(
+                "Search tasks...",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        leadingIcon = {
+            Icon(
+                CustomIcons.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        trailingIcon = {
+            if (searchQuery.isNotEmpty()) {
+                IconButton(onClick = { onSearchQueryChange("") }) {
+                    Icon(
+                        CustomIcons.Close,
+                        contentDescription = "Clear search",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = MaterialTheme.shapes.medium
+    )
+}
+
+/**
+ * Active filters chips row
+ */
+@Composable
+private fun ActiveFiltersChips(
+    filters: TaskFilterCriteria,
+    onClearFilters: () -> Unit,
+    onRemovePriority: (Priority) -> Unit,
+    onRemoveSection: (TaskSection) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Clear all chip
+        item {
+            FilterChip(
+                selected = false,
+                onClick = onClearFilters,
+                label = { Text("Clear all") },
+                leadingIcon = {
+                    Icon(
+                        CustomIcons.ClearAll,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            )
+        }
+        
+        // Priority filters
+        items(filters.selectedPriorities.toList()) { priority ->
+            FilterChip(
+                selected = true,
+                onClick = { onRemovePriority(priority) },
+                label = { Text(priority.displayName) },
+                trailingIcon = {
+                    Icon(
+                        CustomIcons.Close,
+                        contentDescription = "Remove filter",
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            )
+        }
+        
+        // Section filters
+        items(filters.selectedSections.toList()) { section ->
+            FilterChip(
+                selected = true,
+                onClick = { onRemoveSection(section) },
+                label = { Text(section.displayName) },
+                trailingIcon = {
+                    Icon(
+                        CustomIcons.Close,
+                        contentDescription = "Remove filter",
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            )
+        }
+    }
+}
+
+/**
+ * Filter bottom sheet
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterBottomSheet(
+    filters: TaskFilterCriteria,
+    onDismiss: () -> Unit,
+    onTogglePriority: (Priority) -> Unit,
+    onToggleSection: (TaskSection) -> Unit,
+    onToggleOverdue: () -> Unit,
+    onToggleCompleted: () -> Unit,
+    onClearAll: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Filter Tasks",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                TextButton(onClick = onClearAll) {
+                    Text("Clear All")
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Priority Section
+            Text(
+                "Priority",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(Priority.values()) { priority ->
+                    FilterChip(
+                        selected = filters.selectedPriorities.contains(priority),
+                        onClick = { onTogglePriority(priority) },
+                        label = { Text(priority.displayName) },
+                        leadingIcon = {
+                            Icon(
+                                CustomIcons.PriorityHigh,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Section
+            Text(
+                "Section",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(TaskSection.values()) { section ->
+                    val icon = when (section) {
+                        TaskSection.WORK -> CustomIcons.Work
+                        TaskSection.PERSONAL -> CustomIcons.Person
+                        TaskSection.FAMILY -> CustomIcons.Family
+                    }
+                    FilterChip(
+                        selected = filters.selectedSections.contains(section),
+                        onClick = { onToggleSection(section) },
+                        label = { Text(section.displayName) },
+                        leadingIcon = {
+                            Icon(
+                                icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Quick Filters
+            Text(
+                "Quick Filters",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = filters.showOverdueOnly,
+                    onClick = onToggleOverdue,
+                    label = { Text("Overdue") },
+                    leadingIcon = {
+                        Icon(
+                            CustomIcons.Today,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                )
+                FilterChip(
+                    selected = !filters.showCompletedTasks,
+                    onClick = onToggleCompleted,
+                    label = { Text("Hide Completed") },
+                    leadingIcon = {
+                        Icon(
+                            CustomIcons.VisibilityOff,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
 
