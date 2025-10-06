@@ -615,9 +615,8 @@
     <string name="cd_media">الوسائط</string>
     <string name="cd_recurring_tasks">المهام المتكررة</string>
     <string name="cd_select_priority">اختر أولوية %1$s</string>
-    <string name="cd_select_date">اختر التاريخ</string>
-    <string name="cd_select_start_date">اختر تاريخ البداية</string>
-    <string name="cd_select_end_date">اختر تاريخ النهاية</string>
+    <string name="cd_clear_date">مسح التاريخ</string>
+    <string name="cd_clear_time">مسح الوقت</string>
     <string name="cd_arrow_dropdown">قائمة منسدلة</string>
     <string name="cd_bold_formatting">عريض</string>
     <string name="cd_italic_formatting">مائل</string>

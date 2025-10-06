@@ -25,6 +25,7 @@ import com.letsgotoperfection.kino.core.designsystem.KinoTheme
 import com.letsgotoperfection.kino.core.model.*
 import java.time.LocalDateTime
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -50,26 +51,13 @@ fun TaskCreationDialog(
     var selectedLabels by remember { mutableStateOf<List<Label>>(emptyList()) }
     var newLabelText by remember { mutableStateOf("") }
     var showDatePicker by remember { mutableStateOf(false) }
-    var isSubmitting by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
-    // Form validation
-    val isTitleValid = title.trim().isNotBlank()
-    val isFormValid = isTitleValid && !isSubmitting
+    // Form validation - use derivedStateOf for performance
+    val isTitleValid by remember { derivedStateOf { title.trim().isNotBlank() } }
+    val isFormValid by remember { derivedStateOf { isTitleValid } }
 
-    // Reset form when dialog is dismissed
-    LaunchedEffect(isVisible) {
-        if (!isVisible) {
-            title = ""
-            description = ""
-            selectedSection = TaskSection.PERSONAL
-            selectedColumn = TaskColumn.TODO_THIS_WEEK
-            selectedPriority = Priority.MEDIUM
-            dueDate = null
-            selectedLabels = emptyList()
-            newLabelText = ""
-            isSubmitting = false
-        }
-    }
+    // Reset form when dialog is dismissed - handled by navigation, no manual reset needed
 
     // Available labels for selection with accessible colors
     val availableLabels = remember {
@@ -84,7 +72,7 @@ fun TaskCreationDialog(
     }
 
     AlertDialog(
-        onDismissRequest = if (isSubmitting) { {} } else onDismiss,
+        onDismissRequest = onDismiss,
         modifier = modifier.heightIn(max = 700.dp),
         title = {
             Row(
@@ -129,7 +117,6 @@ fun TaskCreationDialog(
                         capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Next
                     ),
-                    enabled = !isSubmitting,
                     modifier = Modifier
                         .fillMaxWidth()
                         .semantics { contentDescription = context.getString(R.string.cd_task_title_input) }
@@ -277,29 +264,79 @@ fun TaskCreationDialog(
                     }
                 }
 
-                // Due Date selection
-                Row(
+                // Due Date and Time selection
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Date selection
                     OutlinedTextField(
                         value = dueDate?.let { 
-                            "${it.dayOfMonth}/${it.monthValue}/${it.year}" 
+                            it.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
                         } ?: "",
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Due Date") },
                         placeholder = { Text("Select due date") },
                         trailingIcon = {
-                            IconButton(onClick = { showDatePicker = true }) {
-                                Icon(Icons.Default.DateRange, contentDescription = context.getString(R.string.cd_select_date))
+                            Row {
+                                if (dueDate != null) {
+                                    IconButton(onClick = { dueDate = null }) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = context.getString(R.string.cd_clear_date),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                IconButton(onClick = { showDatePicker = true }) {
+                                    Icon(
+                                        Icons.Default.DateRange,
+                                        contentDescription = context.getString(R.string.cd_select_date)
+                                    )
+                                }
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .semantics { contentDescription = context.getString(R.string.cd_task_due_date_picker) }
                     )
+                    
+                    // Time selection (only shown when date is selected)
+                    if (dueDate != null) {
+                        OutlinedTextField(
+                            value = dueDate?.let {
+                                it.format(DateTimeFormatter.ofPattern("HH:mm"))
+                            } ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Time") },
+                            placeholder = { Text("Select time") },
+                            trailingIcon = {
+                                Row {
+                                    IconButton(onClick = { 
+                                        // Reset time to start of day
+                                        dueDate = dueDate?.toLocalDate()?.atStartOfDay()
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = context.getString(R.string.cd_clear_time),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    IconButton(onClick = { showTimePicker = true }) {
+                                        Icon(
+                                            Icons.Default.Schedule,
+                                            contentDescription = context.getString(R.string.cd_select_time)
+                                        )
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics { contentDescription = context.getString(R.string.cd_select_time) }
+                        )
+                    }
                 }
 
                 // Labels selection
@@ -397,7 +434,6 @@ fun TaskCreationDialog(
             Button(
                 onClick = {
                     if (isFormValid) {
-                        isSubmitting = true
                         val taskRequest = TaskCreationRequest(
                             title = title.trim(),
                             description = description.trim(),
@@ -408,36 +444,18 @@ fun TaskCreationDialog(
                             labels = selectedLabels
                         )
                         onTaskCreated(taskRequest)
-                        
-                        // Fixed: Reset form after successful submission
-                        title = ""
-                        description = ""
-                        selectedSection = TaskSection.PERSONAL
-                        selectedColumn = TaskColumn.TODO_THIS_WEEK
-                        selectedPriority = Priority.MEDIUM
-                        dueDate = null
-                        selectedLabels = emptyList()
-                        newLabelText = ""
-                        isSubmitting = false
+                        onDismiss() // Dismiss immediately after creating
                     }
                 },
                 enabled = isFormValid,
                 modifier = Modifier.semantics { contentDescription = context.getString(R.string.cd_create_task_button) }
             ) {
-                if (isSubmitting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-                Text(if (isSubmitting) "Creating..." else "Create Task")
+                Text("Create Task")
             }
         },
         dismissButton = {
             TextButton(
-                onClick = onDismiss,
-                enabled = !isSubmitting,
+                onClick = onDismiss, // Just dismiss, no manual clearing needed
                 modifier = Modifier.semantics { contentDescription = context.getString(R.string.cd_cancel_task_creation) }
             ) {
                 Text("Cancel")
@@ -450,47 +468,107 @@ fun TaskCreationDialog(
         DatePickerDialog(
             initialDate = dueDate?.toLocalDate() ?: LocalDate.now(),
             onDateSelected = { date ->
+                // Preserve existing time if set, otherwise start of day
+                val time = dueDate?.toLocalTime() ?: LocalTime.of(0, 0)
+                dueDate = LocalDateTime.of(date, time)
                 showDatePicker = false
-                dueDate = date.atStartOfDay()
             },
             onDismiss = { showDatePicker = false }
+        )
+    }
+    
+    // Time Picker Dialog
+    if (showTimePicker) {
+        TimePickerDialog(
+            initialTime = dueDate?.toLocalTime() ?: LocalTime.of(9, 0),
+            onTimeSelected = { time ->
+                // Update time while preserving the date
+                dueDate = dueDate?.let { LocalDateTime.of(it.toLocalDate(), time) }
+                showTimePicker = false
+            },
+            onDismiss = { showTimePicker = false }
         )
     }
 }
 
 /**
- * Date Picker Dialog Component
+ * Material3 Date Picker Dialog Component
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DatePickerDialog(
     initialDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedDate by remember { mutableStateOf(initialDate) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    )
     
-    AlertDialog(
+    DatePickerDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Select Due Date") },
-        text = {
-            Column {
-                Text("Choose the due date for this task:")
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Selected: ${selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        },
         confirmButton = {
-            Button(onClick = { onDateSelected(selectedDate) }) {
-                Text("Select")
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val selectedDate = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                        onDateSelected(selectedDate)
+                    }
+                }
+            ) {
+                Text("OK")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
+/**
+ * Material3 Time Picker Dialog Component
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerDialog(
+    initialTime: LocalTime,
+    onTimeSelected: (LocalTime) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialTime.hour,
+        initialMinute = initialTime.minute,
+        is24Hour = true
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val selectedTime = LocalTime.of(
+                        timePickerState.hour,
+                        timePickerState.minute
+                    )
+                    onTimeSelected(selectedTime)
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+        text = {
+            TimePicker(state = timePickerState)
         }
     )
 }

@@ -618,8 +618,10 @@
     <string name="cd_select_priority">Select priority %1$s</string>
     <string name="cd_select_priority_dropdown">Select Priority</string>
     <string name="cd_select_date">Select Date</string>
+    <string name="cd_clear_date">Clear date</string>
     <string name="cd_select_frequency">Select Frequency</string>
     <string name="cd_select_time">Select Time</string>
+    <string name="cd_clear_time">Clear time</string>
     <string name="cd_select_start_date">Select Start Date</string>
     <string name="cd_select_end_date">Select End Date</string>
     <string name="cd_arrow_dropdown">Arrow dropdown</string>
