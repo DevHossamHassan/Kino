@@ -123,10 +123,10 @@ fun KanbanBoardScreen(
     onBackClick: () -> Unit,
     viewModel: KanbanBoardViewModel = hiltViewModel()
 ) {
-    val board by viewModel.boardState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var dragState by remember { mutableStateOf<DragState?>(null) }
     val columnBounds = remember { mutableStateMapOf<TaskColumn, Rect>() }
@@ -162,57 +162,56 @@ fun KanbanBoardScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { _ ->
         Column(modifier = Modifier.fillMaxSize()) {
-            // Top App Bar with edge-to-edge support
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface) // Background extends to screen edge
-                    .statusBarsPadding() // Padding for content only
+                    .background(MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    TopAppBar(
-                        title = { 
-                            Column {
+                    // Prepare title content outside TopAppBar
+                    val titleContent: @Composable () -> Unit = {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.kanban_board_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (uiState is KanbanUiState.Success) {
+                                val state = uiState as KanbanUiState.Success
                                 Text(
-                                    text = stringResource(R.string.kanban_board_title),
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                // Task count indicator
-                                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                                if (uiState is KanbanUiState.Success) {
-                                    val state = uiState as KanbanUiState.Success
-                                    Text(
-                                        text = if (state.filters.isActive) {
-                                            "${state.filteredTasks} of ${state.totalTasks} tasks"
-                                        } else {
-                                            "${state.totalTasks} tasks"
-                                        },
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = onBackClick) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.cd_navigate_back)
+                                    text = if (state.filters.isActive) {
+                                        "${state.filteredTasks} of ${state.totalTasks} tasks"
+                                    } else {
+                                        "${state.totalTasks} tasks"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                        },
-                        actions = {
-                            // Filter button with badge
-                            BadgedBox(
-                                badge = {
-                                    if (filters.isActive) {
-                                        Badge(containerColor = MaterialTheme.colorScheme.error) {
-                                            Text("${filters.activeFilterCount}")
-                                        }
-                                    }
-                                }
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.Transparent)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(64.dp)
+                                .padding(horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Title section
+                            Box(
+                                modifier = Modifier.weight(1f).padding(start = 16.dp),
+                                contentAlignment = Alignment.CenterStart
                             ) {
+                                titleContent()
+                            }
+
+                            // Actions section
+                            Box(contentAlignment = Alignment.Center) {
                                 IconButton(onClick = { isFilterSheetOpen = true }) {
                                     Icon(
                                         CustomIcons.FilterList,
@@ -224,20 +223,28 @@ fun KanbanBoardScreen(
                                         }
                                     )
                                 }
+
+                                // Badge overlay
+                                if (filters.isActive) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .offset(x = 4.dp, y = 8.dp)
+                                    ) {
+                                        Text("${filters.activeFilterCount}")
+                                    }
+                                }
                             }
+
                             IconButton(onClick = onNavigateToSettings) {
                                 Icon(
                                     Icons.Default.Settings,
                                     contentDescription = stringResource(R.string.cd_settings)
                                 )
                             }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent, // Transparent to show Box background
-                            titleContentColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                    
+                        }
+                    }
                     // Search Bar
                     SearchBar(
                         searchQuery = searchQuery,

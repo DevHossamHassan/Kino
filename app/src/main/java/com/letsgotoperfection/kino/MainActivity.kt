@@ -5,19 +5,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.navigation.compose.rememberNavController
 import com.letsgotoperfection.kino.navigation.KinoNavHost
-import com.letsgotoperfection.kino.navigation.DeepLinkHandler
-import com.letsgotoperfection.kino.ui.BottomNavigationBar
-import com.letsgotoperfection.kino.core.designsystem.KinoTheme
 import com.letsgotoperfection.kino.core.designsystem.SettingsAwareTheme
 import com.letsgotoperfection.kino.feature.settings.api.SettingsApi
 import dagger.hilt.android.AndroidEntryPoint
@@ -69,16 +61,8 @@ fun KinoApp(
         // The deep link handling is done in the navigation graph
     }
     
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            KinoNavHost(
-                navController = navController
-            )
-        }
-    }
+    // Single Scaffold with both bottomBar and content
+    KinoNavHost(
+        navController = navController
+    )
 }

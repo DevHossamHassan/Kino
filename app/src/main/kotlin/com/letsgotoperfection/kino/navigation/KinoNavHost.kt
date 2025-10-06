@@ -1,5 +1,6 @@
 package com.letsgotoperfection.kino.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -33,10 +34,12 @@ import com.letsgotoperfection.kino.feature.settings.navigation.settingsGraph
 import com.letsgotoperfection.kino.feature.taskdetail.navigation.TaskDetailRoute
 import com.letsgotoperfection.kino.feature.taskdetail.navigation.taskDetailGraph
 import com.letsgotoperfection.kino.core.designsystem.component.TaskCreationDialog
+import com.letsgotoperfection.kino.ui.BottomNavigationBar
 import kotlinx.coroutines.launch
 
 /**
- * Main navigation host for the Kino app using type-safe navigation
+ * Main navigation host for the Kino app using type-safe navigation.
+ * Contains the single app-wide Scaffold with bottom navigation and snackbar.
  */
 @Composable
 fun KinoNavHost(
@@ -47,6 +50,10 @@ fun KinoNavHost(
     val taskCreationViewModel: TaskCreationViewModel = hiltViewModel()
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         NavHost(
