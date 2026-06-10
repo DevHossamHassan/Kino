@@ -25,7 +25,10 @@ class CreateRecurringTaskUseCase @Inject constructor(
         recurrenceRule: com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceRule,
         startDate: java.time.LocalDate,
         endDate: java.time.LocalDate?,
-        isActive: Boolean = true
+        isActive: Boolean = true,
+        defaultColumn: com.letsgotoperfection.kino.core.model.TaskColumn = com.letsgotoperfection.kino.core.model.TaskColumn.TODO_THIS_WEEK,
+        checklistTemplate: List<String> = emptyList(),
+        dueDateOffsetDays: Int = 0
     ): Result<String> {
         // Validate the recurrence rule
         recurrenceCalculator.validateRecurrenceRule(recurrenceRule)
@@ -47,7 +50,10 @@ class CreateRecurringTaskUseCase @Inject constructor(
             isActive = isActive,
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now(),
-            lastGeneratedDate = null
+            lastGeneratedDate = null,
+            defaultColumn = defaultColumn,
+            checklistTemplate = checklistTemplate,
+            dueDateOffsetDays = dueDateOffsetDays
         )
         
         return repository.createRecurringTask(recurringTask)

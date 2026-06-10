@@ -222,13 +222,24 @@ class RecurrenceCalculator @Inject constructor() {
         val occurrences = mutableListOf<LocalDate>()
         var currentDate = fromDate
         
-        repeat(count) {
+        // First, check if the fromDate itself is a valid occurrence
+        if (isOccurrenceDate(rule, fromDate, fromDate)) {
+            occurrences.add(fromDate)
+            if (occurrences.size >= count) {
+                return occurrences
+            }
+            // Move to next day to find subsequent occurrences
+            currentDate = fromDate.plusDays(1)
+        }
+        
+        // Find remaining occurrences
+        while (occurrences.size < count) {
             val nextDate = calculateNextOccurrence(rule, currentDate)
             if (nextDate != null) {
                 occurrences.add(nextDate)
-                currentDate = nextDate
+                currentDate = nextDate.plusDays(1) // Move past this date
             } else {
-                return@repeat
+                break
             }
         }
         

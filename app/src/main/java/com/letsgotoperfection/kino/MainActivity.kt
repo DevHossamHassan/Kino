@@ -1,13 +1,18 @@
 package com.letsgotoperfection.kino
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.letsgotoperfection.kino.navigation.KinoNavHost
 import com.letsgotoperfection.kino.core.designsystem.SettingsAwareTheme
@@ -26,15 +31,42 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsApi: SettingsApi
     
+    // Permission request launcher for notifications
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        // Permission granted or denied
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Request notification permission for Android 13+
+        requestNotificationPermission()
+        
         setContent {
             SettingsAwareTheme(
                 darkTheme = isSystemInDarkTheme(),
                 useDynamicColors = true
             ) {
                 KinoApp(settingsApi = settingsApi)
+            }
+        }
+    }
+    
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                }
+                else -> {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
             }
         }
     }

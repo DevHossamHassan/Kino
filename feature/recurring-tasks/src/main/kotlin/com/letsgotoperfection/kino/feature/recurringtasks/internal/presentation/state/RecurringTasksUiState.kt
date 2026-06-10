@@ -34,6 +34,9 @@ data class CreateRecurringTaskUiState(
     val section: TaskSection = TaskSection.PERSONAL,
     val priority: Priority = Priority.MEDIUM,
     val labels: List<Label> = emptyList(),
+    val defaultColumn: com.letsgotoperfection.kino.core.model.TaskColumn = com.letsgotoperfection.kino.core.model.TaskColumn.TODO_THIS_WEEK,
+    val checklistTemplate: List<String> = emptyList(), // Template checklist items
+    val dueDateOffsetDays: Int = 0, // Days to add to creation date for due date (0 = same day)
     val frequency: RecurrenceFrequency = RecurrenceFrequency.DAILY,
     val interval: Int = 1,
     val daysOfWeek: Set<java.time.DayOfWeek> = emptySet(),
@@ -48,7 +51,6 @@ data class CreateRecurringTaskUiState(
 ) {
     val isValid: Boolean
         get() = title.isNotBlank() && 
-                description.isNotBlank() && 
                 interval > 0 &&
                 (frequency != RecurrenceFrequency.WEEKLY || daysOfWeek.isNotEmpty()) &&
                 (frequency != RecurrenceFrequency.MONTHLY || (dayOfMonth != null && dayOfMonth in 1..31)) &&

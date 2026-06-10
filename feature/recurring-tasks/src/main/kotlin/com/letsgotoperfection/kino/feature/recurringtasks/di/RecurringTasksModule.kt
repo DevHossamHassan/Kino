@@ -1,7 +1,9 @@
 package com.letsgotoperfection.kino.feature.recurringtasks.di
 
+import android.content.Context
 import com.letsgotoperfection.kino.core.database.dao.RecurringTaskDao
 import com.letsgotoperfection.kino.core.database.dao.TaskDao
+import com.letsgotoperfection.kino.feature.notifications.api.UltraSimpleNotificationApi
 import com.letsgotoperfection.kino.feature.recurringtasks.api.RecurringTasksApi
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.api.RecurringTasksApiImpl
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.data.repository.RecurringTasksRepositoryImpl
@@ -11,10 +13,12 @@ import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.usecas
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.usecase.GenerateInstancesUseCase
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.usecase.GetRecurringTasksUseCase
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.usecase.UpdateRecurringTaskUseCase
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.notification.RecurringTaskNotificationService
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -78,6 +82,14 @@ abstract class RecurringTasksModule {
             recurrenceCalculator: RecurrenceCalculator
         ): GenerateInstancesUseCase {
             return GenerateInstancesUseCase(repository, recurrenceCalculator)
+        }
+        
+        @Provides
+        @Singleton
+        fun provideRecurringTaskNotificationService(
+            notificationApi: UltraSimpleNotificationApi
+        ): RecurringTaskNotificationService {
+            return RecurringTaskNotificationService(notificationApi)
         }
     }
 }

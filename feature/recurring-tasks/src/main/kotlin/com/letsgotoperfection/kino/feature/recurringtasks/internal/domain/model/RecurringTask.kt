@@ -22,7 +22,10 @@ data class RecurringTask(
     val isActive: Boolean,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val lastGeneratedDate: LocalDate?  // Last date an instance was generated
+    val lastGeneratedDate: LocalDate?,  // Last date an instance was generated
+    val defaultColumn: com.letsgotoperfection.kino.core.model.TaskColumn = com.letsgotoperfection.kino.core.model.TaskColumn.TODO_THIS_WEEK,
+    val checklistTemplate: List<String> = emptyList(), // Template checklist items
+    val dueDateOffsetDays: Int = 0 // Days to add to creation date for due date (0 = same day)
 ) {
     /**
      * Check if this recurring task should generate instances on a given date

@@ -27,6 +27,7 @@ include(":core:data")
 include(":core:database")
 include(":core:model")
 include(":core:resources")
+include(":core:worker")
 // include(":navigation") // REMOVED - Using type-safe navigation in app module
 include(":feature:kanban")
 include(":feature:notes")

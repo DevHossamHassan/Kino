@@ -41,7 +41,10 @@ fun RecurringTaskEntity.toDomain(labels: List<Label> = emptyList()): RecurringTa
         isActive = isActive,
         createdAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(createdAt), ZoneId.systemDefault()),
         updatedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(updatedAt), ZoneId.systemDefault()),
-        lastGeneratedDate = lastGeneratedDate?.let { LocalDate.ofEpochDay(it) }
+        lastGeneratedDate = lastGeneratedDate?.let { LocalDate.ofEpochDay(it) },
+        defaultColumn = com.letsgotoperfection.kino.core.model.TaskColumn.valueOf(defaultColumn.uppercase()),
+        checklistTemplate = parseChecklistTemplate(checklistTemplate),
+        dueDateOffsetDays = dueDateOffsetDays
     )
 }
 
@@ -63,7 +66,10 @@ fun RecurringTask.toEntity(): RecurringTaskEntity {
         isActive = isActive,
         createdAt = createdAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
         updatedAt = updatedAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-        lastGeneratedDate = lastGeneratedDate?.toEpochDay()
+        lastGeneratedDate = lastGeneratedDate?.toEpochDay(),
+        defaultColumn = defaultColumn.name.lowercase(),
+        checklistTemplate = serializeChecklistTemplate(checklistTemplate),
+        dueDateOffsetDays = dueDateOffsetDays
     )
 }
 
@@ -80,6 +86,22 @@ private fun serializeDaysOfWeek(daysOfWeek: Set<DayOfWeek>): String {
     return try {
         val dayNumbers = daysOfWeek.map { it.value }
         Json.encodeToString(dayNumbers)
+    } catch (e: Exception) {
+        "[]"
+    }
+}
+
+private fun parseChecklistTemplate(checklistTemplateJson: String): List<String> {
+    return try {
+        Json.decodeFromString<List<String>>(checklistTemplateJson)
+    } catch (e: Exception) {
+        emptyList()
+    }
+}
+
+private fun serializeChecklistTemplate(checklistTemplate: List<String>): String {
+    return try {
+        Json.encodeToString(checklistTemplate)
     } catch (e: Exception) {
         "[]"
     }

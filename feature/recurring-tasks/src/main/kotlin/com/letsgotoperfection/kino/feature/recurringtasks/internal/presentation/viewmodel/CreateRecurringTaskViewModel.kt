@@ -11,6 +11,9 @@ import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.usecase.CreateRecurringTaskUseCase
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.CreateRecurringTaskUiState
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.RecurringTaskEvent
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.alarm.RecurringTaskAlarmScheduler
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.permission.AlarmPermissionManager
+import android.util.Log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -25,7 +28,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CreateRecurringTaskViewModel @Inject constructor(
     private val createRecurringTaskUseCase: CreateRecurringTaskUseCase,
-    private val recurrenceCalculator: RecurrenceCalculator
+    private val recurrenceCalculator: RecurrenceCalculator,
+    private val alarmScheduler: RecurringTaskAlarmScheduler
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(CreateRecurringTaskUiState())
@@ -52,6 +56,30 @@ class CreateRecurringTaskViewModel @Inject constructor(
 
     fun updateLabels(labels: List<Label>) {
         _uiState.update { it.copy(labels = labels) }
+    }
+    
+    fun updateDefaultColumn(column: com.letsgotoperfection.kino.core.model.TaskColumn) {
+        _uiState.update { it.copy(defaultColumn = column) }
+    }
+    
+    fun updateChecklistTemplate(checklist: List<String>) {
+        _uiState.update { it.copy(checklistTemplate = checklist) }
+    }
+    
+    fun addChecklistItem(item: String) {
+        _uiState.update { 
+            it.copy(checklistTemplate = it.checklistTemplate + item) 
+        }
+    }
+    
+    fun removeChecklistItem(index: Int) {
+        _uiState.update { 
+            it.copy(checklistTemplate = it.checklistTemplate.filterIndexed { i, _ -> i != index })
+        }
+    }
+    
+    fun updateDueDateOffsetDays(days: Int) {
+        _uiState.update { it.copy(dueDateOffsetDays = days) }
     }
     
     fun updateFrequency(frequency: RecurrenceFrequency) {
@@ -133,11 +161,38 @@ class CreateRecurringTaskViewModel @Inject constructor(
                 recurrenceRule = recurrenceRule,
                 startDate = currentState.startDate,
                 endDate = currentState.endDate,
-                isActive = currentState.isActive
+                isActive = currentState.isActive,
+                defaultColumn = currentState.defaultColumn,
+                checklistTemplate = currentState.checklistTemplate,
+                dueDateOffsetDays = currentState.dueDateOffsetDays
             ).fold(
-                onSuccess = {
+                onSuccess = { recurringTaskId ->
+                    // Schedule alarms for upcoming occurrences
+                    val recurringTaskWithId = com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask(
+                        id = recurringTaskId,
+                        title = currentState.title,
+                        description = currentState.description,
+                        section = currentState.section,
+                        priority = currentState.priority,
+                        labels = currentState.labels,
+                        recurrenceRule = recurrenceRule,
+                        startDate = currentState.startDate,
+                        endDate = currentState.endDate,
+                        isActive = currentState.isActive,
+                        createdAt = java.time.LocalDateTime.now(),
+                        updatedAt = java.time.LocalDateTime.now(),
+                        lastGeneratedDate = null,
+                        defaultColumn = currentState.defaultColumn,
+                        checklistTemplate = currentState.checklistTemplate,
+                        dueDateOffsetDays = currentState.dueDateOffsetDays
+                    )
+                    
+                    // Get next occurrences and schedule alarms
+                    val nextOccurrences = getNextOccurrences(7)
+                    alarmScheduler.scheduleUpcomingOccurrences(recurringTaskWithId, nextOccurrences)
+                    
                     _uiState.update { it.copy(isLoading = false) }
-                    _uiEvent.trySend(RecurringTaskEvent.ShowSuccess("Recurring task created successfully"))
+                    _uiEvent.trySend(RecurringTaskEvent.ShowSuccess("Recurring task created and scheduled"))
                     // Navigation handled by UI callbacks
                 },
                 onFailure = { error ->

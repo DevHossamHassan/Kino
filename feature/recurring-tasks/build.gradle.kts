@@ -67,6 +67,7 @@ dependencies {
     
     // Feature modules (APIs only)
     implementation(project(":feature:kanban"))
+    implementation(project(":feature:notifications"))
     
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
