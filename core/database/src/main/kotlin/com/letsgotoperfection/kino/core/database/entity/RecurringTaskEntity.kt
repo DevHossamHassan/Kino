@@ -22,6 +22,9 @@ data class RecurringTaskEntity(
     val isActive: Boolean,
     val createdAt: Long,
     val updatedAt: Long,
-    val lastGeneratedDate: Long?  // Epoch day, last date an instance was generated
+    val lastGeneratedDate: Long?,  // Epoch day, last date an instance was generated
+    val defaultColumn: String = "todo_this_week",  // Default column for generated tasks
+    val checklistTemplate: String = "[]",  // JSON array of checklist template items
+    val dueDateOffsetDays: Int = 0  // Days to add to creation date for due date
 )
 

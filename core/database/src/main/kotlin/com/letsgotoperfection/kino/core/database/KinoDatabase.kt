@@ -13,6 +13,10 @@ import com.letsgotoperfection.kino.core.database.entity.*
 /**
  * Kino Database with performance optimizations.
  * 
+ * Version 6 improvements:
+ * - Added defaultColumn, checklistTemplate, and dueDateOffsetDays fields to RecurringTaskEntity
+ * - Enhanced recurring task functionality with better task generation control
+ * 
  * Version 5 improvements:
  * - Added orderPosition field for drag-to-reorder functionality
  * - Added index on (column, orderPosition) for efficient ordering queries
@@ -34,7 +38,7 @@ import com.letsgotoperfection.kino.core.database.entity.*
         RecurringTaskEntity::class,
         SectionEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

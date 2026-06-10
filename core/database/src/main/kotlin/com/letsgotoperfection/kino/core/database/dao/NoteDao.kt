@@ -21,6 +21,15 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY updatedAt DESC")
     fun searchNotes(query: String): Flow<List<NoteEntity>>
     
+    @Query("SELECT * FROM notes WHERE isPinned = 0 ORDER BY updatedAt DESC")
+    fun getUnpinnedNotes(): Flow<List<NoteEntity>>
+    
+    @Query("SELECT * FROM notes WHERE attachmentCount > 0 ORDER BY updatedAt DESC")
+    fun getNotesWithAttachments(): Flow<List<NoteEntity>>
+    
+    @Query("SELECT * FROM notes WHERE updatedAt >= :since ORDER BY updatedAt DESC")
+    fun getRecentNotes(since: Long): Flow<List<NoteEntity>>
+    
     @Upsert
     suspend fun upsertNote(note: NoteEntity)
     
