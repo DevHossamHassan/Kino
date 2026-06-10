@@ -27,7 +27,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 /**
@@ -50,9 +54,11 @@ internal class NotesListViewModel @Inject constructor(
     val uiEvent: SharedFlow<NotesListEvent> = _uiEvent.receiveAsFlow()
 
     private var notesJob: Job? = null
+    private var searchJob: Job? = null
     
     init {
         loadNotes()
+        setupSearchDebounce()
     }
     
     fun onAction(action: NotesListAction) {
@@ -76,6 +82,8 @@ internal class NotesListViewModel @Inject constructor(
     
     private fun loadNotes() {
         val currentState = _uiState.value
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        
         observeNotes(
             flow = getAllNotesUseCase(
                 filter = currentState.selectedFilter,
@@ -96,13 +104,31 @@ internal class NotesListViewModel @Inject constructor(
     
     private fun searchNotes(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
-
-        if (query.isBlank()) {
-            loadNotes()
-            return
+    }
+    
+    private fun setupSearchDebounce() {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            _uiState
+                .map { it.searchQuery }
+                .distinctUntilChanged()
+                .debounce(300) // 300ms debounce
+                .collect { query ->
+                    if (query.isBlank()) {
+                        loadNotes()
+                    } else {
+                        performSearch(query)
+                    }
+                }
         }
-
-        val sort = _uiState.value.selectedSort
+    }
+    
+    private fun performSearch(query: String) {
+        val currentState = _uiState.value
+        val sort = currentState.selectedSort
+        
+        _uiState.update { it.copy(isSearching = true) }
+        
         observeNotes(
             flow = searchNotesUseCase(query).map { notes ->
                 sortNotes(notes, sort)
@@ -180,10 +206,16 @@ internal class NotesListViewModel @Inject constructor(
                     }
                 }
                 .collect { notes ->
+                    val pinnedNotes = notes.filter { it.isPinned }
+                    val unpinnedNotes = notes.filter { !it.isPinned }
+                    
                     _uiState.update {
                         it.copy(
                             notes = notes,
+                            pinnedNotes = pinnedNotes,
+                            unpinnedNotes = unpinnedNotes,
                             isLoading = false,
+                            isSearching = false,
                             error = null
                         )
                     }

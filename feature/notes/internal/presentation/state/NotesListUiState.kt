@@ -13,13 +13,31 @@ import com.letsgotoperfection.kino.feature.notes.internal.domain.model.NoteSort
 @Immutable
 data class NotesListUiState(
     val notes: List<Note> = emptyList(),
+    val pinnedNotes: List<Note> = emptyList(),
+    val unpinnedNotes: List<Note> = emptyList(),
     val isLoading: Boolean = false,
+    val isSearching: Boolean = false,
     val error: String? = null,
     val selectedFilter: NoteFilter = NoteFilter.ALL,
     val selectedSort: NoteSort = NoteSort.UPDATED_DESC,
     val searchQuery: String = "",
-    val snackbarMessage: String? = null
-)
+    val snackbarMessage: String? = null,
+    val showPinnedSection: Boolean = true
+) {
+    val displayNotes: List<Note> get() = when (selectedFilter) {
+        NoteFilter.ALL -> notes
+        NoteFilter.PINNED -> pinnedNotes
+        NoteFilter.RECENT -> notes.filter { 
+            System.currentTimeMillis() - it.updatedAt.toEpochSecond(java.time.ZoneOffset.UTC) * 1000 < 24 * 60 * 60 * 1000 
+        }
+        NoteFilter.WITH_LABELS -> notes.filter { it.labels.isNotEmpty() }
+    }
+    
+    val hasPinnedNotes: Boolean get() = pinnedNotes.isNotEmpty()
+    val hasUnpinnedNotes: Boolean get() = unpinnedNotes.isNotEmpty()
+    val isEmpty: Boolean get() = notes.isEmpty() && !isLoading
+    val isSearchActive: Boolean get() = searchQuery.isNotBlank()
+}
 
 /**
  * Actions that can be performed on the notes list screen.
