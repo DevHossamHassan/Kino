@@ -3,140 +3,229 @@ package com.letsgotoperfection.kino.feature.notifications.internal.api
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
+import android.os.Build
+import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import com.letsgotoperfection.kino.feature.notifications.api.NotificationApi
-import com.letsgotoperfection.kino.feature.notifications.internal.domain.model.NotificationCategory
-import com.letsgotoperfection.kino.feature.notifications.internal.manager.NotificationChannelManager
+import com.letsgotoperfection.kino.feature.notifications.api.NotificationChannelManager
+import com.letsgotoperfection.kino.feature.notifications.api.NotificationChannelSettings
+import com.letsgotoperfection.kino.feature.notifications.api.NotificationInitializer
+import com.letsgotoperfection.kino.feature.notifications.api.ChannelNotEnabledException
+import com.letsgotoperfection.kino.feature.notifications.api.NotificationSystemNotInitializedException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Implementation of NotificationApi
+ * Completely generic implementation of NotificationApi
+ * This implementation is feature-agnostic and can be used by any module
  */
 @Singleton
 class NotificationApiImpl @Inject constructor(
     private val context: Context,
-    private val channelManager: NotificationChannelManager
+    private val channelManager: NotificationChannelManager,
+    private val channelSettings: NotificationChannelSettings,
+    private val initializer: NotificationInitializer
 ) : NotificationApi {
     
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     
-    override suspend fun sendSmartSuggestion(
-        taskId: String,
-        suggestion: String
-    ) {
-        sendNotification(
-            title = "Smart Suggestion",
-            message = suggestion,
-            category = NotificationCategory.SMART_SUGGESTION,
-            deepLink = "kino://task/$taskId"
-        )
-    }
-    
     override suspend fun sendNotification(
         title: String,
         message: String,
-        category: NotificationCategory,
-        deepLink: String?
+        channelId: String,
+        smallIcon: Int,
+        largeIcon: Int?,
+        priority: NotificationApi.NotificationPriority,
+        autoCancel: Boolean,
+        ongoing: Boolean,
+        showWhen: Boolean,
+        whenTime: Long?,
+        tickerText: String?,
+        contentIntent: PendingIntent?,
+        deleteIntent: PendingIntent?,
+        groupKey: String?,
+        sortKey: String?,
+        isGroupSummary: Boolean,
+        actions: List<NotificationApi.NotificationAction>,
+        extras: Map<String, Any>
     ) {
-        val channelId = when (category) {
-            NotificationCategory.TASK_REMINDER -> NotificationChannelManager.TASK_REMINDER_CHANNEL_ID
-            NotificationCategory.SMART_SUGGESTION -> NotificationChannelManager.SMART_SUGGESTION_CHANNEL_ID
-            NotificationCategory.PRODUCTIVITY_INSIGHT -> NotificationChannelManager.PRODUCTIVITY_CHANNEL_ID
-            NotificationCategory.ACHIEVEMENT -> NotificationChannelManager.GAMIFICATION_CHANNEL_ID
-            NotificationCategory.GAMIFICATION -> NotificationChannelManager.GAMIFICATION_CHANNEL_ID
-            NotificationCategory.STREAK_REMINDER -> NotificationChannelManager.GAMIFICATION_CHANNEL_ID
-            NotificationCategory.PROGRESS_UPDATE -> NotificationChannelManager.GAMIFICATION_CHANNEL_ID
-            NotificationCategory.NOTE_REMINDER -> NotificationChannelManager.TASK_REMINDER_CHANNEL_ID
-            NotificationCategory.TASK_DUE_SOON -> NotificationChannelManager.TASK_REMINDER_CHANNEL_ID
-            NotificationCategory.MICRO_TASK -> NotificationChannelManager.SMART_SUGGESTION_CHANNEL_ID
+        // Ensure system is initialized
+        if (!initializer.isInitialized()) {
+            throw NotificationSystemNotInitializedException()
+        }
+        
+        // Validate channel exists and is enabled
+        if (!channelSettings.shouldSendNotification(channelId)) {
+            throw ChannelNotEnabledException(channelId)
         }
         
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(smallIcon)
             .setContentTitle(title)
             .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
+            .setPriority(convertPriority(priority))
+            .setAutoCancel(autoCancel)
+            .setOngoing(ongoing)
+            .setShowWhen(showWhen)
             .apply {
-                deepLink?.let { link ->
-                    val deepLinkIntent = Intent(Intent.ACTION_VIEW, Uri.parse(link)).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                largeIcon?.let { setLargeIcon(android.graphics.BitmapFactory.decodeResource(context.resources, it)) }
+                whenTime?.let { setWhen(it) }
+                tickerText?.let { setTicker(it) }
+                contentIntent?.let { setContentIntent(it) }
+                deleteIntent?.let { setDeleteIntent(it) }
+                groupKey?.let { setGroup(it) }
+                sortKey?.let { setSortKey(it) }
+                if (isGroupSummary) setGroupSummary(true)
+                
+                // Add actions
+                actions.forEach { action ->
+                    addAction(action.icon, action.title, action.intent)
+                }
+                
+                // Add extras
+                if (extras.isNotEmpty()) {
+                    val bundle = Bundle()
+                    extras.forEach { (key, value) ->
+                        when (value) {
+                            is String -> bundle.putString(key, value)
+                            is Int -> bundle.putInt(key, value)
+                            is Long -> bundle.putLong(key, value)
+                            is Boolean -> bundle.putBoolean(key, value)
+                            is Float -> bundle.putFloat(key, value)
+                            is Double -> bundle.putDouble(key, value)
+                        }
                     }
-                    val requestCode = link.hashCode() and 0x7fffffff
-                    val pendingIntent = PendingIntent.getActivity(
-                        context,
-                        requestCode,
-                        deepLinkIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    setContentIntent(pendingIntent)
+                    setExtras(bundle)
                 }
             }
             .build()
         
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        val notificationId = System.currentTimeMillis().toInt()
+        notificationManager.notify(notificationId, notification)
     }
     
-    override suspend fun sendTaskReminder(
-        taskId: String,
-        taskTitle: String,
-        dueDate: String
+    override suspend fun sendBigTextNotification(
+        title: String,
+        message: String,
+        bigText: String,
+        channelId: String,
+        smallIcon: Int,
+        summaryText: String?,
+        contentIntent: PendingIntent?,
+        actions: List<NotificationApi.NotificationAction>
     ) {
+        val style = NotificationCompat.BigTextStyle()
+            .bigText(bigText)
+            .setBigContentTitle(title)
+        
+        summaryText?.let { style.setSummaryText(it) }
+        
         sendNotification(
-            title = "Task Reminder",
-            message = "$taskTitle is due $dueDate",
-            category = NotificationCategory.TASK_REMINDER,
-            deepLink = "kino://task/$taskId"
+            title = title,
+            message = message,
+            channelId = channelId,
+            smallIcon = smallIcon,
+            contentIntent = contentIntent,
+            actions = actions
         )
     }
     
-    override suspend fun sendAchievement(
-        achievementTitle: String,
-        achievementDescription: String
+    override suspend fun sendInboxNotification(
+        title: String,
+        summaryText: String,
+        channelId: String,
+        smallIcon: Int,
+        lines: List<String>,
+        contentIntent: PendingIntent?,
+        actions: List<NotificationApi.NotificationAction>
     ) {
+        val style = NotificationCompat.InboxStyle()
+            .setBigContentTitle(title)
+            .setSummaryText(summaryText)
+        
+        lines.forEach { line ->
+            style.addLine(line)
+        }
+        
         sendNotification(
-            title = "Achievement Unlocked!",
-            message = "$achievementTitle: $achievementDescription",
-            category = NotificationCategory.ACHIEVEMENT
+            title = title,
+            message = summaryText,
+            channelId = channelId,
+            smallIcon = smallIcon,
+            contentIntent = contentIntent,
+            actions = actions
         )
     }
     
-    override suspend fun sendProductivityInsight(
-        insight: String,
-        category: String
+    override suspend fun sendProgressNotification(
+        title: String,
+        message: String,
+        channelId: String,
+        smallIcon: Int,
+        progress: Int,
+        maxProgress: Int,
+        indeterminate: Boolean,
+        contentIntent: PendingIntent?,
+        actions: List<NotificationApi.NotificationAction>
     ) {
+        val notification = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(smallIcon)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setProgress(maxProgress, progress, indeterminate)
+            .setOngoing(true)
+            .apply {
+                contentIntent?.let { setContentIntent(it) }
+                actions.forEach { action ->
+                    addAction(action.icon, action.title, action.intent)
+                }
+            }
+            .build()
+        
+        val notificationId = System.currentTimeMillis().toInt()
+        notificationManager.notify(notificationId, notification)
+    }
+    
+    override suspend fun sendMediaNotification(
+        title: String,
+        message: String,
+        channelId: String,
+        smallIcon: Int,
+        largeIcon: Int?,
+        contentIntent: PendingIntent?,
+        actions: List<NotificationApi.NotificationAction>
+    ) {
+        // For now, just send a regular notification
+        // Media style notifications require additional setup
         sendNotification(
-            title = "Productivity Insight",
-            message = "$category: $insight",
-            category = NotificationCategory.PRODUCTIVITY_INSIGHT,
-            deepLink = "kino://insights"
+            title = title,
+            message = message,
+            channelId = channelId,
+            smallIcon = smallIcon,
+            largeIcon = largeIcon,
+            contentIntent = contentIntent,
+            actions = actions
         )
     }
     
-    override suspend fun sendAchievementNotification(
-        achievementTitle: String,
-        message: String
-    ) {
-        sendNotification(
-            title = "Achievement Unlocked!",
-            message = "$achievementTitle: $message",
-            category = NotificationCategory.ACHIEVEMENT
-        )
+    override fun cancelNotification(notificationId: Int) {
+        notificationManager.cancel(notificationId)
     }
     
-    override suspend fun sendNoteReminder(
-        noteId: String,
-        noteTitle: String,
-        reminderText: String
-    ) {
-        sendNotification(
-            title = "Note Reminder",
-            message = "$noteTitle: $reminderText",
-            category = NotificationCategory.NOTE_REMINDER,
-            deepLink = "kino://note/$noteId"
-        )
+    override fun cancelAllNotifications() {
+        notificationManager.cancelAll()
+    }
+    
+    override fun cancelNotificationsByTag(tag: String) {
+        notificationManager.cancel(tag, 0)
+    }
+    
+    private fun convertPriority(priority: NotificationApi.NotificationPriority): Int {
+        return when (priority) {
+            NotificationApi.NotificationPriority.LOW -> NotificationCompat.PRIORITY_LOW
+            NotificationApi.NotificationPriority.DEFAULT -> NotificationCompat.PRIORITY_DEFAULT
+            NotificationApi.NotificationPriority.HIGH -> NotificationCompat.PRIORITY_HIGH
+            NotificationApi.NotificationPriority.MAX -> NotificationCompat.PRIORITY_MAX
+        }
     }
 }

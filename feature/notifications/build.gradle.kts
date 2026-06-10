@@ -35,11 +35,7 @@ android {
 dependencies {
     // Core modules only
     implementation(project(":core:common"))
-    implementation(project(":core:design-system"))
-    implementation(project(":core:data"))
-    implementation(project(":core:model"))
-    implementation(project(":core:database"))
-    implementation(project(":core:resources"))
+    
     
     // Navigation (temporarily disabled)
     // implementation(project(":navigation"))
