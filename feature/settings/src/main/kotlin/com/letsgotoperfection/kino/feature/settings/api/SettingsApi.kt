@@ -56,4 +56,14 @@ interface SettingsApi {
      * Check if gamification is enabled
      */
     fun isGamificationEnabled(): Flow<Boolean>
+    
+    /**
+     * Check if recurring task notifications are enabled
+     */
+    fun areRecurringTaskNotificationsEnabled(): Flow<Boolean>
+    
+    /**
+     * Update recurring task notification setting
+     */
+    suspend fun updateRecurringTaskNotifications(enabled: Boolean): Result<Unit>
 }

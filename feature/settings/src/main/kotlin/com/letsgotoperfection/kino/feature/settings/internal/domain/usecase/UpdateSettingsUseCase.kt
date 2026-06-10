@@ -41,6 +41,9 @@ class UpdateSettingsUseCase @Inject constructor(
     suspend fun updateNoteReminders(enabled: Boolean) = 
         settingsRepository.updateNoteReminders(enabled)
     
+    suspend fun updateRecurringTasks(enabled: Boolean) = 
+        settingsRepository.updateRecurringTasks(enabled)
+    
     suspend fun updateQuietHours(enabled: Boolean, start: java.time.LocalTime?, end: java.time.LocalTime?) = 
         settingsRepository.updateQuietHours(enabled, start, end)
     

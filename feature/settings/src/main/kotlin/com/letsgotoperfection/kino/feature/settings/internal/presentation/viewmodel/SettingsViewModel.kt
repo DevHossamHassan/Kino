@@ -63,6 +63,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsAction.UpdateSmartSuggestions -> updateSmartSuggestions(action.enabled)
             is SettingsAction.UpdateAchievements -> updateAchievements(action.enabled)
             is SettingsAction.UpdateNoteReminders -> updateNoteReminders(action.enabled)
+            is SettingsAction.UpdateRecurringTasks -> updateRecurringTasks(action.enabled)
             is SettingsAction.UpdateQuietHours -> updateQuietHours(action.enabled, action.start, action.end)
             is SettingsAction.UpdateNotificationFrequency -> updateNotificationFrequency(action.frequency)
             is SettingsAction.UpdateAiEnabled -> updateAiEnabled(action.enabled)
@@ -158,6 +159,15 @@ class SettingsViewModel @Inject constructor(
             updateSettingsUseCase.updateNoteReminders(enabled)
                 .onFailure { error ->
                     _uiEvent.emit(SettingsUiEvent.ShowError(error.message ?: "Failed to update note reminders"))
+                }
+        }
+    }
+    
+    private fun updateRecurringTasks(enabled: Boolean) {
+        viewModelScope.launch {
+            updateSettingsUseCase.updateRecurringTasks(enabled)
+                .onFailure { error ->
+                    _uiEvent.emit(SettingsUiEvent.ShowError(error.message ?: "Failed to update recurring task notifications"))
                 }
         }
     }

@@ -61,6 +61,7 @@ data class NotificationSettings(
     val smartSuggestions: Boolean,
     val achievements: Boolean,
     val noteReminders: Boolean,
+    val recurringTasks: Boolean,
     val quietHoursEnabled: Boolean,
     val quietHoursStart: LocalTime,
     val quietHoursEnd: LocalTime,

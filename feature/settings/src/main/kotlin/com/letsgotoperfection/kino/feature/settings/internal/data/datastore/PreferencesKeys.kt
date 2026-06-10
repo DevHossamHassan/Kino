@@ -17,6 +17,7 @@ internal object PreferencesKeys {
     val SMART_SUGGESTIONS = booleanPreferencesKey("smart_suggestions")
     val ACHIEVEMENTS = booleanPreferencesKey("achievements")
     val NOTE_REMINDERS = booleanPreferencesKey("note_reminders")
+    val RECURRING_TASKS = booleanPreferencesKey("recurring_tasks")
     val QUIET_HOURS_ENABLED = booleanPreferencesKey("quiet_hours_enabled")
     val QUIET_HOURS_START = stringPreferencesKey("quiet_hours_start")
     val QUIET_HOURS_END = stringPreferencesKey("quiet_hours_end")

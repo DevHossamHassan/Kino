@@ -59,6 +59,7 @@ class SettingsRepositoryImpl @Inject constructor(
             settingsDataStore.updateSmartSuggestions(settings.smartSuggestions)
             settingsDataStore.updateAchievements(settings.achievements)
             settingsDataStore.updateNoteReminders(settings.noteReminders)
+            settingsDataStore.updateRecurringTasks(settings.recurringTasks)
             settingsDataStore.updateQuietHours(
                 enabled = settings.quietHoursEnabled,
                 start = settings.quietHoursStart,
@@ -100,6 +101,13 @@ class SettingsRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) {
             runCatching {
                 settingsDataStore.updateNoteReminders(enabled)
+            }
+        }
+    
+    override suspend fun updateRecurringTasks(enabled: Boolean): Result<Unit> = 
+        withContext(ioDispatcher) {
+            runCatching {
+                settingsDataStore.updateRecurringTasks(enabled)
             }
         }
     

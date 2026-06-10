@@ -42,7 +42,9 @@ class SettingsApiImpl @Inject constructor(
     
     override fun areNotificationsEnabled(): Flow<Boolean> {
         return settingsRepository.getSettings()
-            .map { it.notifications.enabled }
+            .map { settings ->
+                settings.notifications.enabled
+            }
     }
     
     override fun isAiEnabled(): Flow<Boolean> {
@@ -53,5 +55,16 @@ class SettingsApiImpl @Inject constructor(
     override fun isGamificationEnabled(): Flow<Boolean> {
         return settingsRepository.getSettings()
             .map { it.gamification.enabled }
+    }
+    
+    override fun areRecurringTaskNotificationsEnabled(): Flow<Boolean> {
+        return settingsRepository.getSettings()
+            .map { settings ->
+                settings.notifications.recurringTasks
+            }
+    }
+    
+    override suspend fun updateRecurringTaskNotifications(enabled: Boolean): Result<Unit> {
+        return settingsRepository.updateRecurringTasks(enabled)
     }
 }

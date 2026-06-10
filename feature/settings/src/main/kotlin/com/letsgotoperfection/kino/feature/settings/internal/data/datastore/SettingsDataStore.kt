@@ -86,6 +86,12 @@ class SettingsDataStore @Inject constructor(
         }
     }
     
+    suspend fun updateRecurringTasks(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECURRING_TASKS] = enabled
+        }
+    }
+    
     suspend fun updateQuietHours(
         enabled: Boolean,
         start: LocalTime? = null,
@@ -233,6 +239,7 @@ class SettingsDataStore @Inject constructor(
                 smartSuggestions = preferences[PreferencesKeys.SMART_SUGGESTIONS] ?: true,
                 achievements = preferences[PreferencesKeys.ACHIEVEMENTS] ?: true,
                 noteReminders = preferences[PreferencesKeys.NOTE_REMINDERS] ?: false,
+                recurringTasks = preferences[PreferencesKeys.RECURRING_TASKS] ?: true,
                 quietHoursEnabled = preferences[PreferencesKeys.QUIET_HOURS_ENABLED] ?: false,
                 quietHoursStart = preferences[PreferencesKeys.QUIET_HOURS_START]?.let {
                     parseLocalTime(it)

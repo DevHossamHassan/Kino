@@ -80,6 +80,16 @@ internal fun NotificationSettingsSection(
                 }
             )
             
+            // Recurring Task Notifications
+            SettingsSwitch(
+                title = "Recurring Task Notifications",
+                subtitle = "Get notified when recurring tasks are created",
+                checked = notificationSettings.recurringTasks,
+                onCheckedChange = { enabled ->
+                    onAction(SettingsAction.UpdateRecurringTasks(enabled))
+                }
+            )
+            
             // Notification Frequency
             SettingsDropdown(
                 title = "Notification Frequency",

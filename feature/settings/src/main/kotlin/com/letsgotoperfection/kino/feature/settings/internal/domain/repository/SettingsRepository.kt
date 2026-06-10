@@ -24,6 +24,7 @@ interface SettingsRepository {
     suspend fun updateSmartSuggestions(enabled: Boolean): Result<Unit>
     suspend fun updateAchievements(enabled: Boolean): Result<Unit>
     suspend fun updateNoteReminders(enabled: Boolean): Result<Unit>
+    suspend fun updateRecurringTasks(enabled: Boolean): Result<Unit>
     suspend fun updateQuietHours(enabled: Boolean, start: java.time.LocalTime?, end: java.time.LocalTime?): Result<Unit>
     suspend fun updateNotificationFrequency(frequency: NotificationFrequency): Result<Unit>
     

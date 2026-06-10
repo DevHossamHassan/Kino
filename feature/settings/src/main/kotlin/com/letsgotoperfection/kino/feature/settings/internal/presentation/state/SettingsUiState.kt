@@ -21,6 +21,7 @@ sealed interface SettingsAction {
     data class UpdateSmartSuggestions(val enabled: Boolean) : SettingsAction
     data class UpdateAchievements(val enabled: Boolean) : SettingsAction
     data class UpdateNoteReminders(val enabled: Boolean) : SettingsAction
+    data class UpdateRecurringTasks(val enabled: Boolean) : SettingsAction
     data class UpdateQuietHours(val enabled: Boolean, val start: java.time.LocalTime?, val end: java.time.LocalTime?) : SettingsAction
     data class UpdateNotificationFrequency(val frequency: com.letsgotoperfection.kino.feature.settings.internal.domain.model.NotificationFrequency) : SettingsAction
     data class UpdateAiEnabled(val enabled: Boolean) : SettingsAction
