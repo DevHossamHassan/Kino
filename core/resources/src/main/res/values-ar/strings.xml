@@ -466,6 +466,14 @@
     <string name="media_play_audio">تشغيل</string>
     <string name="media_pause_audio">إيقاف مؤقت</string>
     <string name="media_open_external_error">لا يوجد تطبيق متاح لفتح هذا الملف.</string>
+    <string name="media_preview_unavailable">المعاينة غير متاحة لهذا النوع من الملفات</string>
+    <string name="media_source_task">مهمة: %1$s</string>
+    <string name="media_source_note">ملاحظة: %1$s</string>
+    <string name="media_type_image">صورة</string>
+    <string name="media_type_video">فيديو</string>
+    <string name="media_type_document">مستند</string>
+    <string name="media_type_audio">صوت</string>
+    <string name="media_type_other">ملف</string>
     
     <!-- Permissions -->
     <string name="media_permission_required_title">مطلوب الوصول للوسائط</string>
@@ -539,6 +547,12 @@
     <string name="notes_editor_pin">تثبيت الملاحظة</string>
     <string name="notes_editor_unpin">إلغاء تثبيت الملاحظة</string>
     <string name="notes_editor_remove_attachment">إزالة المرفق</string>
+    <string name="notes_detail_title">تفاصيل الملاحظة</string>
+    <string name="notes_created_at">أُنشئت %1$s</string>
+    <string name="notes_updated_at">حُدِّثت %1$s</string>
+    <string name="notes_note_pinned_message">تم تثبيت الملاحظة</string>
+    <string name="notes_note_unpinned_message">تم إلغاء تثبيت الملاحظة</string>
+    <string name="notes_load_failed">فشل تحميل الملاحظات</string>
     
     <!-- Notifications -->
     <string name="notifications_title">الإشعارات</string>

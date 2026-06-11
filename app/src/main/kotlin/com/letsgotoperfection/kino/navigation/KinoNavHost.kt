@@ -9,13 +9,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
+import com.letsgotoperfection.kino.R
 import com.letsgotoperfection.kino.feature.kanban.navigation.KanbanBoardRoute
 import com.letsgotoperfection.kino.feature.kanban.navigation.kanbanGraph
 import com.letsgotoperfection.kino.feature.kanban.navigation.CreateTaskRoute
@@ -27,7 +27,6 @@ import com.letsgotoperfection.kino.feature.notes.navigation.notesGraph
 import com.letsgotoperfection.kino.feature.recurringtasks.navigation.CreateRecurringTaskRoute
 import com.letsgotoperfection.kino.feature.recurringtasks.navigation.EditRecurringTaskRoute
 import com.letsgotoperfection.kino.feature.recurringtasks.navigation.RecurringTaskInstancesRoute
-import com.letsgotoperfection.kino.feature.recurringtasks.api.RecurringTaskInstancesScreenApi
 import com.letsgotoperfection.kino.feature.recurringtasks.navigation.recurringTasksGraph
 import com.letsgotoperfection.kino.feature.settings.navigation.SettingsRoute
 import com.letsgotoperfection.kino.feature.settings.navigation.settingsGraph
@@ -47,6 +46,7 @@ fun KinoNavHost(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val taskCreationViewModel: TaskCreationViewModel = hiltViewModel()
 
     Scaffold(
@@ -150,25 +150,19 @@ fun KinoNavHost(
                     coroutineScope.launch {
                         taskCreationViewModel.createTask(draft)
                             .onSuccess { newTaskId ->
-                                snackbarHostState.showSnackbar("Task created")
+                                snackbarHostState.showSnackbar(
+                                    context.getString(R.string.task_created)
+                                )
                                 navController.popBackStack()
                                 navController.navigate(TaskDetailRoute(newTaskId))
                             }
-                            .onFailure { error ->
+                            .onFailure {
                                 snackbarHostState.showSnackbar(
-                                    error.message ?: "Failed to create task"
+                                    context.getString(R.string.task_creation_failed)
                                 )
                             }
                     }
                 }
-            )
-        }
-
-        composable<RecurringTaskInstancesRoute> { backStackEntry ->
-            val route = backStackEntry.toRoute<RecurringTaskInstancesRoute>()
-            RecurringTaskInstancesScreenApi(
-                recurringTaskId = route.recurringTaskId,
-                onNavigateBack = { navController.popBackStack() }
             )
         }
     }
