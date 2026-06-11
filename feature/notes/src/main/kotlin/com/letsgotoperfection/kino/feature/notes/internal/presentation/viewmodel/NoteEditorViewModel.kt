@@ -1,6 +1,8 @@
-package com.letsgotoperfection.kino.feature.notes
+package com.letsgotoperfection.kino.feature.notes.internal.presentation.viewmodel
 
 import android.net.Uri
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -10,6 +12,7 @@ import com.letsgotoperfection.kino.core.database.dao.AttachmentDao
 import com.letsgotoperfection.kino.core.database.dao.NoteDao
 import com.letsgotoperfection.kino.core.database.entity.AttachmentEntity
 import com.letsgotoperfection.kino.core.database.entity.NoteEntity
+import com.letsgotoperfection.kino.core.resources.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
@@ -33,15 +36,20 @@ import javax.inject.Inject
 
 private const val TARGET_NOTE_TYPE = "note"
 
+/**
+ * ViewModel for the note editor screen. Supports creating new notes and
+ * editing existing ones, including file attachments.
+ */
 @HiltViewModel
-class NoteEditorViewModel @Inject constructor(
+internal class NoteEditorViewModel @Inject constructor(
     private val noteDao: NoteDao,
     private val attachmentDao: AttachmentDao,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private var currentNoteId: String? = savedStateHandle.get<String>("noteId")?.takeIf { it.isNotBlank() }
+    private var currentNoteId: String? =
+        savedStateHandle.get<String>("noteId")?.takeIf { it.isNotBlank() }
     private val noteIdState = MutableStateFlow(currentNoteId)
 
     private val persistedAttachments = MutableStateFlow<List<EditorAttachmentUiModel>>(emptyList())
@@ -60,18 +68,15 @@ class NoteEditorViewModel @Inject constructor(
         observeAttachmentUiState()
 
         currentNoteId?.let { id ->
-            // Observe note reactively to auto-update UI on changes
-            // Fixed: Thread-safe state update
             _uiState.update { it.copy(isLoading = true) }
             viewModelScope.launch(ioDispatcher) {
                 noteDao.observeNoteById(id).collectLatest { entity ->
                     if (entity == null) {
-                        _events.send(NoteEditorEvent.ShowMessageRes(com.letsgotoperfection.kino.core.resources.R.string.notes_editor_not_found))
+                        _events.send(NoteEditorEvent.ShowMessage(R.string.notes_editor_not_found))
                         _events.send(NoteEditorEvent.Finish)
                     } else {
                         originalCreatedAt = entity.createdAt
-                        // Fixed: Thread-safe state update
-                        _uiState.update { 
+                        _uiState.update {
                             NoteEditorUiState(
                                 noteId = entity.id,
                                 title = entity.title,
@@ -88,9 +93,6 @@ class NoteEditorViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Fixed: Thread-safe state updates for all UI callbacks
-     */
     fun onTitleChange(value: String) {
         _uiState.update { it.copy(title = value) }
     }
@@ -108,7 +110,8 @@ class NoteEditorViewModel @Inject constructor(
             val attachment = metadata.asUiModel(isPersisted = currentNoteId != null)
             val noteId = currentNoteId
             if (noteId == null) {
-                pendingAttachments.value = pendingAttachments.value + attachment.copy(isPersisted = false)
+                pendingAttachments.value =
+                    pendingAttachments.value + attachment.copy(isPersisted = false)
             } else {
                 attachmentDao.upsertAttachment(attachment.toEntity(noteId))
                 updateAttachmentCount(noteId)
@@ -139,18 +142,19 @@ class NoteEditorViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Saves the current note to the database
-     * Fixed: Used .update{} instead of direct .value assignment to prevent race conditions
-     */
+    fun onAttachmentReadFailed() {
+        viewModelScope.launch {
+            _events.send(NoteEditorEvent.ShowMessage(R.string.notes_editor_unable_to_read_file))
+        }
+    }
+
     fun saveNote() {
         val stateSnapshot = _uiState.value
         if (!stateSnapshot.canSave || stateSnapshot.isSaving) return
 
         viewModelScope.launch(ioDispatcher) {
             try {
-                // Fixed: Use .update{} for thread-safe state mutations
-                _uiState.update { it.copy(isSaving = true, errorMessage = null) }
+                _uiState.update { it.copy(isSaving = true, errorRes = null) }
 
                 val now = System.currentTimeMillis()
                 val noteId = currentNoteId ?: UUID.randomUUID().toString()
@@ -160,7 +164,8 @@ class NoteEditorViewModel @Inject constructor(
                     title = stateSnapshot.title.trim(),
                     content = stateSnapshot.content.text,
                     isPinned = stateSnapshot.isPinned,
-                    attachmentCount = stateSnapshot.attachments.count { it.isPersisted } + pendingAttachments.value.size,
+                    attachmentCount = stateSnapshot.attachments.count { it.isPersisted } +
+                        pendingAttachments.value.size,
                     createdAt = originalCreatedAt ?: now,
                     updatedAt = now
                 )
@@ -175,7 +180,6 @@ class NoteEditorViewModel @Inject constructor(
                 persistPendingAttachments(noteId)
                 updateAttachmentCount(noteId)
 
-                // Fixed: Use .update{} instead of .value for thread safety
                 _uiState.update { currentState ->
                     currentState.copy(
                         noteId = noteId,
@@ -187,9 +191,10 @@ class NoteEditorViewModel @Inject constructor(
 
                 _events.send(NoteEditorEvent.Saved(noteId))
             } catch (throwable: Throwable) {
-                // Fixed: Thread-safe error state update
-                _uiState.update { it.copy(isSaving = false, errorMessage = throwable.message) }
-                _events.send(NoteEditorEvent.ShowMessage(throwable.message ?: "Failed to save note"))
+                _uiState.update {
+                    it.copy(isSaving = false, errorRes = R.string.notes_note_update_failed)
+                }
+                _events.send(NoteEditorEvent.ShowMessage(R.string.notes_note_update_failed))
             }
         }
     }
@@ -207,46 +212,13 @@ class NoteEditorViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Observes attachment state changes and updates UI
-     * Fixed: Used .update{} instead of direct .value assignment to prevent race conditions
-     */
     private fun observeAttachmentUiState() {
         viewModelScope.launch {
             combine(persistedAttachments, pendingAttachments) { persisted, pending ->
                 (persisted + pending).sortedByDescending { it.addedAt }
             }.collect { attachments ->
-                // Fixed: Thread-safe state update
                 _uiState.update { it.copy(attachments = attachments) }
             }
-        }
-    }
-
-    /**
-     * Loads an existing note (legacy method, now replaced by reactive observation)
-     * Fixed: Thread-safe state updates
-     */
-    private suspend fun loadExistingNote(noteId: String) {
-        // Deprecated by reactive observation; kept for compatibility if needed elsewhere
-        val entity = noteDao.getNoteById(noteId)
-        if (entity == null) {
-            _events.send(NoteEditorEvent.ShowMessageRes(com.letsgotoperfection.kino.core.resources.R.string.notes_editor_not_found))
-            _events.send(NoteEditorEvent.Finish)
-            return
-        }
-
-        originalCreatedAt = entity.createdAt
-        // Fixed: Thread-safe state update
-        _uiState.update { 
-            NoteEditorUiState(
-                noteId = entity.id,
-                title = entity.title,
-                content = TextFieldValue(entity.content),
-                isPinned = entity.isPinned,
-                createdAt = entity.createdAt.toLocalDateTime(),
-                updatedAt = entity.updatedAt.toLocalDateTime(),
-                isLoading = false
-            )
         }
     }
 
@@ -266,9 +238,8 @@ class NoteEditorViewModel @Inject constructor(
     }
 
     private fun AttachmentMetadata.asUiModel(isPersisted: Boolean): EditorAttachmentUiModel {
-        val identifier = UUID.randomUUID().toString()
         return EditorAttachmentUiModel(
-            id = identifier,
+            id = UUID.randomUUID().toString(),
             uri = uri,
             displayName = displayName,
             mimeType = mimeType,
@@ -307,7 +278,11 @@ class NoteEditorViewModel @Inject constructor(
         LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
 }
 
-data class NoteEditorUiState(
+/**
+ * UI state for the note editor screen.
+ */
+@Immutable
+internal data class NoteEditorUiState(
     val noteId: String? = null,
     val title: String = "",
     val content: TextFieldValue = TextFieldValue(),
@@ -317,13 +292,17 @@ data class NoteEditorUiState(
     val updatedAt: LocalDateTime? = null,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
-    val errorMessage: String? = null
+    @StringRes val errorRes: Int? = null
 ) {
     val canSave: Boolean get() =
         title.isNotBlank() || content.text.isNotBlank() || attachments.isNotEmpty()
 }
 
-data class EditorAttachmentUiModel(
+/**
+ * UI model for an attachment shown in the editor.
+ */
+@Immutable
+internal data class EditorAttachmentUiModel(
     val id: String,
     val uri: Uri,
     val displayName: String,
@@ -333,17 +312,22 @@ data class EditorAttachmentUiModel(
     val isPersisted: Boolean
 )
 
-data class AttachmentMetadata(
+/**
+ * Metadata describing a file picked by the user to attach to a note.
+ */
+internal data class AttachmentMetadata(
     val uri: Uri,
     val displayName: String,
     val mimeType: String,
     val size: Long
 )
 
-sealed interface NoteEditorEvent {
+/**
+ * One-time events for the note editor screen.
+ */
+internal sealed interface NoteEditorEvent {
     data class Saved(val noteId: String) : NoteEditorEvent
-    data class ShowMessage(val message: String) : NoteEditorEvent
-    data class ShowMessageRes(val messageRes: Int) : NoteEditorEvent
+    data class ShowMessage(@StringRes val messageRes: Int) : NoteEditorEvent
     data class OpenAttachment(val uri: Uri, val mimeType: String) : NoteEditorEvent
     data object Finish : NoteEditorEvent
 }
