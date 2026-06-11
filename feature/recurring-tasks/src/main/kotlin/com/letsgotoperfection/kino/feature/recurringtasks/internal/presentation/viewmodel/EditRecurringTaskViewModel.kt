@@ -3,6 +3,7 @@ package com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.letsgotoperfection.kino.core.model.Label
+import com.letsgotoperfection.kino.feature.recurringtasks.R
 import com.letsgotoperfection.kino.feature.recurringtasks.api.RecurringTasksApi
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.EditRecurringTaskUiState
@@ -30,7 +31,7 @@ class EditRecurringTaskViewModel @Inject constructor(
     
     fun loadRecurringTask(recurringTaskId: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, errorRes = null) }
             
             recurringTasksApi.getRecurringTask(recurringTaskId)
                 .onSuccess { recurringTask ->
@@ -55,11 +56,11 @@ class EditRecurringTaskViewModel @Inject constructor(
                         )
                     }
                 }
-                .onFailure { error ->
+                .onFailure {
                     _uiState.update { 
                         it.copy(
                             isLoading = false,
-                            error = error.message ?: "Failed to load recurring task"
+                            errorRes = R.string.error_loading_recurring_task
                         )
                     }
                 }
@@ -102,11 +103,38 @@ class EditRecurringTaskViewModel @Inject constructor(
     }
     
     fun updateFrequency(frequency: com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency) {
-        _uiState.update { it.copy(frequency = frequency) }
+        _uiState.update {
+            it.copy(
+                frequency = frequency,
+                daysOfWeek = if (frequency == com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.WEEKLY) {
+                    it.daysOfWeek.ifEmpty { setOf(java.time.LocalDate.now().dayOfWeek) }
+                } else emptySet(),
+                dayOfMonth = if (frequency == com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.MONTHLY ||
+                    frequency == com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.YEARLY
+                ) {
+                    it.dayOfMonth ?: java.time.LocalDate.now().dayOfMonth
+                } else null,
+                monthOfYear = if (frequency == com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.YEARLY) {
+                    it.monthOfYear ?: java.time.LocalDate.now().monthValue
+                } else null
+            )
+        }
     }
     
     fun updateInterval(interval: Int) {
         _uiState.update { it.copy(interval = maxOf(1, interval)) }
+    }
+
+    fun updateDaysOfWeek(daysOfWeek: Set<java.time.DayOfWeek>) {
+        _uiState.update { it.copy(daysOfWeek = daysOfWeek) }
+    }
+
+    fun updateDayOfMonth(dayOfMonth: Int) {
+        _uiState.update { it.copy(dayOfMonth = dayOfMonth) }
+    }
+
+    fun updateMonthOfYear(monthOfYear: Int) {
+        _uiState.update { it.copy(monthOfYear = monthOfYear) }
     }
     
     fun updateTimeOfDay(timeOfDay: java.time.LocalTime) {
@@ -156,12 +184,12 @@ class EditRecurringTaskViewModel @Inject constructor(
             recurringTasksApi.updateRecurringTask(updatedTask)
                 .onSuccess {
                     _uiState.update { it.copy(isSaving = false) }
-                    _uiEvent.trySend(RecurringTaskEvent.ShowSuccess("Recurring task updated successfully"))
+                    _uiEvent.trySend(RecurringTaskEvent.ShowSuccess(R.string.recurring_task_updated))
                     // Navigation handled by UI callbacks
                 }
-                .onFailure { error ->
+                .onFailure {
                     _uiState.update { it.copy(isSaving = false) }
-                    _uiEvent.trySend(RecurringTaskEvent.ShowError(error.message ?: "Failed to update recurring task"))
+                    _uiEvent.trySend(RecurringTaskEvent.ShowError(R.string.error_updating_recurring_task))
                 }
         }
     }

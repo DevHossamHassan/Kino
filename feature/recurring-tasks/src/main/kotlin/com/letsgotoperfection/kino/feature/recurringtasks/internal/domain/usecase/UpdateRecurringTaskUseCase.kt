@@ -2,6 +2,7 @@ package com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.useca
 
 import com.letsgotoperfection.kino.feature.recurringtasks.api.InvalidRecurrenceRuleException
 import com.letsgotoperfection.kino.feature.recurringtasks.api.RecurringTaskNotFoundException
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.alarm.RecurringTaskAlarmScheduler
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.calculator.RecurrenceCalculator
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.repository.RecurringTasksRepository
@@ -9,11 +10,15 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 /**
- * Use case for updating an existing recurring task
+ * Use case for updating an existing recurring task.
+ *
+ * On success, all pending alarms are cancelled and rescheduled with the new
+ * rule so schedule edits take effect immediately.
  */
 class UpdateRecurringTaskUseCase @Inject constructor(
     private val repository: RecurringTasksRepository,
-    private val recurrenceCalculator: RecurrenceCalculator
+    private val recurrenceCalculator: RecurrenceCalculator,
+    private val alarmScheduler: RecurringTaskAlarmScheduler
 ) {
     
     suspend operator fun invoke(
@@ -52,7 +57,9 @@ class UpdateRecurringTaskUseCase @Inject constructor(
             updatedAt = LocalDateTime.now()
         )
         
-        return repository.updateRecurringTask(updatedTask)
+        return repository.updateRecurringTask(updatedTask).onSuccess {
+            resetAlarms(updatedTask)
+        }
     }
     
     suspend operator fun invoke(recurringTask: RecurringTask): Result<Unit> {
@@ -65,6 +72,15 @@ class UpdateRecurringTaskUseCase @Inject constructor(
         // Update with current timestamp
         val updatedTask = recurringTask.copy(updatedAt = LocalDateTime.now())
         
-        return repository.updateRecurringTask(updatedTask)
+        return repository.updateRecurringTask(updatedTask).onSuccess {
+            resetAlarms(updatedTask)
+        }
+    }
+    
+    private fun resetAlarms(task: RecurringTask) {
+        alarmScheduler.cancelAllForRecurringTask(task.id)
+        if (task.isActive) {
+            alarmScheduler.scheduleUpcomingOccurrences(task)
+        }
     }
 }

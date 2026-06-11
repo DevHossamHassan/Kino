@@ -28,11 +28,8 @@ class AlarmPermissionManager @Inject constructor(
      */
     fun canScheduleExactAlarms(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            alarmManager.canScheduleExactAlarms().also { canSchedule ->
-                Log.i(TAG, "Can schedule exact alarms: $canSchedule (Android ${Build.VERSION.SDK_INT})")
-            }
+            alarmManager.canScheduleExactAlarms()
         } else {
-            Log.i(TAG, "Can schedule exact alarms: true (Android ${Build.VERSION.SDK_INT} - no permission needed)")
             true
         }
     }
@@ -81,15 +78,11 @@ class AlarmPermissionManager @Inject constructor(
     }
     
     /**
-     * Get user-friendly message about alarm permission requirement.
+     * Whether the exact alarm permission flow is relevant on this device
+     * (Android 12+ only) and currently not granted.
      */
-    fun getPermissionMessage(): String {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION.SDK_INT) {
-            "Recurring tasks need permission to schedule exact alarms. " +
-            "Please grant 'Alarms & reminders' permission in the next screen."
-        } else {
-            ""
-        }
+    fun isExactAlarmPermissionMissing(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !canScheduleExactAlarms()
     }
     
     companion object {

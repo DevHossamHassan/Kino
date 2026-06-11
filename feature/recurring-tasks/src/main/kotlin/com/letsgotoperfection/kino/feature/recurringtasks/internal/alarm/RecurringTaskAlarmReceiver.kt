@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -62,7 +63,12 @@ class RecurringTaskAlarmReceiver : BroadcastReceiver() {
             )
             .build()
         
-        workManager.enqueue(workRequest)
+        // Unique work prevents duplicate instances if the alarm re-fires.
+        workManager.enqueueUniqueWork(
+            "task_instance_${recurringTaskId}_$scheduledDateEpochDay",
+            ExistingWorkPolicy.KEEP,
+            workRequest
+        )
         Log.i(TAG, "Enqueued task creation work for $recurringTaskId")
     }
     

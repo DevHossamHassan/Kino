@@ -2,6 +2,7 @@ package com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.letsgotoperfection.kino.feature.recurringtasks.R
 import com.letsgotoperfection.kino.feature.recurringtasks.api.RecurringTasksApi
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.RecurringTaskAction
@@ -42,14 +43,14 @@ class RecurringTasksViewModel @Inject constructor(
     
     private fun loadRecurringTasks() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, errorRes = null) }
             
             recurringTasksApi.getAllRecurringTasks()
-                .catch { exception ->
+                .catch {
                     _uiState.update { 
                         it.copy(
                             isLoading = false,
-                            error = exception.message ?: "Failed to load recurring tasks"
+                            errorRes = R.string.error_loading_recurring_tasks
                         ) 
                     }
                 }
@@ -58,7 +59,7 @@ class RecurringTasksViewModel @Inject constructor(
                         it.copy(
                             recurringTasks = recurringTasks,
                             isLoading = false,
-                            error = null
+                            errorRes = null
                         ) 
                     }
                 }
@@ -70,11 +71,11 @@ class RecurringTasksViewModel @Inject constructor(
             recurringTasksApi.deleteRecurringTask(id)
                 .fold(
                     onSuccess = {
-                        _uiEvent.trySend(RecurringTaskEvent.ShowSuccess("Recurring task deleted successfully"))
+                        _uiEvent.trySend(RecurringTaskEvent.ShowSuccess(R.string.recurring_task_deleted))
                         loadRecurringTasks()
                     },
-                    onFailure = { error ->
-                        _uiEvent.trySend(RecurringTaskEvent.ShowError(error.message ?: "Failed to delete recurring task"))
+                    onFailure = {
+                        _uiEvent.trySend(RecurringTaskEvent.ShowError(R.string.error_deleting_recurring_task))
                     }
                 )
         }
@@ -85,13 +86,16 @@ class RecurringTasksViewModel @Inject constructor(
             recurringTasksApi.setRecurringTaskActive(id, isActive)
                 .fold(
                     onSuccess = {
-                        val message = if (isActive) "Recurring task resumed" else "Recurring task paused"
-                        _uiEvent.trySend(RecurringTaskEvent.ShowSuccess(message))
+                        val messageRes = if (isActive) {
+                            R.string.recurring_task_resumed
+                        } else {
+                            R.string.recurring_task_paused
+                        }
+                        _uiEvent.trySend(RecurringTaskEvent.ShowSuccess(messageRes))
                         loadRecurringTasks()
                     },
-                    onFailure = { error ->
-                        val message = if (isActive) "Failed to resume recurring task" else "Failed to pause recurring task"
-                        _uiEvent.trySend(RecurringTaskEvent.ShowError(error.message ?: message))
+                    onFailure = {
+                        _uiEvent.trySend(RecurringTaskEvent.ShowError(R.string.error_updating_recurring_task))
                     }
                 )
         }

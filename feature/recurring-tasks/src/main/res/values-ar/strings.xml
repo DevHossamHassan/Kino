@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Recurring Tasks -->
+    <string name="recurring_tasks_title">المهام المتكررة</string>
+    <string name="create_recurring_task_title">إنشاء مهمة متكررة</string>
+    <string name="edit_recurring_task_title">تعديل المهمة المتكررة</string>
+    <string name="recurring_task_instances_title">نسخ المهمة</string>
+
+    <!-- Basic Information -->
+    <string name="recurring_task_basic_info">المعلومات الأساسية</string>
+    <string name="recurring_task_pattern">نمط التكرار</string>
+    <string name="recurring_task_schedule">الجدولة</string>
+
+    <!-- Form Fields -->
+    <string name="title">العنوان</string>
+    <string name="description">الوصف</string>
+    <string name="section">القسم</string>
+    <string name="priority">الأولوية</string>
+    <string name="frequency">التكرار</string>
+    <string name="interval">الفاصل الزمني</string>
+    <string name="days_of_week">أيام الأسبوع</string>
+    <string name="day_of_month">يوم الشهر</string>
+    <string name="month_of_year">شهر السنة</string>
+    <string name="time_of_day">الوقت</string>
+    <string name="start_date">تاريخ البدء</string>
+    <string name="end_date">تاريخ الانتهاء (اختياري)</string>
+
+    <!-- Frequency Options -->
+    <string name="daily">يومي</string>
+    <string name="weekly">أسبوعي</string>
+    <string name="monthly">شهري</string>
+    <string name="yearly">سنوي</string>
+
+    <!-- Days of Week -->
+    <string name="monday">الاثنين</string>
+    <string name="tuesday">الثلاثاء</string>
+    <string name="wednesday">الأربعاء</string>
+    <string name="thursday">الخميس</string>
+    <string name="friday">الجمعة</string>
+    <string name="saturday">السبت</string>
+    <string name="sunday">الأحد</string>
+
+    <!-- Months -->
+    <string name="january">يناير</string>
+    <string name="february">فبراير</string>
+    <string name="march">مارس</string>
+    <string name="april">أبريل</string>
+    <string name="may">مايو</string>
+    <string name="june">يونيو</string>
+    <string name="july">يوليو</string>
+    <string name="august">أغسطس</string>
+    <string name="september">سبتمبر</string>
+    <string name="october">أكتوبر</string>
+    <string name="november">نوفمبر</string>
+    <string name="december">ديسمبر</string>
+
+    <!-- Actions -->
+    <string name="create">إنشاء</string>
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="delete">حذف</string>
+    <string name="edit">تعديل</string>
+    <string name="pause">إيقاف مؤقت</string>
+    <string name="resume">استئناف</string>
+    <string name="view_instances">عرض النسخ</string>
+    <string name="add">إضافة</string>
+    <string name="ok">موافق</string>
+    <string name="retry">إعادة المحاولة</string>
+
+    <!-- Checklist Template -->
+    <string name="add_checklist_item_title">إضافة عنصر إلى قائمة التحقق</string>
+    <string name="checklist_item_text">نص العنصر</string>
+    <string name="checklist_template_hint">أضف عناصر قائمة التحقق التي سيتم نسخها إلى كل مهمة يتم إنشاؤها</string>
+    <string name="checklist_template_title">قالب قائمة التحقق</string>
+
+    <!-- Description Editor -->
+    <string name="tap_to_add_description">انقر لإضافة وصف بتنسيق غني</string>
+    <string name="cd_edit_description">تعديل الوصف بتنسيق غني</string>
+
+    <!-- Task Template -->
+    <string name="task_template">قالب المهمة</string>
+    <string name="default_column">العمود الافتراضي</string>
+    <string name="default_column_hint">المكان الذي ستوضع فيه المهام التي يتم إنشاؤها</string>
+    <string name="due_date">تاريخ الاستحقاق</string>
+    <string name="due_date_offset_hint">عدد الأيام بعد إنشاء المهمة</string>
+    <string name="offset_same_day">نفس اليوم</string>
+    <plurals name="offset_days">
+        <item quantity="zero">%d يوم</item>
+        <item quantity="one">يوم واحد</item>
+        <item quantity="two">يومان</item>
+        <item quantity="few">%d أيام</item>
+        <item quantity="many">%d يومًا</item>
+        <item quantity="other">%d يوم</item>
+    </plurals>
+    <string name="labels">التصنيفات</string>
+
+    <!-- Interval labels -->
+    <string name="every_x_days">كل X أيام</string>
+    <string name="every_x_weeks">كل X أسابيع</string>
+    <string name="every_x_months">كل X أشهر</string>
+    <string name="every_x_years">كل X سنوات</string>
+
+    <!-- Field Hints -->
+    <string name="day_of_month_hint">اليوم (1–31)</string>
+    <string name="label_optional">%1$s (اختياري)</string>
+    <string name="no_end_date">لا يوجد تاريخ انتهاء</string>
+    <string name="occurrence_bullet">• %1$s</string>
+
+    <!-- Content Descriptions (general) -->
+    <string name="cd_back">رجوع</string>
+    <string name="cd_add_checklist_item">إضافة عنصر إلى قائمة التحقق</string>
+    <string name="cd_remove_checklist_item">إزالة عنصر من قائمة التحقق</string>
+    <string name="cd_select_time">اختيار الوقت</string>
+    <string name="cd_select_date">اختيار التاريخ</string>
+    <string name="cd_clear_date">مسح التاريخ</string>
+
+    <!-- Status -->
+    <string name="active">نشط</string>
+    <string name="paused">متوقف مؤقتًا</string>
+    <string name="ends_on">ينتهي في %1$s</string>
+    <string name="never_ends">لا ينتهي أبدًا</string>
+
+    <!-- Preview -->
+    <string name="recurrence_preview">معاينة</string>
+    <string name="next_occurrences">المواعيد القادمة</string>
+    <string name="no_occurrences">لا توجد مواعيد قادمة</string>
+
+    <!-- Task Instance -->
+    <string name="recurring_task_instance">جزء من مهمة متكررة</string>
+    <string name="view_recurring_task">عرض قالب المهمة المتكررة</string>
+    <string name="generated_from">تم إنشاؤها من: %1$s</string>
+    <string name="scheduled_for">مجدولة في %1$s</string>
+
+    <!-- Validation Messages -->
+    <string name="title_required">العنوان مطلوب</string>
+    <string name="description_required">الوصف مطلوب</string>
+    <string name="invalid_interval">يجب أن يكون الفاصل الزمني أكبر من صفر</string>
+    <string name="weekly_requires_days">التكرار الأسبوعي يتطلب يومًا واحدًا على الأقل من أيام الأسبوع</string>
+    <string name="monthly_requires_day">التكرار الشهري يتطلب يومًا صحيحًا من الشهر</string>
+    <string name="yearly_requires_month_day">التكرار السنوي يتطلب شهرًا ويومًا صحيحين</string>
+    <string name="start_date_required">تاريخ البدء مطلوب</string>
+    <string name="end_date_before_start">يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء</string>
+
+    <!-- Recurrence Preview Prompts -->
+    <string name="fill_required_fields">يرجى ملء جميع الحقول المطلوبة بشكل صحيح</string>
+    <string name="select_days_of_week">اختر أيام الأسبوع</string>
+    <string name="select_day_of_month">اختر يوم الشهر</string>
+    <string name="select_month_and_day">اختر الشهر واليوم</string>
+
+    <!-- Error Messages -->
+    <string name="error_loading_recurring_tasks">فشل تحميل المهام المتكررة</string>
+    <string name="error_loading_recurring_task">فشل تحميل المهمة المتكررة</string>
+    <string name="error_creating_recurring_task">فشل إنشاء المهمة المتكررة</string>
+    <string name="error_updating_recurring_task">فشل تحديث المهمة المتكررة</string>
+    <string name="error_deleting_recurring_task">فشل حذف المهمة المتكررة</string>
+    <string name="error_generating_instances">فشل إنشاء نسخ المهمة</string>
+
+    <!-- Success Messages -->
+    <string name="recurring_task_created">تم إنشاء المهمة المتكررة بنجاح</string>
+    <string name="recurring_task_updated">تم تحديث المهمة المتكررة بنجاح</string>
+    <string name="recurring_task_deleted">تم حذف المهمة المتكررة بنجاح</string>
+    <string name="recurring_task_paused">تم إيقاف المهمة المتكررة مؤقتًا</string>
+    <string name="recurring_task_resumed">تم استئناف المهمة المتكررة</string>
+
+    <!-- List subtitle: number of recurring tasks -->
+    <plurals name="recurring_tasks_count">
+        <item quantity="zero">لا توجد مهام متكررة</item>
+        <item quantity="one">مهمة متكررة واحدة</item>
+        <item quantity="two">مهمتان متكررتان</item>
+        <item quantity="few">%d مهام متكررة</item>
+        <item quantity="many">%d مهمة متكررة</item>
+        <item quantity="other">%d مهمة متكررة</item>
+    </plurals>
+
+    <!-- Empty States -->
+    <string name="no_recurring_tasks">لا توجد مهام متكررة بعد</string>
+    <string name="no_recurring_tasks_description">أنشئ أول مهمة متكررة للبدء في إنشاء المهام تلقائيًا</string>
+    <string name="no_task_instances">لم يتم العثور على نسخ للمهمة</string>
+    <string name="no_task_instances_description">ستظهر نسخ المهمة هنا عند إنشائها من المهمة المتكررة</string>
+
+    <!-- Confirmation Dialogs -->
+    <string name="confirm_delete_recurring_task">حذف المهمة المتكررة</string>
+    <string name="confirm_delete_recurring_task_message">هل أنت متأكد من رغبتك في حذف هذه المهمة المتكررة؟ لن يؤدي هذا إلى حذف نسخ المهمة الموجودة.</string>
+    <string name="confirm_pause_recurring_task">إيقاف المهمة المتكررة مؤقتًا</string>
+    <string name="confirm_pause_recurring_task_message">سيؤدي إيقاف هذه المهمة المتكررة مؤقتًا إلى التوقف عن إنشاء نسخ جديدة. ستبقى النسخ الموجودة.</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_add_recurring_task">إضافة مهمة متكررة</string>
+    <string name="cd_edit_recurring_task">تعديل المهمة المتكررة</string>
+    <string name="cd_delete_recurring_task">حذف المهمة المتكررة</string>
+    <string name="cd_pause_recurring_task">إيقاف المهمة المتكررة مؤقتًا</string>
+    <string name="cd_resume_recurring_task">استئناف المهمة المتكررة</string>
+    <string name="cd_view_instances">عرض نسخ المهمة</string>
+    <string name="cd_recurrence_pattern">نمط التكرار</string>
+    <string name="cd_task_status">حالة المهمة</string>
+
+    <!-- Priorities -->
+    <string name="priority_high">مرتفعة</string>
+    <string name="priority_medium">متوسطة</string>
+    <string name="priority_low">منخفضة</string>
+
+    <!-- Sections -->
+    <string name="section_personal">شخصي</string>
+    <string name="section_work">العمل</string>
+    <string name="section_family">العائلة</string>
+
+    <!-- Board Columns -->
+    <string name="column_backlog">قائمة الانتظار</string>
+    <string name="column_todo_this_week">مهام هذا الأسبوع</string>
+    <string name="column_in_progress">قيد التنفيذ</string>
+    <string name="column_pending">معلّق</string>
+    <string name="column_done">منجز</string>
+
+    <!-- Notifications -->
+    <string name="notification_recurring_task_created_title">تم إنشاء مهمة متكررة</string>
+    <string name="notification_recurring_task_created_message">تمت إضافة %1$s إلى %2$s في %3$s</string>
+    <string name="notification_recurring_task_group_line">%1$s ← %2$s (%3$s)</string>
+    <plurals name="notification_recurring_tasks_created_title">
+        <item quantity="zero">لم يتم إنشاء مهام متكررة</item>
+        <item quantity="one">تم إنشاء مهمة متكررة واحدة</item>
+        <item quantity="two">تم إنشاء مهمتين متكررتين</item>
+        <item quantity="few">تم إنشاء %d مهام متكررة</item>
+        <item quantity="many">تم إنشاء %d مهمة متكررة</item>
+        <item quantity="other">تم إنشاء %d مهمة متكررة</item>
+    </plurals>
+    <string name="notification_recurring_tasks_group_summary">تمت إضافة المهام إلى لوحتك</string>
+    <string name="notification_recurring_tasks_group_summary_more">تمت إضافة المهام إلى لوحتك (+%1$d أخرى)</string>
+
+    <!-- Recurrence Descriptions -->
+    <string name="recurrence_daily">كل يوم في %1$s</string>
+    <string name="recurrence_every_n_days">كل %1$d أيام في %2$s</string>
+    <string name="recurrence_weekly">كل أسبوع يوم %1$s في %2$s</string>
+    <string name="recurrence_every_n_weeks">كل %1$d أسابيع يوم %2$s في %3$s</string>
+    <string name="recurrence_monthly">شهريًا في اليوم %1$d في %2$s</string>
+    <string name="recurrence_every_n_months">كل %1$d أشهر في اليوم %2$d في %3$s</string>
+    <string name="recurrence_yearly">سنويًا في %1$s %2$d في %3$s</string>
+    <string name="recurrence_every_n_years">كل %1$d سنوات في %2$s %3$d في %4$s</string>
+    <string name="list_separator">"، "</string>
+
+    <!-- Permissions -->
+    <string name="alarm_permission_message">تحتاج المهام المتكررة إلى إذن لجدولة منبهات دقيقة. يرجى منح إذن "المنبهات والتذكيرات" في الشاشة التالية.</string>
+</resources>

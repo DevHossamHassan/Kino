@@ -2,279 +2,168 @@ package com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.calcu
 
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceRule
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.Month
-import java.time.format.TextStyle
-import java.util.Locale
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Calculator for recurring task date calculations.
+ * Single source of truth for recurring task date calculations.
  * Handles all recurrence patterns: daily, weekly, monthly, and yearly.
+ *
+ * All occurrence checks are anchored to the recurring task's start date so that
+ * interval-based rules (e.g. "every 2 weeks") stay consistent across the app.
  */
 @Singleton
 class RecurrenceCalculator @Inject constructor() {
-    
+
     /**
-     * Calculate next occurrence date based on recurrence rule
-     */
-    fun calculateNextOccurrence(
-        rule: RecurrenceRule,
-        fromDate: LocalDate
-    ): LocalDate? {
-        return when (rule.frequency) {
-            RecurrenceFrequency.DAILY -> calculateNextDaily(rule, fromDate)
-            RecurrenceFrequency.WEEKLY -> calculateNextWeekly(rule, fromDate)
-            RecurrenceFrequency.MONTHLY -> calculateNextMonthly(rule, fromDate)
-            RecurrenceFrequency.YEARLY -> calculateNextYearly(rule, fromDate)
-        }
-    }
-    
-    /**
-     * Generate all occurrences between two dates
-     */
-    fun generateOccurrences(
-        rule: RecurrenceRule,
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): List<LocalDate> {
-        val occurrences = mutableListOf<LocalDate>()
-        var currentDate = startDate
-        
-        while (currentDate.isBefore(endDate) || currentDate.isEqual(endDate)) {
-            occurrences.add(currentDate)
-            
-            val nextDate = calculateNextOccurrence(rule, currentDate)
-            if (nextDate == null || nextDate.isAfter(endDate)) {
-                break
-            }
-            currentDate = nextDate
-        }
-        
-        return occurrences
-    }
-    
-    /**
-     * Check if a specific date matches the recurrence rule
+     * Check if a specific date matches the recurrence rule, anchored at [startDate].
      */
     fun isOccurrenceDate(
         rule: RecurrenceRule,
         date: LocalDate,
         startDate: LocalDate
-    ): Boolean {
-        return when (rule.frequency) {
-            RecurrenceFrequency.DAILY -> isDailyOccurrence(rule, date, startDate)
-            RecurrenceFrequency.WEEKLY -> isWeeklyOccurrence(rule, date, startDate)
-            RecurrenceFrequency.MONTHLY -> isMonthlyOccurrence(rule, date, startDate)
-            RecurrenceFrequency.YEARLY -> isYearlyOccurrence(rule, date, startDate)
-        }
-    }
-    
-    private fun calculateNextDaily(
-        rule: RecurrenceRule,
-        fromDate: LocalDate
-    ): LocalDate {
-        return fromDate.plusDays(rule.interval.toLong())
-    }
-    
-    private fun calculateNextWeekly(
-        rule: RecurrenceRule,
-        fromDate: LocalDate
-    ): LocalDate? {
-        require(rule.daysOfWeek.isNotEmpty()) { "Weekly recurrence requires daysOfWeek" }
-        
-        val sortedDays = rule.daysOfWeek.sorted()
-        val currentDayOfWeek = fromDate.dayOfWeek
-        
-        // Find next day in current week
-        val nextDayInWeek = sortedDays.firstOrNull { it > currentDayOfWeek }
-        
-        return if (nextDayInWeek != null) {
-            // Next occurrence is in the same week
-            fromDate.with(nextDayInWeek)
-        } else {
-            // Move to next week(s) and use first day
-            val weeksToAdd = rule.interval.toLong()
-            fromDate.plusWeeks(weeksToAdd).with(sortedDays.first())
-        }
-    }
-    
-    private fun calculateNextMonthly(
-        rule: RecurrenceRule,
-        fromDate: LocalDate
-    ): LocalDate {
-        val dayOfMonth = rule.dayOfMonth ?: fromDate.dayOfMonth
-        var nextDate = fromDate.plusMonths(rule.interval.toLong())
-        
-        // Handle months with fewer days (e.g., Feb 30 -> Feb 28)
-        val maxDayInMonth = nextDate.lengthOfMonth()
-        val adjustedDay = minOf(dayOfMonth, maxDayInMonth)
-        
-        return nextDate.withDayOfMonth(adjustedDay)
-    }
-    
-    private fun calculateNextYearly(
-        rule: RecurrenceRule,
-        fromDate: LocalDate
-    ): LocalDate {
-        val month = rule.monthOfYear ?: fromDate.monthValue
-        val dayOfMonth = rule.dayOfMonth ?: fromDate.dayOfMonth
-        
-        var nextDate = fromDate.plusYears(rule.interval.toLong())
-        nextDate = nextDate.withMonth(month)
-        
-        // Handle leap years and month variations
-        val maxDayInMonth = nextDate.lengthOfMonth()
-        val adjustedDay = minOf(dayOfMonth, maxDayInMonth)
-        
-        return nextDate.withDayOfMonth(adjustedDay)
-    }
-    
-    private fun isDailyOccurrence(
-        rule: RecurrenceRule,
-        date: LocalDate,
-        startDate: LocalDate
-    ): Boolean {
-        val daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(startDate, date)
-        return daysSinceStart >= 0 && daysSinceStart % rule.interval == 0L
-    }
-    
-    private fun isWeeklyOccurrence(
-        rule: RecurrenceRule,
-        date: LocalDate,
-        startDate: LocalDate
-    ): Boolean {
-        if (!rule.daysOfWeek.contains(date.dayOfWeek)) return false
-        
-        val weeksSinceStart = java.time.temporal.ChronoUnit.WEEKS.between(startDate, date)
-        return weeksSinceStart >= 0 && weeksSinceStart % rule.interval == 0L
-    }
-    
-    private fun isMonthlyOccurrence(
-        rule: RecurrenceRule,
-        date: LocalDate,
-        startDate: LocalDate
-    ): Boolean {
-        val dayOfMonth = rule.dayOfMonth ?: startDate.dayOfMonth
-        if (date.dayOfMonth != dayOfMonth) return false
-        
-        val monthsSinceStart = java.time.temporal.ChronoUnit.MONTHS.between(startDate, date)
-        return monthsSinceStart >= 0 && monthsSinceStart % rule.interval == 0L
-    }
-    
-    private fun isYearlyOccurrence(
-        rule: RecurrenceRule,
-        date: LocalDate,
-        startDate: LocalDate
-    ): Boolean {
-        val month = rule.monthOfYear ?: startDate.monthValue
-        val dayOfMonth = rule.dayOfMonth ?: startDate.dayOfMonth
-        
-        if (date.monthValue != month || date.dayOfMonth != dayOfMonth) return false
-        
-        val yearsSinceStart = java.time.temporal.ChronoUnit.YEARS.between(startDate, date)
-        return yearsSinceStart >= 0 && yearsSinceStart % rule.interval == 0L
-    }
-    
+    ): Boolean = matchesRule(rule, date, startDate)
+
     /**
-     * Get human-readable description of recurrence
+     * Calculate the next occurrence strictly after [fromDate], anchored at [startDate].
+     *
+     * @param endDate Optional inclusive upper bound; null means no bound.
+     * @return The next occurrence date, or null when none exists within bounds.
      */
-    fun getRecurrenceDescription(rule: RecurrenceRule): String {
-        return when (rule.frequency) {
-            RecurrenceFrequency.DAILY -> {
-                if (rule.interval == 1) "Every day at ${rule.timeOfDay}"
-                else "Every ${rule.interval} days at ${rule.timeOfDay}"
-            }
-            RecurrenceFrequency.WEEKLY -> {
-                val daysStr = rule.daysOfWeek
-                    .sorted()
-                    .joinToString(", ") { it.getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
-                
-                if (rule.interval == 1) "Every week on $daysStr at ${rule.timeOfDay}"
-                else "Every ${rule.interval} weeks on $daysStr at ${rule.timeOfDay}"
-            }
-            RecurrenceFrequency.MONTHLY -> {
-                val day = rule.dayOfMonth ?: 1
-                if (rule.interval == 1) "Monthly on day $day at ${rule.timeOfDay}"
-                else "Every ${rule.interval} months on day $day at ${rule.timeOfDay}"
-            }
-            RecurrenceFrequency.YEARLY -> {
-                val month = Month.of(rule.monthOfYear ?: 1)
-                    .getDisplayName(TextStyle.FULL, Locale.getDefault())
-                val day = rule.dayOfMonth ?: 1
-                
-                if (rule.interval == 1) "Yearly on $month $day at ${rule.timeOfDay}"
-                else "Every ${rule.interval} years on $month $day at ${rule.timeOfDay}"
-            }
+    fun nextOccurrenceAfter(
+        rule: RecurrenceRule,
+        startDate: LocalDate,
+        fromDate: LocalDate,
+        endDate: LocalDate? = null
+    ): LocalDate? {
+        var candidate = maxOf(fromDate.plusDays(1), startDate)
+        val bound = endDate ?: candidate.plusDays(MAX_SCAN_DAYS)
+        while (!candidate.isAfter(bound)) {
+            if (matchesRule(rule, candidate, startDate)) return candidate
+            candidate = candidate.plusDays(1)
         }
+        return null
     }
-    
+
     /**
-     * Get next N occurrences from a given date
+     * Get the next [count] occurrences on or after [fromDate], anchored at [startDate].
      */
     fun getNextOccurrences(
         rule: RecurrenceRule,
+        startDate: LocalDate,
         fromDate: LocalDate,
-        count: Int
+        count: Int,
+        endDate: LocalDate? = null
     ): List<LocalDate> {
         val occurrences = mutableListOf<LocalDate>()
-        var currentDate = fromDate
-        
-        // First, check if the fromDate itself is a valid occurrence
-        if (isOccurrenceDate(rule, fromDate, fromDate)) {
-            occurrences.add(fromDate)
-            if (occurrences.size >= count) {
-                return occurrences
+        var candidate = maxOf(fromDate, startDate)
+        val bound = endDate ?: candidate.plusDays(MAX_SCAN_DAYS)
+        while (occurrences.size < count && !candidate.isAfter(bound)) {
+            if (matchesRule(rule, candidate, startDate)) {
+                occurrences.add(candidate)
             }
-            // Move to next day to find subsequent occurrences
-            currentDate = fromDate.plusDays(1)
+            candidate = candidate.plusDays(1)
         }
-        
-        // Find remaining occurrences
-        while (occurrences.size < count) {
-            val nextDate = calculateNextOccurrence(rule, currentDate)
-            if (nextDate != null) {
-                occurrences.add(nextDate)
-                currentDate = nextDate.plusDays(1) // Move past this date
-            } else {
-                break
-            }
-        }
-        
         return occurrences
     }
-    
+
     /**
-     * Validate if a recurrence rule is valid
+     * Generate all occurrences between [fromDate] and [toDate] (both inclusive),
+     * anchored at [startDate].
+     */
+    fun generateOccurrences(
+        rule: RecurrenceRule,
+        startDate: LocalDate,
+        fromDate: LocalDate,
+        toDate: LocalDate
+    ): List<LocalDate> {
+        if (toDate.isBefore(fromDate)) return emptyList()
+        val occurrences = mutableListOf<LocalDate>()
+        var candidate = maxOf(fromDate, startDate)
+        while (!candidate.isAfter(toDate)) {
+            if (matchesRule(rule, candidate, startDate)) {
+                occurrences.add(candidate)
+            }
+            candidate = candidate.plusDays(1)
+        }
+        return occurrences
+    }
+
+    /**
+     * Validate if a recurrence rule is internally consistent.
      */
     fun validateRecurrenceRule(rule: RecurrenceRule): Result<Unit> {
         return try {
+            require(rule.interval > 0) { "Interval must be positive" }
             when (rule.frequency) {
                 RecurrenceFrequency.WEEKLY -> {
-                    require(rule.daysOfWeek.isNotEmpty()) { 
-                        "Weekly recurrence requires at least one day of week" 
+                    require(rule.daysOfWeek.isNotEmpty()) {
+                        "Weekly recurrence requires at least one day of week"
                     }
                 }
                 RecurrenceFrequency.MONTHLY -> {
-                    require(rule.dayOfMonth != null && rule.dayOfMonth in 1..31) { 
-                        "Monthly recurrence requires valid day of month (1-31)" 
+                    require(rule.dayOfMonth != null && rule.dayOfMonth in 1..31) {
+                        "Monthly recurrence requires valid day of month (1-31)"
                     }
                 }
                 RecurrenceFrequency.YEARLY -> {
-                    require(rule.monthOfYear != null && rule.monthOfYear in 1..12) { 
-                        "Yearly recurrence requires valid month of year (1-12)" 
+                    require(rule.monthOfYear != null && rule.monthOfYear in 1..12) {
+                        "Yearly recurrence requires valid month of year (1-12)"
                     }
-                    require(rule.dayOfMonth != null && rule.dayOfMonth in 1..31) { 
-                        "Yearly recurrence requires valid day of month (1-31)" 
+                    require(rule.dayOfMonth != null && rule.dayOfMonth in 1..31) {
+                        "Yearly recurrence requires valid day of month (1-31)"
                     }
                 }
-                else -> {}
+                RecurrenceFrequency.DAILY -> Unit
             }
             Result.success(Unit)
         } catch (e: IllegalArgumentException) {
             Result.failure(e)
+        }
+    }
+
+    companion object {
+        /** Upper bound for unbounded day scans (covers yearly rules with interval > 1). */
+        private const val MAX_SCAN_DAYS = 366L * 5
+
+        /**
+         * Pure occurrence check shared with [RecurringTask.shouldGenerateOn] so the
+         * recurrence semantics exist in exactly one place.
+         */
+        fun matchesRule(rule: RecurrenceRule, date: LocalDate, startDate: LocalDate): Boolean {
+            if (date.isBefore(startDate)) return false
+            return when (rule.frequency) {
+                RecurrenceFrequency.DAILY -> {
+                    val daysSinceStart = ChronoUnit.DAYS.between(startDate, date)
+                    daysSinceStart % rule.interval == 0L
+                }
+                RecurrenceFrequency.WEEKLY -> {
+                    if (!rule.daysOfWeek.contains(date.dayOfWeek)) return false
+                    val weeksSinceStart = ChronoUnit.WEEKS.between(startDate, date)
+                    weeksSinceStart % rule.interval == 0L
+                }
+                RecurrenceFrequency.MONTHLY -> {
+                    val dayOfMonth = rule.dayOfMonth ?: startDate.dayOfMonth
+                    val effectiveDay = minOf(dayOfMonth, date.lengthOfMonth())
+                    if (date.dayOfMonth != effectiveDay) return false
+                    val monthsSinceStart = ChronoUnit.MONTHS.between(
+                        startDate.withDayOfMonth(1),
+                        date.withDayOfMonth(1)
+                    )
+                    monthsSinceStart % rule.interval == 0L
+                }
+                RecurrenceFrequency.YEARLY -> {
+                    val month = rule.monthOfYear ?: startDate.monthValue
+                    val dayOfMonth = rule.dayOfMonth ?: startDate.dayOfMonth
+                    if (date.monthValue != month) return false
+                    val effectiveDay = minOf(dayOfMonth, date.lengthOfMonth())
+                    if (date.dayOfMonth != effectiveDay) return false
+                    val yearsSinceStart = (date.year - startDate.year).toLong()
+                    yearsSinceStart % rule.interval == 0L
+                }
+            }
         }
     }
 }

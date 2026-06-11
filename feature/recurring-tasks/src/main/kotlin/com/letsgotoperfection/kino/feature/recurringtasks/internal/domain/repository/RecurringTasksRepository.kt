@@ -59,10 +59,16 @@ interface RecurringTasksRepository {
     suspend fun getRecurringTasksNeedingGeneration(): List<RecurringTask>
 
     /**
-     * Create a concrete task instance for the provided recurring task on the given date.
+     * Check whether a task instance already exists for the template on the given date.
      */
-    suspend fun createTaskInstance(
-        recurringTask: RecurringTask,
-        scheduledDate: java.time.LocalDate
-    ): Result<Unit>
+    suspend fun taskInstanceExists(recurringTaskId: String, scheduledDate: java.time.LocalDate): Boolean
+
+    /**
+     * Observe task instances generated from a recurring task within a date range (inclusive).
+     */
+    fun getTaskInstances(
+        recurringTaskId: String,
+        fromDate: java.time.LocalDate,
+        toDate: java.time.LocalDate
+    ): Flow<List<com.letsgotoperfection.kino.core.model.Task>>
 }

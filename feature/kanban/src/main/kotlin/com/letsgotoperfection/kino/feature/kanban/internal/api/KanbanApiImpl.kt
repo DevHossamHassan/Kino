@@ -3,6 +3,7 @@ package com.letsgotoperfection.kino.feature.kanban.internal.api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.letsgotoperfection.kino.core.common.Result
+import com.letsgotoperfection.kino.core.database.dao.ChecklistDao
 import com.letsgotoperfection.kino.core.database.dao.TaskDao
 import com.letsgotoperfection.kino.core.database.entity.TaskEntity
 import com.letsgotoperfection.kino.core.database.mapper.toDomain
@@ -19,14 +20,16 @@ import javax.inject.Singleton
 
 @Singleton
 class KanbanApiImpl @Inject constructor(
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
+    private val checklistDao: ChecklistDao
 ) : KanbanApi {
 
     override suspend fun getTask(taskId: String): Result<Task> {
         return try {
             val entity = taskDao.getTaskById(taskId)
                 ?: return Result.Error(IllegalArgumentException("Task not found: $taskId"))
-            Result.Success(entity.toDomain())
+            val checklist = checklistDao.getChecklistItemsOnce(taskId).map { it.toDomain() }
+            Result.Success(entity.toDomain(checklist = checklist))
         } catch (t: Throwable) {
             Result.Error(t)
         }
@@ -36,6 +39,9 @@ class KanbanApiImpl @Inject constructor(
         return try {
             val entity: TaskEntity = task.toEntity()
             taskDao.upsertTask(entity)
+            if (task.checklist.isNotEmpty()) {
+                checklistDao.upsertChecklistItems(task.checklist.map { it.toEntity() })
+            }
             Result.Success(entity.id)
         } catch (t: Throwable) {
             Result.Error(t)
@@ -45,6 +51,9 @@ class KanbanApiImpl @Inject constructor(
     override suspend fun updateTask(task: Task): Result<Unit> {
         return try {
             taskDao.upsertTask(task.toEntity())
+            if (task.checklist.isNotEmpty()) {
+                checklistDao.upsertChecklistItems(task.checklist.map { it.toEntity() })
+            }
             Result.Success(Unit)
         } catch (t: Throwable) {
             Result.Error(t)
