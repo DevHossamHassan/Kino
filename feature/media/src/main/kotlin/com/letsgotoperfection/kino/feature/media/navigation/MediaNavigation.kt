@@ -2,9 +2,8 @@ package com.letsgotoperfection.kino.feature.media.navigation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
-import com.letsgotoperfection.kino.feature.media.MediaManagerScreen
-import com.letsgotoperfection.kino.feature.media.MediaViewerScreen
+import com.letsgotoperfection.kino.feature.media.internal.presentation.ui.MediaManagerScreen
+import com.letsgotoperfection.kino.feature.media.internal.presentation.ui.MediaViewerScreen
 import kotlinx.serialization.Serializable
 
 /**
@@ -36,10 +35,8 @@ fun NavGraphBuilder.mediaGraph(
             onNavigateToViewer = onNavigateToViewer
         )
     }
-    composable<MediaViewerRoute> { backStackEntry ->
-        val route = backStackEntry.toRoute<MediaViewerRoute>()
+    composable<MediaViewerRoute> {
         MediaViewerScreen(
-            mediaId = route.mediaId,
             onNavigateBack = onBackClick,
             onNavigateToTask = onNavigateToTask,
             onNavigateToNote = onNavigateToNote
