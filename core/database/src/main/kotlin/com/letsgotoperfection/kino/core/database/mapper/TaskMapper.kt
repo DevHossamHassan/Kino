@@ -39,7 +39,9 @@ fun TaskEntity.toDomain(
         orderPosition = orderPosition,
         labels = labels,
         checklist = checklist,
-        attachments = attachments
+        attachments = attachments,
+        recurringTaskId = recurringTaskId,
+        scheduledDate = scheduledDate?.let { java.time.LocalDate.ofEpochDay(it) }
     )
 }
 
@@ -57,7 +59,9 @@ fun Task.toEntity(): TaskEntity {
         updatedAt = updatedAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
         dueDate = dueDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
         progress = progress,
-        orderPosition = orderPosition
+        orderPosition = orderPosition,
+        recurringTaskId = recurringTaskId,
+        scheduledDate = scheduledDate?.toEpochDay()
     )
 }
 

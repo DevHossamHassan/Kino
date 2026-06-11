@@ -8,11 +8,13 @@ import android.content.Context
 import com.letsgotoperfection.kino.core.database.converters.Converters
 import com.letsgotoperfection.kino.core.database.dao.*
 import com.letsgotoperfection.kino.core.database.entity.*
-// Media entities will be added when media feature is implemented
 
 /**
  * Kino Database with performance optimizations.
- * 
+ *
+ * Version 7 improvements:
+ * - Added media table for the media manager feature
+ *
  * Version 6 improvements:
  * - Added defaultColumn, checklistTemplate, and dueDateOffsetDays fields to RecurringTaskEntity
  * - Enhanced recurring task functionality with better task generation control
@@ -36,9 +38,10 @@ import com.letsgotoperfection.kino.core.database.entity.*
         AttachmentEntity::class,
         NoteEntity::class,
         RecurringTaskEntity::class,
-        SectionEntity::class
+        SectionEntity::class,
+        MediaEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -51,5 +54,5 @@ abstract class KinoDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
     abstract fun recurringTaskDao(): RecurringTaskDao
     abstract fun sectionDao(): SectionDao
-    // Media DAO will be added when media feature is implemented
+    abstract fun mediaDao(): MediaDao
 }

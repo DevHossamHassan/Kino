@@ -15,7 +15,11 @@ data class Task(
     val orderPosition: Int = 0,
     val labels: List<Label> = emptyList(),
     val checklist: List<ChecklistItem> = emptyList(),
-    val attachments: List<Attachment> = emptyList()
+    val attachments: List<Attachment> = emptyList(),
+    /** ID of the recurring task template this task was generated from, if any. */
+    val recurringTaskId: String? = null,
+    /** The occurrence date this instance was generated for, if recurring. */
+    val scheduledDate: java.time.LocalDate? = null
 ) {
     val attachmentCount: Int get() = attachments.size
     val checklistTotal: Int get() = checklist.size
