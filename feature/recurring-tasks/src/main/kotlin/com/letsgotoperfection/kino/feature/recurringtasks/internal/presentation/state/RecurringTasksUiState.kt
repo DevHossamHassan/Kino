@@ -1,5 +1,6 @@
 package com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import com.letsgotoperfection.kino.core.model.Label
 import com.letsgotoperfection.kino.core.model.Priority
@@ -24,7 +25,7 @@ sealed class UiState<out T> {
 data class RecurringTasksListUiState(
     val recurringTasks: List<RecurringTask> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    @StringRes val errorRes: Int? = null
 )
 
 @Immutable
@@ -47,7 +48,7 @@ data class CreateRecurringTaskUiState(
     val endDate: LocalDate? = null,
     val isActive: Boolean = true,
     val isLoading: Boolean = false,
-    val error: String? = null
+    @StringRes val errorRes: Int? = null
 ) {
     val isValid: Boolean
         get() = title.isNotBlank() && 
@@ -77,7 +78,7 @@ data class EditRecurringTaskUiState(
     val isActive: Boolean = true,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
-    val error: String? = null
+    @StringRes val errorRes: Int? = null
 ) {
     val isValid: Boolean
         get() = title.isNotBlank() && 
@@ -94,7 +95,7 @@ data class RecurringTaskInstancesUiState(
     val recurringTask: RecurringTask? = null,
     val instances: List<com.letsgotoperfection.kino.core.model.Task> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    @StringRes val errorRes: Int? = null
 )
 
 /**
@@ -102,8 +103,23 @@ data class RecurringTaskInstancesUiState(
  * Navigation events removed - handled by UI callbacks
  */
 sealed interface RecurringTaskEvent {
-    data class ShowError(val message: String) : RecurringTaskEvent
-    data class ShowSuccess(val message: String) : RecurringTaskEvent
+    data class ShowError(@StringRes val messageRes: Int) : RecurringTaskEvent
+    data class ShowSuccess(@StringRes val messageRes: Int) : RecurringTaskEvent
+}
+
+/**
+ * Live preview of the configured recurrence shown on the create/edit screens.
+ */
+@Immutable
+sealed interface RecurrencePreview {
+    /** The rule is incomplete; prompt the user for the missing input. */
+    data class Prompt(@StringRes val messageRes: Int) : RecurrencePreview
+
+    /** The rule is complete; show its localized description and upcoming dates. */
+    data class Ready(
+        val description: String,
+        val nextOccurrences: List<LocalDate>
+    ) : RecurrencePreview
 }
 
 /**

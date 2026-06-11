@@ -35,7 +35,5 @@ include(":feature:media")
 include(":feature:settings")
 include(":feature:task-detail")
 include(":feature:notifications")
-include(":feature:ai-analysis")
-include(":feature:gamification")
 include(":feature:recurring-tasks")
  

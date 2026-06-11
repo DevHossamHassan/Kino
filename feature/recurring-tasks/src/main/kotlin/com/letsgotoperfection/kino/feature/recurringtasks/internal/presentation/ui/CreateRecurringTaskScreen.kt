@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -28,9 +29,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.letsgotoperfection.kino.core.designsystem.component.MarkdownPreview
 import com.letsgotoperfection.kino.core.designsystem.component.RichTextEditorDialog
 import com.letsgotoperfection.kino.core.model.Priority
+import com.letsgotoperfection.kino.core.model.TaskColumn
 import com.letsgotoperfection.kino.core.model.TaskSection
 import com.letsgotoperfection.kino.feature.recurringtasks.R
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.CreateRecurringTaskUiState
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.RecurrencePreview
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.RecurringTaskEvent
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.viewmodel.CreateRecurringTaskViewModel
 import java.time.DayOfWeek
@@ -39,6 +43,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.time.format.TextStyle
+import java.util.Locale
 
 /**
  * Screen for creating a new recurring task
@@ -49,19 +56,20 @@ fun CreateRecurringTaskScreen(
     viewModel: CreateRecurringTaskViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val recurrencePreview by viewModel.recurrencePreview.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is RecurringTaskEvent.ShowSuccess -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(context.getString(event.messageRes))
                     onNavigateBack()
                 }
                 is RecurringTaskEvent.ShowError -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(context.getString(event.messageRes))
                 }
-                else -> {}
             }
         }
     }
@@ -93,7 +101,7 @@ fun CreateRecurringTaskScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
 
@@ -135,9 +143,11 @@ fun CreateRecurringTaskScreen(
                     onTimeOfDayChange = viewModel::updateTimeOfDay,
                     onStartDateChange = viewModel::updateStartDate,
                     onEndDateChange = viewModel::updateEndDate,
-                    getRecurrenceDescription = viewModel::getRecurrenceDescription,
-                    getNextOccurrences = viewModel::getNextOccurrences,
-                    viewModel = viewModel
+                    recurrencePreview = recurrencePreview,
+                    onDefaultColumnChange = viewModel::updateDefaultColumn,
+                    onDueDateOffsetChange = viewModel::updateDueDateOffsetDays,
+                    onAddChecklistItem = viewModel::addChecklistItem,
+                    onRemoveChecklistItem = viewModel::removeChecklistItem
                 )
             }
         }
@@ -146,7 +156,7 @@ fun CreateRecurringTaskScreen(
 
 @Composable
 private fun CreateRecurringTaskContent(
-    uiState: com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.CreateRecurringTaskUiState,
+    uiState: CreateRecurringTaskUiState,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     onSectionChange: (TaskSection) -> Unit,
@@ -159,9 +169,11 @@ private fun CreateRecurringTaskContent(
     onTimeOfDayChange: (LocalTime) -> Unit,
     onStartDateChange: (LocalDate) -> Unit,
     onEndDateChange: (LocalDate?) -> Unit,
-    getRecurrenceDescription: () -> String,
-    getNextOccurrences: (Int) -> List<LocalDate>,
-    viewModel: CreateRecurringTaskViewModel = hiltViewModel()
+    recurrencePreview: RecurrencePreview,
+    onDefaultColumnChange: (TaskColumn) -> Unit,
+    onDueDateOffsetChange: (Int) -> Unit,
+    onAddChecklistItem: (String) -> Unit,
+    onRemoveChecklistItem: (Int) -> Unit
 ) {
     var showRichTextEditor by remember { mutableStateOf(false) }
     var descriptionTextFieldValue by remember(uiState.description) { 
@@ -230,7 +242,7 @@ private fun CreateRecurringTaskContent(
                                 )
                             } else {
                                 Text(
-                                    text = "Tap to add rich text description",
+                                    text = stringResource(R.string.tap_to_add_description),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(vertical = 8.dp)
@@ -241,7 +253,7 @@ private fun CreateRecurringTaskContent(
                         IconButton(onClick = { showRichTextEditor = true }) {
                             Icon(
                                 Icons.Default.Edit,
-                                contentDescription = "Edit description with rich text",
+                                contentDescription = stringResource(R.string.cd_edit_description),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -268,7 +280,7 @@ private fun CreateRecurringTaskContent(
         item {
             ColumnSelector(
                 column = uiState.defaultColumn,
-                onColumnChange = viewModel::updateDefaultColumn
+                onColumnChange = onDefaultColumnChange
             )
         }
         
@@ -276,7 +288,7 @@ private fun CreateRecurringTaskContent(
         item {
             DueDateOffsetSelector(
                 offsetDays = uiState.dueDateOffsetDays,
-                onOffsetChange = viewModel::updateDueDateOffsetDays
+                onOffsetChange = onDueDateOffsetChange
             )
         }
         
@@ -290,7 +302,7 @@ private fun CreateRecurringTaskContent(
         // Checklist Template Section
         item {
             Text(
-                text = "Task Template",
+                text = stringResource(R.string.task_template),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -300,7 +312,7 @@ private fun CreateRecurringTaskContent(
             ChecklistTemplateSection(
                 checklistItems = uiState.checklistTemplate,
                 onAddItem = { showAddChecklistDialog = true },
-                onRemoveItem = viewModel::removeChecklistItem
+                onRemoveItem = onRemoveChecklistItem
             )
         }
         
@@ -397,10 +409,7 @@ private fun CreateRecurringTaskContent(
         
         // Preview
         item {
-            RecurrencePreview(
-                description = getRecurrenceDescription(),
-                nextOccurrences = getNextOccurrences(5)
-            )
+            RecurrencePreviewCard(preview = recurrencePreview)
         }
     }
     
@@ -421,12 +430,12 @@ private fun CreateRecurringTaskContent(
     if (showAddChecklistDialog) {
         AlertDialog(
             onDismissRequest = { showAddChecklistDialog = false },
-            title = { Text("Add Checklist Item") },
+            title = { Text(stringResource(R.string.add_checklist_item_title)) },
             text = {
                 OutlinedTextField(
                     value = newChecklistText,
                     onValueChange = { newChecklistText = it },
-                    label = { Text("Item text") },
+                    label = { Text(stringResource(R.string.checklist_item_text)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -435,13 +444,13 @@ private fun CreateRecurringTaskContent(
                 TextButton(
                     onClick = {
                         if (newChecklistText.isNotBlank()) {
-                            viewModel.addChecklistItem(newChecklistText)
+                            onAddChecklistItem(newChecklistText)
                             newChecklistText = ""
                             showAddChecklistDialog = false
                         }
                     }
                 ) {
-                    Text("Add")
+                    Text(stringResource(R.string.add))
                 }
             },
             dismissButton = {
@@ -449,7 +458,7 @@ private fun CreateRecurringTaskContent(
                     newChecklistText = ""
                     showAddChecklistDialog = false 
                 }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -471,11 +480,11 @@ private fun SectionSelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.horizontalScroll(rememberScrollState())
         ) {
-            TaskSection.values().forEach { taskSection ->
+            TaskSection.entries.forEach { taskSection ->
                 FilterChip(
                     selected = section == taskSection,
                     onClick = { onSectionChange(taskSection) },
-                    label = { Text(taskSection.displayName) }
+                    label = { Text(taskSection.localizedName()) }
                 )
             }
         }
@@ -497,11 +506,11 @@ private fun PrioritySelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.horizontalScroll(rememberScrollState())
         ) {
-            Priority.values().forEach { prio ->
+            Priority.entries.forEach { prio ->
                 FilterChip(
                     selected = priority == prio,
                     onClick = { onPriorityChange(prio) },
-                    label = { Text(prio.displayName) }
+                    label = { Text(prio.localizedName()) }
                 )
             }
         }
@@ -523,11 +532,11 @@ private fun FrequencySelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.horizontalScroll(rememberScrollState())
         ) {
-            RecurrenceFrequency.values().forEach { freq ->
+            RecurrenceFrequency.entries.forEach { freq ->
                 FilterChip(
                     selected = frequency == freq,
                     onClick = { onFrequencyChange(freq) },
-                    label = { Text(freq.getDisplayName()) }
+                    label = { Text(freq.localizedName()) }
                 )
             }
         }
@@ -555,12 +564,14 @@ private fun IntervalSelector(
             },
             label = { 
                 Text(
-                    when (frequency) {
-                        RecurrenceFrequency.DAILY -> "Every X days"
-                        RecurrenceFrequency.WEEKLY -> "Every X weeks"
-                        RecurrenceFrequency.MONTHLY -> "Every X months"
-                        RecurrenceFrequency.YEARLY -> "Every X years"
-                    }
+                    stringResource(
+                        when (frequency) {
+                            RecurrenceFrequency.DAILY -> R.string.every_x_days
+                            RecurrenceFrequency.WEEKLY -> R.string.every_x_weeks
+                            RecurrenceFrequency.MONTHLY -> R.string.every_x_months
+                            RecurrenceFrequency.YEARLY -> R.string.every_x_years
+                        }
+                    )
                 )
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -584,7 +595,7 @@ private fun DayOfWeekSelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            DayOfWeek.values().forEach { day ->
+            DayOfWeek.entries.forEach { day ->
                 FilterChip(
                     selected = selectedDays.contains(day),
                     onClick = {
@@ -596,7 +607,7 @@ private fun DayOfWeekSelector(
                         onDaysChange(newDays)
                     },
                     label = {
-                        Text(day.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()))
+                        Text(day.getDisplayName(TextStyle.SHORT, Locale.getDefault()))
                     }
                 )
             }
@@ -622,7 +633,7 @@ private fun DayOfMonthSelector(
                     if (value in 1..31) onDayChange(value)
                 }
             },
-            label = { Text("Day (1-31)") },
+            label = { Text(stringResource(R.string.day_of_month_hint)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -644,12 +655,12 @@ private fun MonthSelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.horizontalScroll(rememberScrollState())
         ) {
-            java.time.Month.values().forEach { monthEnum ->
+            java.time.Month.entries.forEach { monthEnum ->
                 FilterChip(
                     selected = month == monthEnum.value,
                     onClick = { onMonthChange(monthEnum.value) },
                     label = { 
-                        Text(monthEnum.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()))
+                        Text(monthEnum.getDisplayName(TextStyle.SHORT, Locale.getDefault()))
                     }
                 )
             }
@@ -692,10 +703,10 @@ private fun TimeOfDaySelector(
             value = time.format(timeFormatter),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Time") },
+            label = { Text(stringResource(R.string.time_of_day)) },
             trailingIcon = {
                 IconButton(onClick = { showTimePicker = true }) {
-                    Icon(Icons.Default.Schedule, contentDescription = "Select time")
+                    Icon(Icons.Default.Schedule, contentDescription = stringResource(R.string.cd_select_time))
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -719,12 +730,12 @@ private fun TimeOfDaySelector(
                         showTimePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             text = {
@@ -742,7 +753,8 @@ private fun DateSelector(
     onDateChange: (LocalDate) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+
     Column {
         Text(
             text = label,
@@ -750,13 +762,13 @@ private fun DateSelector(
         )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
-            value = date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
+            value = date.format(dateFormatter),
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = true }) {
-                    Icon(Icons.Default.DateRange, contentDescription = "Select date")
+                    Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.cd_select_date))
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -786,12 +798,12 @@ private fun DateSelector(
                         showDatePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         ) {
@@ -808,7 +820,8 @@ private fun OptionalDateSelector(
     onDateChange: (LocalDate?) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+
     Column {
         Text(
             text = label,
@@ -816,24 +829,24 @@ private fun OptionalDateSelector(
         )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
-            value = date?.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")) ?: "",
+            value = date?.format(dateFormatter) ?: "",
             onValueChange = {},
             readOnly = true,
-            label = { Text("$label (optional)") },
-            placeholder = { Text("No end date") },
+            label = { Text(stringResource(R.string.label_optional, label)) },
+            placeholder = { Text(stringResource(R.string.no_end_date)) },
             trailingIcon = {
                 Row {
                     if (date != null) {
                         IconButton(onClick = { onDateChange(null) }) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Clear date",
+                                contentDescription = stringResource(R.string.cd_clear_date),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                     IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Select date")
+                        Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.cd_select_date))
                     }
                 }
             },
@@ -864,12 +877,12 @@ private fun OptionalDateSelector(
                         showDatePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         ) {
@@ -880,17 +893,17 @@ private fun OptionalDateSelector(
 
 @Composable
 private fun ColumnSelector(
-    column: com.letsgotoperfection.kino.core.model.TaskColumn,
-    onColumnChange: (com.letsgotoperfection.kino.core.model.TaskColumn) -> Unit
+    column: TaskColumn,
+    onColumnChange: (TaskColumn) -> Unit
 ) {
     Column {
         Text(
-            text = "Default Column",
+            text = stringResource(R.string.default_column),
             style = MaterialTheme.typography.labelMedium
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Where generated tasks will be placed",
+            text = stringResource(R.string.default_column_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -899,11 +912,11 @@ private fun ColumnSelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.horizontalScroll(rememberScrollState())
         ) {
-            com.letsgotoperfection.kino.core.model.TaskColumn.values().forEach { col ->
+            TaskColumn.entries.forEach { col ->
                 FilterChip(
                     selected = column == col,
                     onClick = { onColumnChange(col) },
-                    label = { Text(col.displayName) }
+                    label = { Text(col.localizedName()) }
                 )
             }
         }
@@ -917,12 +930,12 @@ private fun DueDateOffsetSelector(
 ) {
     Column {
         Text(
-            text = "Due Date",
+            text = stringResource(R.string.due_date),
             style = MaterialTheme.typography.labelMedium
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Days after task creation",
+            text = stringResource(R.string.due_date_offset_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -936,11 +949,13 @@ private fun DueDateOffsetSelector(
                     selected = offsetDays == days,
                     onClick = { onOffsetChange(days) },
                     label = { 
-                        Text(when (days) {
-                            0 -> "Same day"
-                            1 -> "1 day"
-                            else -> "$days days"
-                        })
+                        Text(
+                            if (days == 0) {
+                                stringResource(R.string.offset_same_day)
+                            } else {
+                                pluralStringResource(R.plurals.offset_days, days, days)
+                            }
+                        )
                     }
                 )
             }
@@ -954,7 +969,7 @@ private fun LabelsDisplay(
 ) {
     Column {
         Text(
-            text = "Labels",
+            text = stringResource(R.string.labels),
             style = MaterialTheme.typography.labelMedium
         )
         Spacer(Modifier.height(8.dp))
@@ -994,18 +1009,18 @@ private fun ChecklistTemplateSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Template Checklist",
+                    text = stringResource(R.string.checklist_template_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
                 IconButton(onClick = onAddItem) {
-                    Icon(Icons.Default.Add, contentDescription = "Add checklist item")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_checklist_item))
                 }
             }
             
             if (checklistItems.isEmpty()) {
                 Text(
-                    text = "Add checklist items that will be copied to each generated task",
+                    text = stringResource(R.string.checklist_template_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1035,7 +1050,7 @@ private fun ChecklistTemplateSection(
                         IconButton(onClick = { onRemoveItem(index) }) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Remove",
+                                contentDescription = stringResource(R.string.cd_remove_checklist_item),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -1047,10 +1062,11 @@ private fun ChecklistTemplateSection(
 }
 
 @Composable
-private fun RecurrencePreview(
-    description: String,
-    nextOccurrences: List<LocalDate>
+private fun RecurrencePreviewCard(
+    preview: RecurrencePreview
 ) {
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -1066,32 +1082,43 @@ private fun RecurrencePreview(
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
-            
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            
-            if (nextOccurrences.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.next_occurrences),
-                    style = MaterialTheme.typography.labelMedium
-                )
-                
-                nextOccurrences.forEach { date ->
+
+            when (preview) {
+                is RecurrencePreview.Prompt -> {
                     Text(
-                        text = "• ${date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))}",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = stringResource(preview.messageRes),
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
-            } else {
-                Text(
-                    text = stringResource(R.string.no_occurrences),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                is RecurrencePreview.Ready -> {
+                    Text(
+                        text = preview.description,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    if (preview.nextOccurrences.isNotEmpty()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.next_occurrences),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+
+                        preview.nextOccurrences.forEach { date ->
+                            Text(
+                                text = stringResource(R.string.occurrence_bullet, date.format(dateFormatter)),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = stringResource(R.string.no_occurrences),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
             }
         }
     }

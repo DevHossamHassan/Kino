@@ -14,11 +14,6 @@ android {
     defaultConfig {
         minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Room schema export
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
     }
 
     buildTypes {
@@ -55,6 +50,13 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    testOptions {
+        unitTests {
+            // android.util.Log calls in use cases become no-ops on the JVM.
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 dependencies {
@@ -68,6 +70,7 @@ dependencies {
     // Feature modules (APIs only)
     implementation(project(":feature:kanban"))
     implementation(project(":feature:notifications"))
+    implementation(project(":feature:settings"))
     
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))

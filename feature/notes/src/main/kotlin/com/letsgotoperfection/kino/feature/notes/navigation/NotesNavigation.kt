@@ -3,18 +3,13 @@ package com.letsgotoperfection.kino.feature.notes.navigation
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.letsgotoperfection.kino.feature.notes.NotesListScreenApi
-import com.letsgotoperfection.kino.feature.notes.NoteDetailScreenApi
-import com.letsgotoperfection.kino.feature.notes.NoteEditorScreenApi
-import com.letsgotoperfection.kino.feature.notes.api.NotesApi
-import com.letsgotoperfection.kino.feature.notes.di.rememberNotesApi
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import com.letsgotoperfection.kino.feature.notes.internal.presentation.ui.NoteDetailScreen
+import com.letsgotoperfection.kino.feature.notes.internal.presentation.ui.NoteEditorScreen
+import com.letsgotoperfection.kino.feature.notes.internal.presentation.ui.NotesListScreen
 import kotlinx.serialization.Serializable
 
 /**
- * Notes feature routes - Type-safe navigation
+ * Notes feature routes — type-safe navigation.
  */
 @Serializable
 object NotesListRoute
@@ -30,8 +25,7 @@ data class NoteEditorRoute(
 )
 
 /**
- * Notes navigation graph
- * Exposes composable screens for app module to wire
+ * Notes navigation graph wired by the app module.
  */
 fun NavGraphBuilder.notesGraph(
     onNoteClick: (String) -> Unit,
@@ -39,44 +33,40 @@ fun NavGraphBuilder.notesGraph(
     onBackClick: () -> Unit
 ) {
     composable<NotesListRoute> {
-        NotesListScreenApi(
+        NotesListScreen(
             onNavigateBack = onBackClick,
             onNavigateToNoteDetail = onNoteClick,
             onNavigateToNoteEditor = onNavigateToEditor
         )
     }
-    
+
     composable<NoteDetailRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<NoteDetailRoute>()
-        val notesApi: NotesApi? = rememberNotesApi()
-        NoteDetailScreenApi(
+        NoteDetailScreen(
             noteId = route.noteId,
             onNavigateBack = onBackClick,
-            onNavigateToEditor = onNavigateToEditor,
-            notesApi = notesApi
+            onNavigateToEditor = onNavigateToEditor
         )
     }
-    
+
     composable<NoteEditorRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<NoteEditorRoute>()
-        val notesApi: NotesApi? = rememberNotesApi()
-        NoteEditorScreenApi(
+        NoteEditorScreen(
             noteId = route.noteId,
-            onNavigateBack = onBackClick,
-            notesApi = notesApi
+            onNavigateBack = onBackClick
         )
     }
 }
 
 /**
- * Deep link patterns for notes feature
+ * Deep link patterns for the notes feature.
  */
 object NotesDeepLinks {
     const val NOTES_LIST = "kino://app/notes"
     const val NOTE_DETAIL = "kino://app/note/{noteId}"
     const val NOTE_EDITOR = "kino://app/note/editor"
-    
+
     fun createNoteDetailDeepLink(noteId: String) = "kino://app/note/$noteId"
-    fun createNoteEditorDeepLink(noteId: String? = null) = 
+    fun createNoteEditorDeepLink(noteId: String? = null) =
         if (noteId != null) "kino://app/note/editor?noteId=$noteId" else "kino://app/note/editor"
 }

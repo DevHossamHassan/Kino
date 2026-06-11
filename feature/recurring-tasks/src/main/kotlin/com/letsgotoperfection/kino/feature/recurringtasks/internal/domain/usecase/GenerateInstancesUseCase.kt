@@ -5,19 +5,24 @@ import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.calcul
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.repository.RecurringTasksRepository
 import java.time.LocalDate
-import java.time.ZoneId
 import javax.inject.Inject
 
 /**
- * Use case for generating task instances from recurring tasks
+ * Use case for bulk-generating task instances from recurring tasks.
+ *
+ * Each individual instance goes through [GenerateTaskInstanceUseCase] so manual
+ * generation produces identical results to alarm-driven generation (linkage,
+ * default column, checklist, duplicate guard). Bulk generation does not emit
+ * per-instance notifications or schedule alarms.
  */
 class GenerateInstancesUseCase @Inject constructor(
     private val repository: RecurringTasksRepository,
-    private val recurrenceCalculator: RecurrenceCalculator
+    private val recurrenceCalculator: RecurrenceCalculator,
+    private val generateTaskInstance: GenerateTaskInstanceUseCase
 ) {
-    
+
     /**
-     * Generate task instances for a specific recurring task within a date range
+     * Generate task instances for a specific recurring task within a date range.
      */
     suspend operator fun invoke(
         recurringTaskId: String,
@@ -27,79 +32,52 @@ class GenerateInstancesUseCase @Inject constructor(
         return try {
             val recurringTask = repository.getRecurringTaskById(recurringTaskId)
                 ?: return Result.failure(RecurringTaskGenerationException("Recurring task not found"))
-            
+
             generateInstancesForTask(recurringTask, fromDate, toDate)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(RecurringTaskGenerationException("Failed to generate instances: ${e.message}"))
         }
     }
-    
+
     /**
-     * Generate task instances for all active recurring tasks within a date range
+     * Generate task instances for all active recurring tasks within a date range.
      */
     suspend operator fun invoke(
         fromDate: LocalDate,
         toDate: LocalDate
     ): Result<Unit> {
         return try {
-            val recurringTasks = repository.getRecurringTasksNeedingGeneration()
-            
-            recurringTasks.forEach { recurringTask ->
+            repository.getRecurringTasksNeedingGeneration().forEach { recurringTask ->
                 generateInstancesForTask(recurringTask, fromDate, toDate)
             }
-            
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(RecurringTaskGenerationException("Failed to generate instances: ${e.message}"))
         }
     }
-    
+
     private suspend fun generateInstancesForTask(
         recurringTask: RecurringTask,
         fromDate: LocalDate,
         toDate: LocalDate
     ) {
-        val lastGenerated = recurringTask.lastGeneratedDate ?: recurringTask.startDate.minusDays(1)
-        val actualFromDate = maxOf(fromDate, lastGenerated.plusDays(1))
-        
-        // Check if task has ended
-        if (recurringTask.endDate != null && actualFromDate.isAfter(recurringTask.endDate)) {
-            return
-        }
-        
-        val actualEndDate = minOfNotNull(
-            toDate,
-            recurringTask.endDate ?: LocalDate.MAX
-        )
-        
-        // Generate occurrences for the date range
+        val effectiveEnd = recurringTask.endDate?.let { minOf(it, toDate) } ?: toDate
+
         val occurrences = recurrenceCalculator.generateOccurrences(
             rule = recurringTask.recurrenceRule,
-            startDate = actualFromDate,
-            endDate = actualEndDate
+            startDate = recurringTask.startDate,
+            fromDate = fromDate,
+            toDate = effectiveEnd
         )
-        
-        // Create task instances for each occurrence
+
         occurrences.forEach { occurrence ->
-            createTaskInstance(recurringTask, occurrence)
+            generateTaskInstance(
+                recurringTaskId = recurringTask.id,
+                scheduledDate = occurrence,
+                scheduleNext = false,
+                notify = false
+            ).getOrThrow()
         }
-        
-        // Update last generated date
-        if (occurrences.isNotEmpty()) {
-            repository.updateLastGeneratedDate(recurringTask.id, occurrences.last())
-        }
-    }
-    
-    private suspend fun createTaskInstance(
-        recurringTask: RecurringTask,
-        scheduledDate: LocalDate
-    ) {
-        repository.createTaskInstance(recurringTask, scheduledDate)
-            .getOrElse { throw it }
-    }
-    
-    private fun minOfNotNull(vararg values: LocalDate): LocalDate {
-        return values.filterNotNull().minOrNull() ?: LocalDate.MAX
     }
 }

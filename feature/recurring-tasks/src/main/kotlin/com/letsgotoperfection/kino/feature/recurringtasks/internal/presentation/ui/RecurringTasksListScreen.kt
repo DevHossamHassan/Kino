@@ -8,10 +8,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.annotation.StringRes
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,10 +24,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.letsgotoperfection.kino.feature.recurringtasks.R
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.formatter.RecurrenceDescriptionFormatter
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.RecurringTaskAction
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.state.RecurringTaskEvent
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.presentation.viewmodel.RecurringTasksViewModel
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 /**
  * Screen displaying the list of recurring tasks
@@ -40,17 +44,17 @@ fun RecurringTasksListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is RecurringTaskEvent.ShowError -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(context.getString(event.messageRes))
                 }
                 is RecurringTaskEvent.ShowSuccess -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(context.getString(event.messageRes))
                 }
-                else -> {}
             }
         }
     }
@@ -90,7 +94,7 @@ fun RecurringTasksListScreen(
                 ) {
                     // Back button
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                     
                     // Title
@@ -106,7 +110,11 @@ fun RecurringTasksListScreen(
                             )
                             if (uiState.recurringTasks.isNotEmpty()) {
                                 Text(
-                                    text = "${uiState.recurringTasks.size} recurring tasks",
+                                    text = pluralStringResource(
+                                        R.plurals.recurring_tasks_count,
+                                        uiState.recurringTasks.size,
+                                        uiState.recurringTasks.size
+                                    ),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -126,9 +134,9 @@ fun RecurringTasksListScreen(
                     uiState.isLoading -> {
                         LoadingScreen(modifier = Modifier.fillMaxSize())
                     }
-                    uiState.error != null -> {
+                    uiState.errorRes != null -> {
                         ErrorScreen(
-                            message = uiState.error!!,
+                            messageRes = uiState.errorRes!!,
                             onRetry = { viewModel.onAction(RecurringTaskAction.RefreshRecurringTasks) },
                             modifier = Modifier.fillMaxSize()
                         )
@@ -194,7 +202,12 @@ private fun RecurringTaskCard(
     onDelete: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    
+    val context = LocalContext.current
+    val recurrenceDescription = remember(task.recurrenceRule, context) {
+        RecurrenceDescriptionFormatter(context).format(task.recurrenceRule)
+    }
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth()
@@ -253,7 +266,7 @@ private fun RecurringTaskCard(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = getRecurrenceDescription(task),
+                    text = recurrenceDescription,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -285,7 +298,7 @@ private fun RecurringTaskCard(
                     Text(
                         text = stringResource(
                             R.string.ends_on,
-                            task.endDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+                            task.endDate.format(dateFormatter)
                         ),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -403,7 +416,7 @@ private fun LoadingScreen(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ErrorScreen(
-    message: String,
+    @StringRes messageRes: Int,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -422,7 +435,7 @@ private fun ErrorScreen(
         Spacer(Modifier.height(16.dp))
         
         Text(
-            text = message,
+            text = stringResource(messageRes),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error
         )
@@ -430,39 +443,7 @@ private fun ErrorScreen(
         Spacer(Modifier.height(16.dp))
         
         Button(onClick = onRetry) {
-            Text("Retry")
-        }
-    }
-}
-
-@Composable
-private fun getRecurrenceDescription(task: RecurringTask): String {
-    val rule = task.recurrenceRule
-    return when (rule.frequency) {
-        com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.DAILY -> {
-            if (rule.interval == 1) "Every day at ${rule.timeOfDay}"
-            else "Every ${rule.interval} days at ${rule.timeOfDay}"
-        }
-        com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.WEEKLY -> {
-            val daysStr = rule.daysOfWeek
-                .sorted()
-                .joinToString(", ") { it.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()) }
-            
-            if (rule.interval == 1) "Every week on $daysStr at ${rule.timeOfDay}"
-            else "Every ${rule.interval} weeks on $daysStr at ${rule.timeOfDay}"
-        }
-        com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.MONTHLY -> {
-            val day = rule.dayOfMonth ?: 1
-            if (rule.interval == 1) "Monthly on day $day at ${rule.timeOfDay}"
-            else "Every ${rule.interval} months on day $day at ${rule.timeOfDay}"
-        }
-        com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurrenceFrequency.YEARLY -> {
-            val month = java.time.Month.of(rule.monthOfYear ?: 1)
-                .getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault())
-            val day = rule.dayOfMonth ?: 1
-            
-            if (rule.interval == 1) "Yearly on $month $day at ${rule.timeOfDay}"
-            else "Every ${rule.interval} years on $month $day at ${rule.timeOfDay}"
+            Text(stringResource(R.string.retry))
         }
     }
 }

@@ -49,6 +49,7 @@ class GetSettingsUseCaseTest {
             smartSuggestions = true,
             achievements = true,
             noteReminders = false,
+            recurringTasks = true,
             quietHoursEnabled = false,
             quietHoursStart = java.time.LocalTime.of(22, 0),
             quietHoursEnd = java.time.LocalTime.of(7, 0),
@@ -129,6 +130,10 @@ class FakeSettingsRepository : SettingsRepository {
     }
     
     override suspend fun updateNoteReminders(enabled: Boolean): Result<Unit> {
+        return Result.success(Unit)
+    }
+    
+    override suspend fun updateRecurringTasks(enabled: Boolean): Result<Unit> {
         return Result.success(Unit)
     }
     
@@ -236,6 +241,7 @@ class FakeSettingsRepository : SettingsRepository {
             smartSuggestions = true,
             achievements = true,
             noteReminders = false,
+            recurringTasks = true,
             quietHoursEnabled = false,
             quietHoursStart = java.time.LocalTime.of(22, 0),
             quietHoursEnd = java.time.LocalTime.of(7, 0),

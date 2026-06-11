@@ -87,4 +87,19 @@ interface TaskDao {
     
     @Query("SELECT MAX(orderPosition) FROM tasks WHERE `column` = :column")
     suspend fun getMaxOrderPosition(column: String): Int?
+    
+    // ========== Recurring task instances ==========
+    
+    @Query("SELECT COUNT(*) FROM tasks WHERE recurringTaskId = :recurringTaskId AND scheduledDate = :scheduledDateEpochDay")
+    suspend fun countInstancesFor(recurringTaskId: String, scheduledDateEpochDay: Long): Int
+    
+    @Query(
+        "SELECT * FROM tasks WHERE recurringTaskId = :recurringTaskId " +
+            "AND scheduledDate BETWEEN :fromEpochDay AND :toEpochDay ORDER BY scheduledDate ASC"
+    )
+    fun getInstancesForRecurringTask(
+        recurringTaskId: String,
+        fromEpochDay: Long,
+        toEpochDay: Long
+    ): Flow<List<TaskEntity>>
 }

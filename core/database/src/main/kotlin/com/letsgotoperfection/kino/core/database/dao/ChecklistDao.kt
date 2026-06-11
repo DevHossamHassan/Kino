@@ -9,8 +9,14 @@ interface ChecklistDao {
     @Query("SELECT * FROM checklist_items WHERE taskId = :taskId ORDER BY `order`")
     fun getChecklistItems(taskId: String): Flow<List<ChecklistItemEntity>>
     
+    @Query("SELECT * FROM checklist_items WHERE taskId = :taskId ORDER BY `order`")
+    suspend fun getChecklistItemsOnce(taskId: String): List<ChecklistItemEntity>
+    
     @Upsert
     suspend fun upsertChecklistItem(item: ChecklistItemEntity)
+    
+    @Upsert
+    suspend fun upsertChecklistItems(items: List<ChecklistItemEntity>)
     
     @Delete
     suspend fun deleteChecklistItem(item: ChecklistItemEntity)

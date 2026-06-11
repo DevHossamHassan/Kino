@@ -40,9 +40,7 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:model"))
     implementation(project(":core:database"))
-    
-    // Navigation (temporarily disabled)
-    // implementation(project(":navigation"))
+    implementation(project(":core:resources"))
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
@@ -76,7 +74,4 @@ dependencies {
     // Image Loading
     implementation(libs.coil)
     implementation(libs.coil.compose)
-    
-    // Permissions
-    implementation(libs.accompanist.permissions)
 }

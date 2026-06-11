@@ -1,120 +1,76 @@
 package com.letsgotoperfection.kino.feature.notes.api
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import com.letsgotoperfection.kino.core.common.Result
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Public API for Notes feature.
- * This allows other feature modules to interact with notes in a limited way.
- * 
- * This API provides only what other modules actually need:
- * - Media module: Get notes with media, navigate to specific notes
- * - Task modules: Get notes attached to tasks
- * 
+ * Public API for the Notes feature.
+ *
+ * Allows other feature modules to read and manipulate notes without depending
+ * on the internal implementation.
+ *
  * @since 1.0.0
- * @see com.letsgotoperfection.kino.feature.media.api.MediaApi for media operations
  */
 interface NotesApi {
-    
+
     /**
-     * Get all notes.
-     * Used by the notes list screen to display all notes.
-     * 
-     * @return Flow of all notes
+     * Observe all notes, pinned first, most recently updated next.
      */
     fun getAllNotes(): Flow<List<Note>>
-    
+
     /**
-     * Search notes by query.
-     * Used by the notes list screen for search functionality.
-     * 
+     * Search notes by free-text query against title and content.
+     *
      * @param query The search query
      * @return Result containing matching notes
      */
     suspend fun searchNotes(query: String): Result<List<Note>>
-    
+
     /**
-     * Get note by ID for navigation purposes.
-     * Used by media module to navigate to specific notes.
-     * 
+     * Get a note by id.
+     *
      * @param noteId The unique note identifier
-     * @return Result containing the Note or an error
+     * @return Result containing the Note or an error if not found
      */
     suspend fun getNote(noteId: String): Result<Note>
-    
+
     /**
-     * Get all notes that have media attachments.
-     * Used by media module to show notes with media.
-     * 
-     * @return Flow of notes with media attachments
+     * Observe all notes that have at least one attachment.
+     * Used by the media feature to surface notes with media.
      */
     fun getNotesWithMedia(): Flow<List<Note>>
-    
-    /**
-     * Get notes attached to a specific task.
-     * Used by task modules to show related notes.
-     * 
-     * @param taskId The task ID
-     * @return Flow of notes attached to the task
-     */
-    fun getNotesForTask(taskId: String): Flow<List<Note>>
-    
-    /**
-     * Navigate to a specific note.
-     * Used by other modules to navigate to note detail screen.
-     * 
-     * @param noteId The note ID to navigate to
-     * @return Navigation route for the note
-     */
-    fun getNoteDetailRoute(noteId: String): String
-    
+
     /**
      * Create a new note.
-     * Used by the note editor for creating new notes.
-     * 
-     * @param title The note title
-     * @param content The note content
-     * @param tags List of tags for the note
-     * @return Result containing the created note ID or an error
+     *
+     * @return Result containing the created note id
      */
-    suspend fun createNote(title: String, content: String, tags: List<String> = emptyList()): Result<String>
-    
+    suspend fun createNote(title: String, content: String): Result<String>
+
     /**
-     * Update an existing note.
-     * Used by the note editor for updating notes.
-     * 
-     * @param noteId The note ID to update
-     * @param title The new title (optional)
-     * @param content The new content (optional)
-     * @param tags The new tags (optional)
-     * @return Result indicating success or failure
+     * Update an existing note; null arguments leave the field unchanged.
      */
-    suspend fun updateNote(noteId: String, title: String? = null, content: String? = null, tags: List<String>? = null): Result<Unit>
-    
+    suspend fun updateNote(
+        noteId: String,
+        title: String? = null,
+        content: String? = null
+    ): Result<Unit>
+
     /**
-     * Delete a note.
-     * Used by the note detail screen for deleting notes.
-     * 
-     * @param noteId The note ID to delete
-     * @return Result indicating success or failure
+     * Delete a note by id.
      */
     suspend fun deleteNote(noteId: String): Result<Unit>
-    
+
     /**
-     * Toggle pin status of a note.
-     * Used by the note detail screen for pinning/unpinning notes.
-     * 
-     * @param noteId The note ID to toggle
-     * @return Result containing the new pin status or an error
+     * Toggle the pinned status of a note.
+     *
+     * @return Result containing the new pin state
      */
     suspend fun togglePin(noteId: String): Result<Boolean>
 }
 
 /**
- * Public data model for notes that can be used by other modules.
- * This is a simplified version of the internal Note model.
+ * Public data model for notes exposed to other modules.
  */
 data class Note(
     val id: String,
@@ -127,7 +83,4 @@ data class Note(
     val updatedAt: Long
 ) {
     val hasAttachments: Boolean get() = attachmentCount > 0
-    val isRecentlyUpdated: Boolean get() = 
-        updatedAt > (System.currentTimeMillis() - 24 * 60 * 60 * 1000) // 24 hours
-    val previewText: String get() = content.take(100) + if (content.length > 100) "..." else ""
 }

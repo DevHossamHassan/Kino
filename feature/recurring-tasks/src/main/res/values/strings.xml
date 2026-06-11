@@ -63,6 +63,54 @@
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
     <string name="view_instances">View Instances</string>
+    <string name="add">Add</string>
+    <string name="ok">OK</string>
+    <string name="retry">Retry</string>
+
+    <!-- Checklist Template -->
+    <string name="add_checklist_item_title">Add Checklist Item</string>
+    <string name="checklist_item_text">Item text</string>
+    <string name="checklist_template_hint">Add checklist items that will be copied to each generated task</string>
+    <string name="checklist_template_title">Checklist Template</string>
+
+    <!-- Description Editor -->
+    <string name="tap_to_add_description">Tap to add rich text description</string>
+    <string name="cd_edit_description">Edit description with rich text</string>
+
+    <!-- Task Template -->
+    <string name="task_template">Task Template</string>
+    <string name="default_column">Default Column</string>
+    <string name="default_column_hint">Where generated tasks will be placed</string>
+    <string name="due_date">Due Date</string>
+    <string name="due_date_offset_hint">Days after task creation</string>
+    <string name="offset_same_day">Same day</string>
+    <plurals name="offset_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="labels">Labels</string>
+
+    <!-- Interval labels -->
+    <string name="every_x_days">Every X days</string>
+    <string name="every_x_weeks">Every X weeks</string>
+    <string name="every_x_months">Every X months</string>
+    <string name="every_x_years">Every X years</string>
+
+    <!-- Field Hints -->
+    <string name="day_of_month_hint">Day (1–31)</string>
+    <!-- %1$s is the field label -->
+    <string name="label_optional">%1$s (optional)</string>
+    <string name="no_end_date">No end date</string>
+    <!-- %1$s a formatted occurrence date -->
+    <string name="occurrence_bullet">• %1$s</string>
+
+    <!-- Content Descriptions (general) -->
+    <string name="cd_back">Back</string>
+    <string name="cd_add_checklist_item">Add checklist item</string>
+    <string name="cd_remove_checklist_item">Remove checklist item</string>
+    <string name="cd_select_time">Select time</string>
+    <string name="cd_select_date">Select date</string>
+    <string name="cd_clear_date">Clear date</string>
     
     <!-- Status -->
     <string name="active">Active</string>
@@ -79,6 +127,8 @@
     <string name="recurring_task_instance">Part of a recurring task</string>
     <string name="view_recurring_task">View recurring task template</string>
     <string name="generated_from">Generated from: %1$s</string>
+    <!-- %1$s the occurrence date this instance was generated for -->
+    <string name="scheduled_for">Scheduled for %1$s</string>
     
     <!-- Validation Messages -->
     <string name="title_required">Title is required</string>
@@ -90,8 +140,15 @@
     <string name="start_date_required">Start date is required</string>
     <string name="end_date_before_start">End date must be after start date</string>
     
+    <!-- Recurrence Preview Prompts -->
+    <string name="fill_required_fields">Please fill in all required fields correctly</string>
+    <string name="select_days_of_week">Select days of the week</string>
+    <string name="select_day_of_month">Select day of the month</string>
+    <string name="select_month_and_day">Select month and day</string>
+
     <!-- Error Messages -->
     <string name="error_loading_recurring_tasks">Failed to load recurring tasks</string>
+    <string name="error_loading_recurring_task">Failed to load recurring task</string>
     <string name="error_creating_recurring_task">Failed to create recurring task</string>
     <string name="error_updating_recurring_task">Failed to update recurring task</string>
     <string name="error_deleting_recurring_task">Failed to delete recurring task</string>
@@ -104,6 +161,12 @@
     <string name="recurring_task_paused">Recurring task paused</string>
     <string name="recurring_task_resumed">Recurring task resumed</string>
     
+    <!-- List subtitle: number of recurring tasks -->
+    <plurals name="recurring_tasks_count">
+        <item quantity="one">%d recurring task</item>
+        <item quantity="other">%d recurring tasks</item>
+    </plurals>
+
     <!-- Empty States -->
     <string name="no_recurring_tasks">No recurring tasks yet</string>
     <string name="no_recurring_tasks_description">Create your first recurring task to get started with automated task generation</string>
@@ -125,5 +188,51 @@
     <string name="cd_view_instances">View task instances</string>
     <string name="cd_recurrence_pattern">Recurrence pattern</string>
     <string name="cd_task_status">Task status</string>
+
+    <!-- Priorities -->
+    <string name="priority_high">High</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_low">Low</string>
+
+    <!-- Sections -->
+    <string name="section_personal">Personal</string>
+    <string name="section_work">Work</string>
+    <string name="section_family">Family</string>
+
+    <!-- Board Columns -->
+    <string name="column_backlog">Backlog</string>
+    <string name="column_todo_this_week">To Do This Week</string>
+    <string name="column_in_progress">In Progress</string>
+    <string name="column_pending">Pending</string>
+    <string name="column_done">Done</string>
+
+    <!-- Notifications -->
+    <string name="notification_recurring_task_created_title">Recurring task created</string>
+    <!-- %1$s task title, %2$s column name, %3$s section name -->
+    <string name="notification_recurring_task_created_message">%1$s has been added to %2$s in %3$s</string>
+    <!-- %1$s task title, %2$s column name, %3$s section name -->
+    <string name="notification_recurring_task_group_line">%1$s → %2$s (%3$s)</string>
+    <plurals name="notification_recurring_tasks_created_title">
+        <item quantity="one">%d recurring task created</item>
+        <item quantity="other">%d recurring tasks created</item>
+    </plurals>
+    <string name="notification_recurring_tasks_group_summary">Tasks have been added to your board</string>
+    <!-- %1$d number of additional tasks not shown -->
+    <string name="notification_recurring_tasks_group_summary_more">Tasks have been added to your board (+%1$d more)</string>
+
+    <!-- Recurrence Descriptions. %s time, %d interval/day -->
+    <string name="recurrence_daily">Every day at %1$s</string>
+    <string name="recurrence_every_n_days">Every %1$d days at %2$s</string>
+    <string name="recurrence_weekly">Every week on %1$s at %2$s</string>
+    <string name="recurrence_every_n_weeks">Every %1$d weeks on %2$s at %3$s</string>
+    <string name="recurrence_monthly">Monthly on day %1$d at %2$s</string>
+    <string name="recurrence_every_n_months">Every %1$d months on day %2$d at %3$s</string>
+    <string name="recurrence_yearly">Yearly on %1$s %2$d at %3$s</string>
+    <string name="recurrence_every_n_years">Every %1$d years on %2$s %3$d at %4$s</string>
+    <!-- Separator used when joining day names in a list -->
+    <string name="list_separator">", "</string>
+
+    <!-- Permissions -->
+    <string name="alarm_permission_message">Recurring tasks need permission to schedule exact alarms. Please grant the Alarms &amp; reminders permission in the next screen.</string>
 </resources>
 

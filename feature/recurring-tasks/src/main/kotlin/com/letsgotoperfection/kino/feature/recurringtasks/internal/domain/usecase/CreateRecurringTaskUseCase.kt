@@ -1,6 +1,7 @@
 package com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.usecase
 
 import com.letsgotoperfection.kino.feature.recurringtasks.api.InvalidRecurrenceRuleException
+import com.letsgotoperfection.kino.feature.recurringtasks.internal.alarm.RecurringTaskAlarmScheduler
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.calculator.RecurrenceCalculator
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.model.RecurringTask
 import com.letsgotoperfection.kino.feature.recurringtasks.internal.domain.repository.RecurringTasksRepository
@@ -9,11 +10,15 @@ import java.util.UUID
 import javax.inject.Inject
 
 /**
- * Use case for creating a new recurring task
+ * Use case for creating a new recurring task.
+ *
+ * On success, alarms for the upcoming occurrences are scheduled so generation
+ * starts without any further action from the caller.
  */
 class CreateRecurringTaskUseCase @Inject constructor(
     private val repository: RecurringTasksRepository,
-    private val recurrenceCalculator: RecurrenceCalculator
+    private val recurrenceCalculator: RecurrenceCalculator,
+    private val alarmScheduler: RecurringTaskAlarmScheduler
 ) {
     
     suspend operator fun invoke(
@@ -56,6 +61,10 @@ class CreateRecurringTaskUseCase @Inject constructor(
             dueDateOffsetDays = dueDateOffsetDays
         )
         
-        return repository.createRecurringTask(recurringTask)
+        return repository.createRecurringTask(recurringTask).onSuccess {
+            if (recurringTask.isActive) {
+                alarmScheduler.scheduleUpcomingOccurrences(recurringTask)
+            }
+        }
     }
 }

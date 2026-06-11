@@ -103,6 +103,14 @@
     <string name="media_play_audio">Play</string>
     <string name="media_pause_audio">Pause</string>
     <string name="media_open_external_error">No app available to open this file.</string>
+    <string name="media_preview_unavailable">Preview not available for this file type</string>
+    <string name="media_source_task">Task: %1$s</string>
+    <string name="media_source_note">Note: %1$s</string>
+    <string name="media_type_image">Image</string>
+    <string name="media_type_video">Video</string>
+    <string name="media_type_document">Document</string>
+    <string name="media_type_audio">Audio</string>
+    <string name="media_type_other">File</string>
     
     <!-- Permissions -->
     <string name="media_permission_required_title">Media Access Required</string>
@@ -176,6 +184,12 @@
     <string name="notes_editor_unpin">Unpin note</string>
     <string name="notes_editor_remove_attachment">Remove attachment</string>
     <string name="notes_editor_not_found">Note not found</string>
+    <string name="notes_detail_title">Note details</string>
+    <string name="notes_created_at">Created %1$s</string>
+    <string name="notes_updated_at">Updated %1$s</string>
+    <string name="notes_note_pinned_message">Note pinned</string>
+    <string name="notes_note_unpinned_message">Note unpinned</string>
+    <string name="notes_load_failed">Failed to load notes</string>
     
     <!-- Sections Management -->
     <string name="section_add">Add section</string>
